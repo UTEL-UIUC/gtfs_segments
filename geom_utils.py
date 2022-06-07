@@ -1,6 +1,8 @@
 import utm
+import numpy as np
 import geopandas as gpd
-from shapely.geometry import Point,MultiPoint,LineString
+from shapely.ops import split
+from shapely.geometry import Point
 
 
 def split_route(row):
