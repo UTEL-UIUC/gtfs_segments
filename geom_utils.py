@@ -3,22 +3,24 @@ import numpy as np
 import geopandas as gpd
 from shapely.ops import split
 from shapely.geometry import Point
-
+from scipy.spatial import cKDTree
 
 def split_route(row):
     route= row['geometry']
     if row['snapped_start_id']:
         try:
-            route = split(route,row['start'])[1]
+            route = split(route,row['start']).geoms[1]
         except:
             route = route
     if row['snapped_end_id']:
-        route = split(route,row['end'])[0]
-    return route
+        route = split(route,row['end']).geoms[0]
+    return route.wkt
 
 def nearest_snap(route,point):
-    dist_list = [point.distance(Point(coord)) for coord in route.coords]  
-    return Point(list(route.coords)[np.argmin(dist_list)])
+    route = np.array(route.coords)
+    point = np.array(point.coords)
+    ckd_tree = cKDTree(route)
+    return Point(route[ckd_tree.query(point, k=1)[1]][0]).wkt
 
 def make_gdf(df):
     df = gpd.GeoDataFrame(df)

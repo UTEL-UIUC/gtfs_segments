@@ -1,3 +1,4 @@
+from tracemalloc import stop
 import geopandas as gpd
 from .partridge_func import ptg_read_file
 from .geom_utils import *
@@ -29,15 +30,16 @@ def merge_trip_geom(trip_df,shape_df):
 
 def create_segments(stop_df):
     stop_df = stop_df.rename({'stop_id':'stop_id1'},axis =1)
-    stop_df['start'] = stop_df.apply(lambda row: nearest_snap(row['geometry'],row['start']), axis = 1)
+    start_wkts = stop_df.apply(lambda row: nearest_snap(row['geometry'],row['start']), axis = 1)
+    stop_df['start'] = gpd.GeoSeries.from_wkt(start_wkts)
     grp = stop_df.groupby('trip_id').apply(lambda df: df.shift(-1)).reset_index(drop=True)
-    stop_df['stop_id2'] = grp['stop_id1']
-    stop_df['end'] = grp['start']
+    stop_df[['stop_id2','end']] = grp[['stop_id1','start']]
     stop_df = stop_df.dropna().reset_index(drop=True)
     stop_df['segment_id'] = stop_df.apply(lambda row: str(row['stop_id1']) +'-'+ str(row['stop_id2']),axis =1)
     stop_df['snapped_start_id'] = stop_df.apply(lambda row: row['start'].within(row['geometry']), axis = 1)
     stop_df['snapped_end_id'] = stop_df.apply(lambda row: row['end'].within(row['geometry']), axis = 1)
-    stop_df['geometry'] = stop_df.apply(lambda row: split_route(row),axis = 1)
+    split_routes = stop_df.apply(lambda row: split_route(row),axis = 1)
+    stop_df['geometry'] = gpd.GeoSeries.from_wkt(split_routes)
     return stop_df
 
 def filter_stop_df(stop_df,trip_ids):
@@ -59,12 +61,17 @@ def process_feed(feed):
     stop_df = merge_stop_geom(stop_df,stop_loc_df)    
     
     stop_df = stop_df.merge(trip_df,on='trip_id',how='left')
+    # return stop_df
     stop_df = create_segments(stop_df)
     epsg_zone = get_zone_epsg(stop_df)
     stop_df = stop_df[['route_id','service_id','segment_id','stop_id1','stop_id2','direction_id','traversals','geometry']]
     stop_df = make_gdf(stop_df)    
     stop_df['distance'] = stop_df.to_crs(epsg_zone).geometry.length
     return stop_df
+
+def get_gtfs_segments(path):
+    bday ,feed = ptg_read_file(path)
+    return process_feed(feed)
 
 def pipeline_gtfs(filename,url,bounds,max_spacing):
     folder_path  = os.path.join('output_files',filename)

@@ -2,6 +2,7 @@ import os
 import shutil
 import requests
 import traceback
+import numpy as np
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -10,17 +11,20 @@ plt.style.use('ggplot')
 from shapely.geometry import Point
 from statsmodels.stats.weightstats import DescrStatsW
 
-def plot_func(df,filename,path,max_spacing):
+def plot_func(df,filename,path,max_spacing,save_fig = True):
     fig, ax = plt.subplots(figsize=(10,8),dpi=200)
-    sns.distplot(df[df["distance"] <max_spacing]["distance"], bins = int(max_spacing/50), hist_kws={'weights': df[df["distance"] <max_spacing]["traversals"]}, kde=True,ax=ax)
+    df_sub = df[df['distance']  < 3000]
+    data = np.hstack([np.repeat(x, y) for x, y in zip(df_sub['distance'], df_sub.traversals)])
+    sns.histplot(data,bins=int(max_spacing/50),kde=True,ax=ax)
     plt.xlim([0,max_spacing])
     plt.xlabel('Stop Spacing [m]')
     plt.ylabel('Density - Traversal Weighted')
     
     plt.title(filename.split('.')[0])
-    plt.savefig(path+'/spacings.png', dpi=200)
+    if save_fig == True:
+        plt.savefig(path+'/spacings.png', dpi=200)
 
-def summary_stats(df,path,filename,b_day,link,bounds,max_spacing):
+def summary_stats(df,path,filename,b_day,link,bounds,max_spacing = 3000):
     weighted_stats = DescrStatsW(df["distance"], weights=df.traversals, ddof=0)
     quant = weighted_stats.quantile([0.25,0.5,0.75],return_pandas=False)
     percent_spacing = round(df[df["distance"] > max_spacing]['traversals'].sum()/df['traversals'].sum() *100,3)
@@ -68,14 +72,15 @@ def output_df(df,path,filename,max_spacing):
     ## Output to GeoJSON
     df.to_file(path+'/geojson.json', driver="GeoJSON")
     plot_func(df,filename,path,max_spacing)
-    df = df[df["distance"] < max_spacing]
-    s_df = df[['route_id','segment_id','stop_id1','stop_id2','distance','traversals','geometry']]
-    s_df['start_point'] = s_df.geometry.apply(lambda x: Point(x.coords[0]))
-    s_df['end_point'] = s_df.geometry.apply(lambda x: Point(x.coords[-1]))
-    s_df['start_lon'] = s_df.geometry.apply(lambda x: x.coords[0][0])
-    s_df['start_lat'] = s_df.geometry.apply(lambda x: x.coords[0][1])
-    s_df['end_lon'] = s_df.geometry.apply(lambda x: x.coords[1][0])
-    s_df['end_lat'] = s_df.geometry.apply(lambda x:x.coords[1][1])
+    df = df[df["distance"] < max_spacing].reset_index(drop=True)
+    s_df = df[['route_id','segment_id','stop_id1','stop_id2','distance','traversals','geometry']].copy()
+    geom_list =  s_df.geometry.apply(lambda g: np.array(g.coords))
+    s_df['start_point'] = [Point(g[0]).wkt for g in geom_list]
+    s_df['end_point'] = [Point(g[-1]).wkt for g in geom_list]
+    s_df['start_lon'] = [g[0][0] for g in geom_list]
+    s_df['start_lat'] = [g[0][1] for g in geom_list]
+    s_df['end_lon'] = [g[-1][0] for g in geom_list]
+    s_df['end_lat'] = [g[-1][1] for g in geom_list]
     
     sg_df = s_df[['route_id','segment_id','stop_id1','stop_id2','distance','traversals','start_point','end_point','geometry']]
     ## Output With LS

@@ -1,5 +1,4 @@
-
-import partridge as ptg
+from .partridge_mod import partridge as ptg
 
 def ptg_read_file(path):
     _date, service_ids = ptg.read_busiest_date(path)
