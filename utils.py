@@ -11,10 +11,9 @@ plt.style.use('ggplot')
 from shapely.geometry import Point
 from statsmodels.stats.weightstats import DescrStatsW
 
-def plot_func(df,filename,path,max_spacing,save_fig = True):
+def plot_func(df,path,filename,max_spacing,save_fig = True):
     fig, ax = plt.subplots(figsize=(10,8),dpi=200)
-    df_sub = df[df['distance']  < 3000]
-    data = np.hstack([np.repeat(x, y) for x, y in zip(df_sub['distance'], df_sub.traversals)])
+    data = np.hstack([np.repeat(x, y) for x, y in zip(df['distance'], df.traversals)])
     sns.histplot(data,bins=int(max_spacing/50),kde=True,ax=ax)
     plt.xlim([0,max_spacing])
     plt.xlabel('Stop Spacing [m]')
@@ -23,6 +22,7 @@ def plot_func(df,filename,path,max_spacing,save_fig = True):
     plt.title(filename.split('.')[0])
     if save_fig == True:
         plt.savefig(path+'/spacings.png', dpi=200)
+    plt.close(fig)
 
 def summary_stats(df,path,filename,b_day,link,bounds,max_spacing = 3000):
     weighted_stats = DescrStatsW(df["distance"], weights=df.traversals, ddof=0)
@@ -53,26 +53,9 @@ def summary_stats(df,path,filename,b_day,link,bounds,max_spacing = 3000):
     summary_df.to_csv(path + '/summary.csv',index = False)
 #         f.write('% Segments w/ spacing > max_spacing: '+str(round(len(df[df["distance"] > max_spacing])/len(df) *100,3)))
 
-def process(pipeline_gtfs,row,max_spacing):
-    filename = row['file_name']
-    url = row['urls.direct_download']
-    bounds = [[row['location.bounding_box.minimum_longitude'],row['location.bounding_box.minimum_latitude']],[row['location.bounding_box.maximum_longitude'],row['location.bounding_box.maximum_latitude']]]
-    print(filename)
-#     pipeline_gtfs(filename,url,bounds,max_spacing)
-    try:
-        return pipeline_gtfs(filename,url,bounds,max_spacing)
-    except:
-        traceback.print_exc()
-        folder_path  = os.path.join('output_files',filename)
-        if os.path.exists(folder_path):
-            shutil.rmtree(folder_path)
-        return "Failed for " + filename
-
 def output_df(df,path,filename,max_spacing):
     ## Output to GeoJSON
     df.to_file(path+'/geojson.json', driver="GeoJSON")
-    plot_func(df,filename,path,max_spacing)
-    df = df[df["distance"] < max_spacing].reset_index(drop=True)
     s_df = df[['route_id','segment_id','stop_id1','stop_id2','distance','traversals','geometry']].copy()
     geom_list =  s_df.geometry.apply(lambda g: np.array(g.coords))
     s_df['start_point'] = [Point(g[0]).wkt for g in geom_list]
@@ -88,3 +71,19 @@ def output_df(df,path,filename,max_spacing):
     d_df = s_df[['route_id','segment_id','stop_id1','stop_id2','start_lat','start_lon','end_lat','end_lon','distance','traversals']]
     ## Output without LS
     d_df.to_csv(path+'/spacing_data.csv',index = False)
+
+
+def process(pipeline_gtfs,row,max_spacing):
+    filename = row['file_name']
+    url = row['urls.direct_download']
+    bounds = [[row['location.bounding_box.minimum_longitude'],row['location.bounding_box.minimum_latitude']],[row['location.bounding_box.maximum_longitude'],row['location.bounding_box.maximum_latitude']]]
+    print(filename)
+#     pipeline_gtfs(filename,url,bounds,max_spacing)
+    try:
+        return pipeline_gtfs(filename,url,bounds,max_spacing)
+    except:
+        traceback.print_exc()
+        folder_path  = os.path.join('output_files',filename)
+        if os.path.exists(folder_path):
+            shutil.rmtree(folder_path)
+        return "Failed for " + filename

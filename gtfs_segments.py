@@ -20,11 +20,25 @@ def filter_bus_routes(routes, stops, stop_times, trips, shapes):
 
 
 def merge_trip_geom(trip_df,shape_df):
-    grp = trip_df.groupby(['route_id','shape_id','direction_id'])
+    ## `direction_id` and `shape_id` are optional
+    if ('shape_id' in trip_df.columns):
+        if ('direction_id' in trip_df.columns):
+        ## Check is direction_ids are listed as null
+            if trip_df['direction_id'].isnull().sum() == 0:
+                grp = trip_df.groupby(['route_id','shape_id','direction_id'])
+            else:
+                grp = trip_df.groupby(['route_id','shape_id'])
+        else:
+            grp = trip_df.groupby(['route_id','shape_id'])
+    else:
+        print("Cannot Process - Need `shape_id` column")
     trip_df = grp.first().reset_index()
     trip_df['traversals'] = grp.count().reset_index(drop=True)['trip_id']
-    trip_df = trip_df[['route_id','trip_id','shape_id','service_id','direction_id','traversals']]
+    col_subset = set(['route_id','trip_id','shape_id','service_id','direction_id','traversals'])
+    trip_df = trip_df[trip_df.columns.intersection(col_subset)]
+    trip_df = trip_df.dropna(how='all', axis=1)
     trip_df = shape_df.merge(trip_df, on='shape_id',how='left')
+    
 #     trip_df = trip_df.set_crs(epsg=4326,allow_override=True)
     return make_gdf(trip_df)
 
@@ -59,12 +73,12 @@ def process_feed(feed):
     stop_df = filter_stop_df(feed.stop_times,trip_ids)
     stop_loc_df = feed.stops[['stop_id','geometry']]
     stop_df = merge_stop_geom(stop_df,stop_loc_df)    
-    
     stop_df = stop_df.merge(trip_df,on='trip_id',how='left')
-    # return stop_df
     stop_df = create_segments(stop_df)
+    # return stop_df
     epsg_zone = get_zone_epsg(stop_df)
-    stop_df = stop_df[['route_id','service_id','segment_id','stop_id1','stop_id2','direction_id','traversals','geometry']]
+    col_subset = set(['route_id','service_id','segment_id','stop_id1','stop_id2','direction_id','traversals','geometry'])
+    stop_df = stop_df[stop_df.columns.intersection(col_subset)]
     stop_df = make_gdf(stop_df)    
     stop_df['distance'] = stop_df.to_crs(epsg_zone).geometry.length
     return stop_df
@@ -91,7 +105,6 @@ def pipeline_gtfs(filename,url,bounds,max_spacing):
     
     ## read file using GTFS Fucntions
     busisest_day, feed = ptg_read_file(gtfs_file_loc)
-    
     ## Remove Null entries
     if len(feed.stop_times) == 0:
         print('No Bus Routes')
@@ -101,8 +114,15 @@ def pipeline_gtfs(filename,url,bounds,max_spacing):
         return 'No Bus Routes in '+filename
     
     df = process_feed(feed)
-    
+    df_sub = df[df['distance']  < 3000].copy().reset_index(drop=True)
+    if len(df_sub) == 0:
+        print('Only Long Bus Routes')
+        isExist = os.path.exists(folder_path)
+        if isExist:
+            shutil.rmtree(folder_path)
+        return 'Only Long Bus Routes in '+filename
     ## Output files and Stats
-    output_df(df,folder_path,filename,max_spacing)
     summary_stats(df,folder_path,filename,busisest_day,url,bounds,max_spacing)
+    output_df(df_sub,folder_path,filename,max_spacing)
+    plot_func(df,folder_path,filename,max_spacing)
     return "Success for "+filename
