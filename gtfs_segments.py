@@ -21,17 +21,14 @@ def filter_bus_routes(routes, stops, stop_times, trips, shapes):
 
 def merge_trip_geom(trip_df,shape_df):
     ## `direction_id` and `shape_id` are optional
-    if ('shape_id' in trip_df.columns):
-        if ('direction_id' in trip_df.columns):
-        ## Check is direction_ids are listed as null
-            if trip_df['direction_id'].isnull().sum() == 0:
-                grp = trip_df.groupby(['route_id','shape_id','direction_id'])
-            else:
-                grp = trip_df.groupby(['route_id','shape_id'])
+    if ('direction_id' in trip_df.columns):
+    ## Check is direction_ids are listed as null
+        if trip_df['direction_id'].isnull().sum() == 0:
+            grp = trip_df.groupby(['route_id','shape_id','direction_id'])
         else:
             grp = trip_df.groupby(['route_id','shape_id'])
     else:
-        print("Cannot Process - Need `shape_id` column")
+        grp = trip_df.groupby(['route_id','shape_id'])
     trip_df = grp.first().reset_index()
     trip_df['traversals'] = grp.count().reset_index(drop=True)['trip_id']
     col_subset = set(['route_id','trip_id','shape_id','service_id','direction_id','traversals'])
@@ -83,44 +80,40 @@ def process_feed(feed):
     stop_df['distance'] = stop_df.to_crs(epsg_zone).geometry.length
     return stop_df
 
+def inspect_feed(feed):
+    message = True
+    if len(feed.stop_times) == 0:
+        message = 'No Bus Routes' 
+    if not "shape_id" in feed.trips.columns:
+        message = "Missing `shape_id` column"
+    return message 
+
 def get_gtfs_segments(path):
     bday ,feed = ptg_read_file(path)
     return process_feed(feed)
 
 def pipeline_gtfs(filename,url,bounds,max_spacing):
     folder_path  = os.path.join('output_files',filename)
-    isExist = os.path.exists(folder_path)
-    if not isExist:
+    if not os.path.exists(folder_path):
       # Create a new directory because it does not exist 
       os.makedirs(folder_path)
+    print("Folder_path " ,os.path.exists(folder_path))
     
-    ## Download file from URL
-    r = requests.get(url, allow_redirects=True)
-    gtfs_file_loc = folder_path+"/try_gtfs.zip"
+    gtfs_file_loc = download_write_file(url,folder_path)
     
-    ## Write file locally
-    file = open(gtfs_file_loc, "wb")
-    file.write(r.content)
-    file.close()
-    
+    return "yay"
     ## read file using GTFS Fucntions
     busisest_day, feed = ptg_read_file(gtfs_file_loc)
     ## Remove Null entries
-    if len(feed.stop_times) == 0:
-        print('No Bus Routes')
-        isExist = os.path.exists(folder_path)
-        if isExist:
-            shutil.rmtree(folder_path)
-        return 'No Bus Routes in '+filename
+    message =  inspect_feed(feed)
+    print(message)
+    if message != True:
+        return failed_pipeline(message,filename,folder_path)
     
     df = process_feed(feed)
     df_sub = df[df['distance']  < 3000].copy().reset_index(drop=True)
     if len(df_sub) == 0:
-        print('Only Long Bus Routes')
-        isExist = os.path.exists(folder_path)
-        if isExist:
-            shutil.rmtree(folder_path)
-        return 'Only Long Bus Routes in '+filename
+        failed_pipeline('Only Long Bus Routes in',filename,folder_path)
     ## Output files and Stats
     summary_stats(df,folder_path,filename,busisest_day,url,bounds,max_spacing)
     output_df(df_sub,folder_path,filename,max_spacing)

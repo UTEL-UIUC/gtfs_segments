@@ -83,7 +83,20 @@ def process(pipeline_gtfs,row,max_spacing):
         return pipeline_gtfs(filename,url,bounds,max_spacing)
     except:
         traceback.print_exc()
-        folder_path  = os.path.join('output_files',filename)
-        if os.path.exists(folder_path):
-            shutil.rmtree(folder_path)
-        return "Failed for " + filename
+        return failed_pipeline("Failed",filename,folder_path)
+
+def failed_pipeline(message,filename,folder_path):
+    if os.path.exists(folder_path):
+        shutil.rmtree(folder_path)
+    return message + filename
+
+def download_write_file(url,folder_path):
+    ## Download file from URL
+    r = requests.get(url, allow_redirects=True)
+    gtfs_file_loc = folder_path+"/gtfs.zip"
+    
+    ## Write file locally
+    file = open(gtfs_file_loc, "wb")
+    file.write(r.content)
+    file.close()
+    return gtfs_file_loc
