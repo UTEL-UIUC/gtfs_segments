@@ -21,14 +21,15 @@ def plot_func(df,path,filename,max_spacing,save_fig = True):
     
     plt.title(filename.split('.')[0])
     if save_fig == True:
-        plt.savefig(path+'/spacings.png', dpi=200)
+        plt.savefig(os.path.join(path,'spacings.png'), dpi=200)
     plt.close(fig)
 
 def summary_stats(df,path,filename,b_day,link,bounds,max_spacing = 3000):
     weighted_stats = DescrStatsW(df["distance"], weights=df.traversals, ddof=0)
     quant = weighted_stats.quantile([0.25,0.5,0.75],return_pandas=False)
     percent_spacing = round(df[df["distance"] > max_spacing]['traversals'].sum()/df['traversals'].sum() *100,3)
-    with open(path + '/summary.csv', 'w',encoding='utf-8') as f:
+    csv_path = os.path.join(path,'summary.csv')
+    with open(csv_path, 'w',encoding='utf-8') as f:
         f.write('Name,'+str(filename)+'\n')
         f.write('Busiest Day,'+str(b_day)+'\n')
         f.write('Link,'+str(link)+'\n')
@@ -47,15 +48,14 @@ def summary_stats(df,path,filename,b_day,link,bounds,max_spacing = 3000):
         f.write('Max Spacing,'+str(max_spacing)+'\n')
         f.write('% Segments w/ spacing > max_spacing,'+str(percent_spacing))
         f.close()
-    summary_df = pd.read_csv(path + '/summary.csv')
+    summary_df = pd.read_csv(csv_path)
     summary_df.set_index(summary_df.columns[0],inplace=True)
     summary_df = summary_df.T
-    summary_df.to_csv(path + '/summary.csv',index = False)
-#         f.write('% Segments w/ spacing > max_spacing: '+str(round(len(df[df["distance"] > max_spacing])/len(df) *100,3)))
+    summary_df.to_csv(csv_path,index = False)
 
-def output_df(df,path,filename,max_spacing):
+def output_df(df,path):
     ## Output to GeoJSON
-    df.to_file(path+'/geojson.json', driver="GeoJSON")
+    df.to_file(os.path.join(path,'geojson.json'), driver="GeoJSON")
     s_df = df[['route_id','segment_id','stop_id1','stop_id2','distance','traversals','geometry']].copy()
     geom_list =  s_df.geometry.apply(lambda g: np.array(g.coords))
     s_df['start_point'] = [Point(g[0]).wkt for g in geom_list]
@@ -67,10 +67,10 @@ def output_df(df,path,filename,max_spacing):
     
     sg_df = s_df[['route_id','segment_id','stop_id1','stop_id2','distance','traversals','start_point','end_point','geometry']]
     ## Output With LS
-    sg_df.to_csv(path+'/spacing_data_with_geometry.csv',index = False)
+    sg_df.to_csv(os.path.join(path,'spacing_data_with_geometry.csv'),index = False)
     d_df = s_df[['route_id','segment_id','stop_id1','stop_id2','start_lat','start_lon','end_lat','end_lon','distance','traversals']]
     ## Output without LS
-    d_df.to_csv(path+'/spacing_data.csv',index = False)
+    d_df.to_csv(os.path.join(path,'spacing_data.csv'),index = False)
 
 
 def process(pipeline_gtfs,row,max_spacing):
@@ -83,6 +83,7 @@ def process(pipeline_gtfs,row,max_spacing):
         return pipeline_gtfs(filename,url,bounds,max_spacing)
     except:
         traceback.print_exc()
+        folder_path  = os.path.join('output_files',filename)
         return failed_pipeline("Failed",filename,folder_path)
 
 def failed_pipeline(message,filename,folder_path):

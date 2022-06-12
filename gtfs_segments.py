@@ -83,9 +83,9 @@ def process_feed(feed):
 def inspect_feed(feed):
     message = True
     if len(feed.stop_times) == 0:
-        message = 'No Bus Routes' 
+        message = 'No Bus Routes in ' 
     if not "shape_id" in feed.trips.columns:
-        message = "Missing `shape_id` column"
+        message = "Missing `shape_id` column in "
     return message 
 
 def get_gtfs_segments(path):
@@ -97,25 +97,23 @@ def pipeline_gtfs(filename,url,bounds,max_spacing):
     if not os.path.exists(folder_path):
       # Create a new directory because it does not exist 
       os.makedirs(folder_path)
-    print("Folder_path " ,os.path.exists(folder_path))
     
     gtfs_file_loc = download_write_file(url,folder_path)
     
-    return "yay"
     ## read file using GTFS Fucntions
     busisest_day, feed = ptg_read_file(gtfs_file_loc)
     ## Remove Null entries
     message =  inspect_feed(feed)
-    print(message)
     if message != True:
         return failed_pipeline(message,filename,folder_path)
     
     df = process_feed(feed)
     df_sub = df[df['distance']  < 3000].copy().reset_index(drop=True)
     if len(df_sub) == 0:
-        failed_pipeline('Only Long Bus Routes in',filename,folder_path)
+        return failed_pipeline('Only Long Bus Routes in ',filename,folder_path)
     ## Output files and Stats
     summary_stats(df,folder_path,filename,busisest_day,url,bounds,max_spacing)
-    output_df(df_sub,folder_path,filename,max_spacing)
+
     plot_func(df,folder_path,filename,max_spacing)
+    output_df(df_sub,folder_path)
     return "Success for "+filename
