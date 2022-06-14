@@ -29,9 +29,9 @@
 <!-- PROJECT LOGO -->
 <br />
 <div align="center">
-  <!-- <a href="https://github.com/UTEL-UIUC/gtfs_segments">
-    <img src="images/logo.png" alt="Logo" width="80" height="80">
-  </a> -->
+  <a href="https://github.com/UTEL-UIUC/gtfs_segments">
+    <img src="/images/example.jpg" alt="Logo" width="80" height="80">
+  </a>
 
 <h3 align="center">GTFS Segments</h3>
 
@@ -81,9 +81,9 @@
 
 <!-- ABOUT THE PROJECT -->
 ## About The Project
-
-[![GTFS Segments Example][product-screenshot]](images/example.jpg)
-
+<div align="center">
+  <img src="/images/example.jpg" alt="drawing" width="400"/>
+</div>
 Transit agencies use the General Transit Feed Specification (GTFS) to publish transit data. More and more cities are adopting the GTFS format across the globe. The GTFS feed can be downloaded from [@transitfeeds](https://transitfeeds.com/) & [@mobility data](https://mobilitydata.org/). 
 
 <p align="right">(<a href="#top">back to top</a>)</p>
