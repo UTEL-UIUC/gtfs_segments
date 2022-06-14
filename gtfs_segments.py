@@ -1,25 +1,16 @@
-from tracemalloc import stop
 import geopandas as gpd
 from .partridge_func import ptg_read_file
 from .geom_utils import *
 from .utils import *
 
 
-def filter_bus_routes(routes, stops, stop_times, trips, shapes):
-    ##Bus route_ids
-    routes = routes[routes.route_type == 3]
-    route_ids = routes.route_id
-    stop_times = stop_times[stop_times.route_id.isin(route_ids)]
-    trips = trips[trips.route_id.isin(route_ids)]
-
-    stops_ids = stop_times.stop_id.unique()
-    stops = stops[stops.stop_id.isin(stops_ids)]
-    shape_ids = trips.shape_id.unique()
-    shapes = shapes[shapes.shape_id.isin(shape_ids)]
-    return routes, stops, stop_times, trips, shapes
-
-
 def merge_trip_geom(trip_df,shape_df):
+    """Merge Trips and Shapes
+
+    Args:
+        trip_df (DataFrame): DataFrame fo Trips
+        shape_df (DataFrame): DataFrame of Shapes
+    """
     ## `direction_id` and `shape_id` are optional
     if ('direction_id' in trip_df.columns):
     ## Check is direction_ids are listed as null
@@ -40,6 +31,14 @@ def merge_trip_geom(trip_df,shape_df):
     return make_gdf(trip_df)
 
 def create_segments(stop_df):
+    """Generate Segments and splice their geometry
+
+    Args:
+        stop_df (DataFrame): DataFrame without segments
+
+    Returns:
+        DataFrame: DataFrame with segments
+    """
     stop_df = stop_df.rename({'stop_id':'stop_id1'},axis =1)
     start_wkts = stop_df.apply(lambda row: nearest_snap(row['geometry'],row['start']), axis = 1)
     stop_df['start'] = gpd.GeoSeries.from_wkt(start_wkts)
@@ -54,17 +53,43 @@ def create_segments(stop_df):
     return stop_df
 
 def filter_stop_df(stop_df,trip_ids):
+    """Filters DataFrame to contain only filtered trips
+
+    Args:
+        stop_df (DataFrame): DataFrame containing stop times
+        trip_ids (list): List of trip ids that have a unique `route_id`, `direction_id` & `shape_id`
+
+    Returns:
+        _type_: _description_
+    """
     stop_df = stop_df[['trip_id','stop_id','stop_sequence']]
     stop_df = stop_df[stop_df.trip_id.isin(trip_ids)].reset_index(drop=True)
     stop_df = stop_df.sort_values(['trip_id','stop_sequence']).reset_index(drop=True)
     return stop_df
 
 def merge_stop_geom(stop_df,stop_loc_df):
+    """Merge stop_times and stops to obtain stop locations
+
+    Args:
+        stop_df (DataFrame): Contains stop times for all trip_id
+        stop_loc_df (DataFrame): Consists of stop location corresponding to a stop_id
+
+    Returns:
+        GeoDataFrame: GeoDataFrame containing stops with geometry
+    """       
     stop_df['start'] = stop_df.copy().merge(stop_loc_df,how='left',on='stop_id')['geometry']
     stop_df = gpd.GeoDataFrame(stop_df,geometry='start')
     return make_gdf(stop_df)
     
 def process_feed(feed):
+    """Process the feed to generate Segments and Stop Spacings 
+
+    Args:
+        feed (Feed): GTFS feed
+
+    Returns:
+        GeoDataFrame: Consists of segements with Traversals and Geometries
+    """
     trip_df = merge_trip_geom(feed.trips,feed.shapes)
     trip_ids = trip_df.trip_id.unique()
     stop_df = filter_stop_df(feed.stop_times,trip_ids)
@@ -81,6 +106,14 @@ def process_feed(feed):
     return stop_df
 
 def inspect_feed(feed):
+    """Inspect Feed before processing           
+
+    Args:
+        feed (Feed): GTFS Feed
+
+    Returns:
+        str: Message about feed characteristics
+    """
     message = True
     if len(feed.stop_times) == 0:
         message = 'No Bus Routes in ' 
@@ -89,10 +122,29 @@ def inspect_feed(feed):
     return message 
 
 def get_gtfs_segments(path):
+    """Combined Function to get segments from GTFS File
+
+    Args:
+        path (str): Path to GTFS File
+
+    Returns:
+        GeoDataFrame: GeoDataFrame containing the segments and stop spacings with geometries
+    """
     bday ,feed = ptg_read_file(path)
     return process_feed(feed)
 
 def pipeline_gtfs(filename,url,bounds,max_spacing):
+    """Pipeline for handling Mobility data
+
+    Args:
+        filename (str): Filename
+        url (str): Link to the GTFS file
+        bounds (tuple): Lat long bounds of the gtfs file
+        max_spacing (int): Maximum Allowed Spacing between two consecutive stops.
+
+    Returns:
+        str: Status of pipeline
+    """
     folder_path  = os.path.join('output_files',filename)
     if not os.path.exists(folder_path):
       # Create a new directory because it does not exist 

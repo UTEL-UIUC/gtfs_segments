@@ -1,6 +1,15 @@
 import pandas as pd
 
 def read_moblity_sources(abb_path,mob_path):
+    """Read mobility Data csv and generate DataFrame
+
+    Args:
+        abb_path (str): path to state abbreviations csv 
+        mob_path (_type_): path to sources csv
+
+    Returns:
+        DataFrame: Sources DataFrame
+    """
     abb_df = pd.read_csv(abb_path)
     sources_df = pd.read_csv(mob_path)
     sources_df = sources_df[sources_df['location.country_code'] == 'US']

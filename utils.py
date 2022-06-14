@@ -11,20 +11,39 @@ plt.style.use('ggplot')
 from shapely.geometry import Point
 from statsmodels.stats.weightstats import DescrStatsW
 
-def plot_func(df,path,filename,max_spacing,save_fig = True):
+def plot_func(df,folder_path,filename,max_spacing=3000,save_fig = True):
+    """Used to Plot Weighted Histogram of distributions
+
+    Args:
+        df (DataFrame): Final DataFrame  
+        folder_path (str): Folder Path
+        filename (str): Filename
+        max_spacing (_type_): Maximum Allowed Spacing between two stops. Defaults to 3000.
+        save_fig (bool, optional): Field to save the generated figure. Defaults to True.
+    """    
     fig, ax = plt.subplots(figsize=(10,8),dpi=200)
     data = np.hstack([np.repeat(x, y) for x, y in zip(df['distance'], df.traversals)])
     sns.histplot(data,bins=int(max_spacing/50),kde=True,ax=ax)
     plt.xlim([0,max_spacing])
     plt.xlabel('Stop Spacing [m]')
     plt.ylabel('Density - Traversal Weighted')
-    
     plt.title(filename.split('.')[0])
     if save_fig == True:
         plt.savefig(os.path.join(path,'spacings.png'), dpi=200)
     plt.close(fig)
 
-def summary_stats(df,path,filename,b_day,link,bounds,max_spacing = 3000):
+def summary_stats(df,folder_path,filename,b_day,link,bounds,max_spacing = 3000):
+    """Generate a report of summary statistics for the gtfs file
+
+    Args:
+        df (DataFrame): DataFrame
+        folder_path (str): Folder Path
+        filename (str): Filename
+        b_day (date): Busiest Day
+        link (str): Download URL
+        bounds (tuple): Lat Long bounds
+        max_spacing (int, optional): Maximum Allowed Spacing between two consecutive stops. Defaults to 3000.
+    """
     weighted_stats = DescrStatsW(df["distance"], weights=df.traversals, ddof=0)
     quant = weighted_stats.quantile([0.25,0.5,0.75],return_pandas=False)
     percent_spacing = round(df[df["distance"] > max_spacing]['traversals'].sum()/df['traversals'].sum() *100,3)
@@ -54,6 +73,12 @@ def summary_stats(df,path,filename,b_day,link,bounds,max_spacing = 3000):
     summary_df.to_csv(csv_path,index = False)
 
 def output_df(df,path):
+    """Write the DataFrame as csv and geojson
+
+    Args:
+        df (DataFrame): DataFrame
+        path (str): Output Folder Path
+    """
     ## Output to GeoJSON
     df.to_file(os.path.join(path,'geojson.json'), driver="GeoJSON")
     s_df = df[['route_id','segment_id','stop_id1','stop_id2','distance','traversals','geometry']].copy()
@@ -74,6 +99,13 @@ def output_df(df,path):
 
 
 def process(pipeline_gtfs,row,max_spacing):
+    """
+
+    Args:
+        pipeline_gtfs (function): Pipeline that will return processed dataframe
+        row (row): row in sources_df
+        max_spacing (int): Maximum Allowed Spacing between two consecutive stops.
+    """
     filename = row['file_name']
     url = row['urls.direct_download']
     bounds = [[row['location.bounding_box.minimum_longitude'],row['location.bounding_box.minimum_latitude']],[row['location.bounding_box.maximum_longitude'],row['location.bounding_box.maximum_latitude']]]
@@ -87,11 +119,30 @@ def process(pipeline_gtfs,row,max_spacing):
         return failed_pipeline("Failed",filename,folder_path)
 
 def failed_pipeline(message,filename,folder_path):
+    """Used to terminate the process and return error message
+
+    Args:
+        message (str): Failure cause
+        filename (str): Filename
+        folder_path (str): Folder path
+
+    Returns:
+        str: Failure Message
+    """
     if os.path.exists(folder_path):
         shutil.rmtree(folder_path)
     return message + filename
 
 def download_write_file(url,folder_path):
+    """Function to download the gtfs file from url and save it in a folder
+
+    Args:
+        url (str): URL to download
+        folder_path (str): Folder path
+
+    Returns:
+        str: Path to downloaded file
+    """
     ## Download file from URL
     r = requests.get(url, allow_redirects=True)
     gtfs_file_loc = folder_path+"/gtfs.zip"
