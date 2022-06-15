@@ -30,7 +30,7 @@
 <br />
 <div align="center">
   <a href="https://github.com/UTEL-UIUC/gtfs_segments">
-    <img src="/images/example.jpg" alt="Logo" width="80" height="80">
+    <img src="/images/logo.jpg" alt="Logo" width="80" height="80">
   </a>
 
 <h3 align="center">GTFS Segments</h3>
@@ -93,7 +93,7 @@ Transit agencies use the General Transit Feed Specification (GTFS) to publish tr
 ### Prerequisites
 
 
-The dependencies of this library are the following packages. The detailed list can be found in `requirements.txt`
+The dependencies of this library are the following packages. 
 * numpy
 * shapely
 * pandas
@@ -101,7 +101,9 @@ The dependencies of this library are the following packages. The detailed list c
 * partridge
 * seaborn
 * matplotlib
-* statsmodel
+* statsmodels
+
+The detailed list of package dependencies can be found in `requirements.txt`
 
 ### Installation
 
