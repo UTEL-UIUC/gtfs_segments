@@ -84,7 +84,8 @@
 <div align="center">
   <img src="/images/example.jpg" alt="drawing" width="400"/>
 </div>
-Transit agencies use the General Transit Feed Specification (GTFS) to publish transit data. More and more cities are adopting the GTFS format across the globe. The GTFS feed can be downloaded from [@transitfeeds](https://transitfeeds.com/) & [@mobility data](https://mobilitydata.org/). 
+
+Transit agencies use the General Transit Feed Specification (GTFS) to publish transit data. More and more cities are adopting the GTFS format across the globe. The GTFS feed can be downloaded from [@transitfeeds](https://transitfeeds.com/) and [@mobility data](https://mobilitydata.org/). The GTFS segments is a concise representation of GTFS files removing unnecessary repetitions in the data and representing data in the form of segements. 
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
@@ -95,7 +96,7 @@ Transit agencies use the General Transit Feed Specification (GTFS) to publish tr
 ### Prerequisites
 
 
-The usage of this library requires the following packages
+The dependencies of this library are the following packages. The detailed list can be found in `requirements.txt`
 * numpy
 * shapely
 * pandas
@@ -103,33 +104,68 @@ The usage of this library requires the following packages
 * partridge
 * seaborn
 * matplotlib
+* statsmodel
 
 ### Installation
 
+#### Option A
+Use pip wheel to install 
+  ```sh
+  pip install gtfs-segments
+  ```
+#### Option B
 
 1. Clone the repo
-   ```sh
-   git clone https://github.com/UTEL-UIUC/gtfs_segments.git
-   ```
-<!-- 3. Install NPM packages
-   ```sh
-   npm install
-   ```
-4. Enter your API in `config.js`
-   ```js
-   const API_KEY = 'ENTER YOUR API';
-   ``` -->
-
+    ```sh
+    git clone https://github.com/UTEL-UIUC/gtfs_segments.git
+    ```
+2. Install requirements using
+    ```sh
+    pip install -r requirements.txt
+    ```
+3. [Optional] Download modified version of `partridge` library and install it manually.
+    ```sh
+    git clone https://github.com/praneethd7/partridge
+    cd partridge
+    python setup.py install
+    ``` 
+4. Install the `gtfs_segments` package
+    ```sh
+    cd gtfs_segments
+    python setup.py install
+    ```
 <p align="right">(<a href="#top">back to top</a>)</p>
-
-
 
 <!-- USAGE EXAMPLES -->
 ## Usage
 
-Use this space to show useful examples of how a project can be used. Additional screenshots, code examples and demos work well in this space. You may also link to more resources.
+Import whole package using 
+```python
+import gtfs_segments
+```
+### Get GTFS segments
 
-_For more examples, please refer to the [Documentation](https://example.com)_
+Download the GTFS .zip file from [@transitfeeds](https://transitfeeds.com/) or [@mobility data](https://mobilitydata.org/).
+
+```python
+from gtfs_segments import get_gtfs_segments
+df = get_gtfs_segments("chicago_gtfs.zip")
+```
+### Plot Histogram
+```python
+from gtfs_segments import plot_func
+plot_func(df,save_fig= True)
+```
+### Dowload Data
+Download the data as either `.csv` or `.geojson`
+```python
+from gtfs_segments import output_df
+output_df(df,'filename', format ='geojson')
+```
+
+
+<!-- 
+_For more examples, please refer to the [Documentation](https://example.com)_ -->
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 

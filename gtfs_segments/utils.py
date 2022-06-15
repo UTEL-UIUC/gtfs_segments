@@ -29,7 +29,7 @@ def plot_func(df,folder_path,filename,max_spacing=3000,save_fig = True):
     plt.ylabel('Density - Traversal Weighted')
     plt.title(filename.split('.')[0])
     if save_fig == True:
-        plt.savefig(os.path.join(path,'spacings.png'), dpi=200)
+        plt.savefig(os.path.join(folder_path,'spacings.png'), dpi=200)
     plt.close(fig)
 
 def summary_stats(df,folder_path,filename,b_day,link,bounds,max_spacing = 3000):

@@ -1,0 +1,12 @@
+geopandas==0+untagged.1584.g1c55343
+matplotlib==3.5.1
+numpy==1.22.2
+pandas==1.4.1
+partridge==1.1.1
+requests==2.27.1
+scipy==1.8.0
+seaborn==0.11.2
+setuptools==62.4.0
+Shapely==1.8.2
+statsmodels==0.13.2
+utm==0.7.0

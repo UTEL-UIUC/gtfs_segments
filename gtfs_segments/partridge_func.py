@@ -1,4 +1,4 @@
-from .partridge_mod import partridge as ptg
+import partridge as ptg
 
 def ptg_read_file(path):
     """Use Partridge library to read the gtfs file and get the busiest day. Also filter bus routes
