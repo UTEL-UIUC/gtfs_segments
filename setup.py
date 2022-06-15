@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-VERSION = '0.0.2' 
+VERSION = '0.0.3' 
 DESCRIPTION = 'GTFS segments'
 LONG_DESCRIPTION = 'A fast and efficient library to generate bus stop spacings'
 
