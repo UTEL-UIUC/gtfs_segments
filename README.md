@@ -149,7 +149,7 @@ from gtfs_segments import get_gtfs_segments
 segments_df = get_gtfs_segments("chicago_gtfs.zip")
 ```
 <a href="https://github.com/UTEL-UIUC/gtfs_segments">
-    <img src="/images/data.jpg" alt="histogram" width="400">
+    <img src="/images/data.jpg" alt="histogram" width=800>
 </a>
 
 ### Plot Histogram
@@ -159,7 +159,7 @@ plot_hist(df)
 
 ```
 <a href="https://github.com/UTEL-UIUC/gtfs_segments">
-    <img src="/images/hist.jpg" alt="histogram" width="400">
+    <img src="/images/hist.jpg" alt="histogram" width=800>
 </a>
 
 Optionally save figure using
