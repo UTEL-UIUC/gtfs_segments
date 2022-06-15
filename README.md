@@ -22,7 +22,7 @@
 [![Stargazers][stars-shield]][stars-url]
 [![Issues][issues-shield]][issues-url]
 [![MIT License][license-shield]][license-url]
-[![LinkedIn][linkedin-shield]][linkedin-url]
+<!-- [![LinkedIn][linkedin-shield]][linkedin-url] -->
 
 
 
@@ -57,9 +57,6 @@
   <ol>
     <li>
       <a href="#about-the-project">About The Project</a>
-      <ul>
-        <li><a href="#built-with">Built With</a></li>
-      </ul>
     </li>
     <li>
       <a href="#getting-started">Getting Started</a>
@@ -69,7 +66,7 @@
       </ul>
     </li>
     <li><a href="#usage">Usage</a></li>
-    <li><a href="#roadmap">Roadmap</a></li>
+    <!-- <li><a href="#roadmap">Roadmap</a></li> -->
     <li><a href="#contributing">Contributing</a></li>
     <li><a href="#license">License</a></li>
     <li><a href="#contact">Contact</a></li>
@@ -85,7 +82,7 @@
   <img src="/images/example.jpg" alt="drawing" width="400"/>
 </div>
 
-Transit agencies use the General Transit Feed Specification (GTFS) to publish transit data. More and more cities are adopting the GTFS format across the globe. The GTFS feed can be downloaded from [@transitfeeds](https://transitfeeds.com/) and [@mobility data](https://mobilitydata.org/). The GTFS segments is a concise representation of GTFS files removing unnecessary repetitions in the data and representing data in the form of segements. 
+Transit agencies use the General Transit Feed Specification (GTFS) to publish transit data. More and more cities are adopting the GTFS output_format across the globe. The GTFS feed can be downloaded from [@transitfeeds](https://transitfeeds.com/) and [@mobility data](https://mobilitydata.org/). The GTFS segments is a concise representation of GTFS files removing unnecessary repetitions in the data and representing data in the form of segements. 
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
@@ -149,18 +146,34 @@ Download the GTFS .zip file from [@transitfeeds](https://transitfeeds.com/) or [
 
 ```python
 from gtfs_segments import get_gtfs_segments
-df = get_gtfs_segments("chicago_gtfs.zip")
+segments_df = get_gtfs_segments("chicago_gtfs.zip")
 ```
+<a href="https://github.com/UTEL-UIUC/gtfs_segments">
+    <img src="/images/data.jpg" alt="histogram" width="400">
+</a>
+
 ### Plot Histogram
 ```python
-from gtfs_segments import plot_func
-plot_func(df,save_fig= True)
+from gtfs_segments import plot_hist
+plot_hist(df)
+
 ```
+<a href="https://github.com/UTEL-UIUC/gtfs_segments">
+    <img src="/images/hist.jpg" alt="histogram" width="400">
+</a>
+
+Optionally save figure using
+```python
+plot_hist(df,file_path = "spacings_hist.png",save_fig = True)
+```
+
 ### Dowload Data
 Download the data as either `.csv` or `.geojson`
 ```python
 from gtfs_segments import output_df
-output_df(df,'filename', format ='geojson')
+output_df(df,'filename', output_format ='geojson')
+# Get csv without geometry
+output_df(df,'filename', output_format ='csv',geometry = False)
 ```
 
 
@@ -206,7 +219,7 @@ Don't forget to give the project a star! Thanks again!
 <!-- LICENSE -->
 ## License
 
-Distributed under the MIT License. See `LICENSE.txt` for more information.
+Distributed under the MIT License. See `LICENSE.txt` for more inoutput_formation.
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
@@ -215,7 +228,7 @@ Distributed under the MIT License. See `LICENSE.txt` for more information.
 <!-- CONTACT -->
 ## Contact
 
-Your Name - [@praneethDevunu1](https://twitter.com/praneethDevunu1) - sd37@illinois.edu
+Saipraneeth Devunuri - [@praneethDevunu1](https://twitter.com/praneethDevunu1) - sd37@illinois.edu
 
 Project Link: [https://github.com/UTEL-UIUC/gtfs_segments](https://github.com/UTEL-UIUC/gtfs_segments)
 
