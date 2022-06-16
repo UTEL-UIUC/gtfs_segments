@@ -1,4 +1,4 @@
-geopandas==0+untagged.1584.g1c55343
+geopandas==0.10.2
 matplotlib==3.5.1
 numpy==1.22.2
 pandas==1.4.1

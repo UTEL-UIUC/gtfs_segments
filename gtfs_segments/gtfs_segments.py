@@ -167,7 +167,7 @@ def pipeline_gtfs(filename,url,bounds,max_spacing):
     summary_stats(df,folder_path,filename,busisest_day,url,bounds,max_spacing)
 
     plot_hist(df,file_path = os.path.join(folder_path,'spacings.png'),title = filename.split(".")[0],max_spacing = max_spacing,save_fig=True)
-    output_df(df,os.path.join(folder_path,'geojson'), output_format ='geojson',geometry = True)
-    output_df(df,os.path.join(folder_path,'spacings_with_geometry'), output_format ='csv',geometry = True)
-    output_df(df,os.path.join(folder_path,'spacings'), output_format ='csv',geometry = False)
+    export_segements(df,os.path.join(folder_path,'geojson'), output_format ='geojson',geometry = True)
+    export_segements(df,os.path.join(folder_path,'spacings_with_geometry'), output_format ='csv',geometry = True)
+    export_segements(df,os.path.join(folder_path,'spacings'), output_format ='csv',geometry = False)
     return "Success for "+filename

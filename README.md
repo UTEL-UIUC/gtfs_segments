@@ -172,10 +172,10 @@ plot_hist(df,file_path = "spacings_hist.png",save_fig = True)
 ### Dowload Data
 Download the data as either `.csv` or `.geojson`
 ```python
-from gtfs_segments import output_df
-output_df(df,'filename', output_format ='geojson')
+from gtfs_segments import export_segements
+export_segements(df,'filename', output_format ='geojson')
 # Get csv without geometry
-output_df(df,'filename', output_format ='csv',geometry = False)
+export_segements(df,'filename', output_format ='csv',geometry = False)
 ```
 
 
