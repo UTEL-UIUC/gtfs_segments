@@ -77,7 +77,7 @@
 
 
 <!-- ABOUT THE PROJECT -->
-## About The Project
+# About The Project
 <div align="center">
   <img src="/images/example.jpg" alt="drawing" width="400"/>
 </div>
@@ -88,12 +88,12 @@ Transit agencies use the General Transit Feed Specification (GTFS) to publish tr
 
 
 <!-- GETTING STARTED -->
-## Getting Started
+# Getting Started
 
-### Prerequisites
+## Prerequisites
 
 
-The dependencies of this library are the following packages. 
+The major dependencies of this library are the following packages. 
 * numpy
 * shapely
 * pandas
@@ -105,30 +105,40 @@ The dependencies of this library are the following packages.
 
 The detailed list of package dependencies can be found in `requirements.txt`
 
-### Installation
+## Installation
 
-#### Option A
-Use pip wheel to install 
-  ```sh
-  pip install gtfs-segments
-  ```
-#### Option B
+### Option A
+
+Use pip to install the package. Windows users may have to download and install Microsoft Visual C++ distributions. Follow [these](https://stackoverflow.com/questions/29846087/error-microsoft-visual-c-14-0-is-required-unable-to-find-vcvarsall-bat) instructions. 
+
+```sh
+pip install gtfs-segments
+```
+### Option B
 
 1. Clone the repo
     ```sh
     git clone https://github.com/UTEL-UIUC/gtfs_segments.git
     ```
-2. Install requirements using
+2. Install geopandas using the following code. Read more [here](https://geopandas.org/en/stable/getting_started/install.html)
     ```sh
-    pip install -r requirements.txt
+    conda create -n geo_env
+    conda activate geo_env
+    conda config --env --add channels conda-forge
+    conda config --env --set channel_priority strict
+    conda install python=3 geopandas
     ```
 3. [Optional] Download modified version of `partridge` library and install it manually.
     ```sh
     git clone https://github.com/praneethd7/partridge
     cd partridge
     python setup.py install
-    ``` 
-4. Install the `gtfs_segments` package
+    ```
+4. Install requirements using
+    ```sh
+    pip install -r requirements.txt
+    ```     
+5. Install the `gtfs_segments` package
     ```sh
     cd gtfs_segments
     python setup.py install
@@ -136,13 +146,13 @@ Use pip wheel to install
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 <!-- USAGE EXAMPLES -->
-## Usage
+# Usage
 
 Import whole package using 
 ```python
 import gtfs_segments
 ```
-### Get GTFS segments
+## Get GTFS segments
 
 Download the GTFS .zip file from [@transitfeeds](https://transitfeeds.com/) or [@mobility data](https://mobilitydata.org/).
 
@@ -151,10 +161,10 @@ from gtfs_segments import get_gtfs_segments
 segments_df = get_gtfs_segments("chicago_gtfs.zip")
 ```
 <a href="https://github.com/UTEL-UIUC/gtfs_segments">
-    <img src="/images/data.jpg" alt="histogram" width=800>
+    <img src="/images/data.jpg" alt="data" width=800>
 </a>
 
-### Plot Histogram
+## Plot Histogram
 ```python
 from gtfs_segments import plot_hist
 plot_hist(df)
@@ -169,7 +179,7 @@ Optionally save figure using
 plot_hist(df,file_path = "spacings_hist.png",save_fig = True)
 ```
 
-### Dowload Data
+## Dowload Data
 Download the data as either `.csv` or `.geojson`
 ```python
 from gtfs_segments import export_segements
@@ -201,7 +211,7 @@ See the [open issues](https://github.com/UTEL-UIUC/gtfs_segments/issues) for a f
 
 
 <!-- CONTRIBUTING -->
-## Contributing
+# Contributing
 
 Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
 
@@ -219,7 +229,7 @@ Don't forget to give the project a star! Thanks again!
 
 
 <!-- LICENSE -->
-## License
+# License
 
 Distributed under the MIT License. See `LICENSE.txt` for more inoutput_formation.
 
@@ -228,7 +238,7 @@ Distributed under the MIT License. See `LICENSE.txt` for more inoutput_formation
 
 
 <!-- CONTACT -->
-## Contact
+# Contact
 
 Saipraneeth Devunuri - [@praneethDevunu1](https://twitter.com/praneethDevunu1) - sd37@illinois.edu
 
@@ -239,7 +249,7 @@ Project Link: [https://github.com/UTEL-UIUC/gtfs_segments](https://github.com/UT
 
 
 <!-- ACKNOWLEDGMENTS -->
-## Acknowledgments
+# Acknowledgments
 
 * Parts of the code use the [Partridge](https://github.com/remix/partridge) library 
 * Shoutout to [Mobility Data](https://mobilitydata.org) for compiling GTFS from around the globe and constantly maintaining them
