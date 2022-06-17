@@ -1,8 +1,9 @@
 from setuptools import setup, find_packages
 
-VERSION = '0.0.3' 
+__version__ = '0.0.4' 
 DESCRIPTION = 'GTFS segments'
-LONG_DESCRIPTION = 'A fast and efficient library to generate bus stop spacings'
+with open("README.md", "r") as fh:
+    LONG_DESCRIPTION = fh.read()
 REQUIREMENTS = ['geopandas',
                 'scipy',
                 'partridge',
@@ -16,7 +17,7 @@ REQUIREMENTS = ['geopandas',
 # Setting up
 setup(
         name="gtfs_segments", 
-        version=VERSION,
+        version=__version__,
         author="Saipraneeth Devunuri",
         author_email="<sd37@illinois.edu>",
         description=DESCRIPTION,
@@ -24,7 +25,7 @@ setup(
         packages=find_packages(),
         install_requires=REQUIREMENTS, # add any additional packages that 
         # needs to be installed along with your package. Eg: 'caer'
-        
+        url = "https://github.com/UTEL-UIUC/gtfs_segments"
         keywords=['python', 'gtfs', 'geodata'],
         classifiers= [
             "Development Status :: 3 - Alpha",

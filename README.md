@@ -158,7 +158,8 @@ Download the GTFS .zip file from [@transitfeeds](https://transitfeeds.com/) or [
 
 ```python
 from gtfs_segments import get_gtfs_segments
-segments_df = get_gtfs_segments("chicago_gtfs.zip")
+segments_df = get_gtfs_segments("path_to_gtfs_zip_file")
+segments_df
 ```
 <a href="https://github.com/UTEL-UIUC/gtfs_segments">
     <img src="/images/data.jpg" alt="data" width=800>
@@ -167,8 +168,7 @@ segments_df = get_gtfs_segments("chicago_gtfs.zip")
 ## Plot Histogram
 ```python
 from gtfs_segments import plot_hist
-plot_hist(df)
-
+plot_hist(segments_df)
 ```
 <a href="https://github.com/UTEL-UIUC/gtfs_segments">
     <img src="/images/hist.jpg" alt="histogram" width=800>
@@ -176,16 +176,16 @@ plot_hist(df)
 
 Optionally save figure using
 ```python
-plot_hist(df,file_path = "spacings_hist.png",save_fig = True)
+plot_hist(segments_df,file_path = "spacings_hist.png",save_fig = True)
 ```
 
 ## Dowload Data
 Download the data as either `.csv` or `.geojson`
 ```python
-from gtfs_segments import export_segements
-export_segements(df,'filename', output_format ='geojson')
+from gtfs_segments import export_segments
+export_segments(segments_df,'filename', output_format ='geojson')
 # Get csv without geometry
-export_segements(df,'filename', output_format ='csv',geometry = False)
+export_segments(segments_df,'filename', output_format ='csv',geometry = False)
 ```
 
 

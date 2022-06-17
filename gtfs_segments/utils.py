@@ -86,7 +86,7 @@ def summary_stats(df,folder_path,filename,b_day,link,bounds,max_spacing = 3000):
     summary_df = summary_df.T
     summary_df.to_csv(csv_path,index = False)
 
-def export_segements(df,file_path,output_format, geometry = True):
+def export_segments(df,file_path,output_format, geometry = True):
     """Write the DataFrame as csv and geojson
 
     Args:

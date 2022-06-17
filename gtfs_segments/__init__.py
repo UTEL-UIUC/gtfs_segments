@@ -1,11 +1,11 @@
-__version__ = "0.0.3"
+__version__ = '0.0.4'
 from .gtfs_segments import (
     get_gtfs_segments,
     pipeline_gtfs,
     process_feed
 )
 from .utils import (
-    export_segements,
+    export_segments,
     plot_hist
 )
 
@@ -14,6 +14,6 @@ __all__ = [
     "get_gtfs_segments",
     "pipeline_gtfs",
     "process_feed",
-    "export_segements",
+    "export_segments",
     "plot_hist"
 ]
