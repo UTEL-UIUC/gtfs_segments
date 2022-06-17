@@ -30,7 +30,7 @@
 <br />
 <div align="center">
   <a href="https://github.com/UTEL-UIUC/gtfs_segments">
-    <img src="/images/logo.jpg" alt="Logo" width=200 height=200>
+    <img src="https://github.com/UTEL-UIUC/gtfs_segments/blob/main/images/logo.jpg" alt="Logo" width=200 height=200>
   </a>
 
 <h3 align="center">GTFS Segments</h3>
@@ -79,7 +79,7 @@
 <!-- ABOUT THE PROJECT -->
 # About The Project
 <div align="center">
-  <img src="/images/example.jpg" alt="drawing" width="400"/>
+  <img src="https://github.com/UTEL-UIUC/gtfs_segments/blob/main/images/example.jpg" alt="map" width="400"/>
 </div>
 
 Transit agencies use the General Transit Feed Specification (GTFS) to publish transit data. More and more cities are adopting the GTFS output_format across the globe. The GTFS feed can be downloaded from [@transitfeeds](https://transitfeeds.com/) and [@mobility data](https://mobilitydata.org/). The GTFS segments is a concise representation of GTFS files removing unnecessary repetitions in the data and representing data in the form of segements. 
@@ -162,7 +162,7 @@ segments_df = get_gtfs_segments("path_to_gtfs_zip_file")
 segments_df
 ```
 <a href="https://github.com/UTEL-UIUC/gtfs_segments">
-    <img src="/images/data.jpg" alt="data" width=800>
+    <img src="https://github.com/UTEL-UIUC/gtfs_segments/blob/main/images/data.jpg" alt="data" width=800>
 </a>
 
 ## Plot Histogram
@@ -171,7 +171,7 @@ from gtfs_segments import plot_hist
 plot_hist(segments_df)
 ```
 <a href="https://github.com/UTEL-UIUC/gtfs_segments">
-    <img src="/images/hist.jpg" alt="histogram" width=800>
+    <img src="https://github.com/UTEL-UIUC/gtfs_segments/blob/main/images/hist.jpg" alt="histogram" width=800>
 </a>
 
 Optionally save figure using

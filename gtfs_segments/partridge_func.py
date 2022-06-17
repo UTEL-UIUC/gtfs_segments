@@ -13,4 +13,4 @@ def ptg_read_file(path):
     }
     feed = ptg.load_geo_feed(path,view=view)
 #     return feed.routes, feed.stops, feed.stop_times, feed.trips, feed.shapes
-    return _date,feed
+    return _date,feedhttps://github.com/UTEL-UIUC/gtfs_segments/blob/main/images/logo.jpg
