@@ -35,7 +35,7 @@ def plot_hist(df,save_fig = False,**kwargs):
     else:
         fig, ax = plt.subplots(figsize=(10,8))
     data = np.hstack([np.repeat(x, y) for x, y in zip(df['distance'], df.traversals)])
-    sns.histplot(data,binwidth=50,kde=True,ax=ax)
+    sns.histplot(data,binwidth=50,stat = "density",kde=True,ax=ax)
     plt.xlim([0,max_spacing])
     plt.xlabel('Stop Spacing [m]')
     plt.ylabel('Density - Traversal Weighted')
