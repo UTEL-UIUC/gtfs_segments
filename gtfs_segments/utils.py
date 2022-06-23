@@ -21,6 +21,9 @@ def plot_hist(df,save_fig = False,**kwargs):
         title (str): Title of plot
         max_spacing (_type_): Maximum Allowed Spacing between two stops. Defaults to 3000.
         save_fig (bool, optional): Field to save the generated figure. Defaults to True.
+    
+    Returns:
+        axis: A matplotlib axis
     """ 
     if "max_spacing" not in kwargs.keys():
         max_spacing = 3000
@@ -46,46 +49,43 @@ def plot_hist(df,save_fig = False,**kwargs):
     plt.close(fig)
     return ax
 
-def summary_stats(df,folder_path,filename,b_day,link,bounds,max_spacing = 3000):
+def summary_stats(df,export = False,**kwargs):
     """Generate a report of summary statistics for the gtfs file
 
     Args:
         df (DataFrame): DataFrame
-        folder_path (str): Folder Path
-        filename (str): Filename
-        b_day (date): Busiest Day
-        link (str): Download URL
-        bounds (tuple): Lat Long bounds
+        file_path (str): File Path
         max_spacing (int, optional): Maximum Allowed Spacing between two consecutive stops. Defaults to 3000.
     """
+    
+    if "max_spacing" not in kwargs.keys():
+        max_spacing = 3000
+        print("Using max_spacing = 3000")
+    else:
+        max_spacing = kwargs['max_spacing']
     weighted_stats = DescrStatsW(df["distance"], weights=df.traversals, ddof=0)
     quant = weighted_stats.quantile([0.25,0.5,0.75],return_pandas=False)
     percent_spacing = round(df[df["distance"] > max_spacing]['traversals'].sum()/df['traversals'].sum() *100,3)
-    csv_path = os.path.join(folder_path,'summary.csv')
-    with open(csv_path, 'w',encoding='utf-8') as f:
-        f.write('Name,'+str(filename)+'\n')
-        f.write('Busiest Day,'+str(b_day)+'\n')
-        f.write('Link,'+str(link)+'\n')
-        f.write('Min Latitude,'+str(bounds[0][1])+'\n')
-        f.write('Min Longitude,'+str(bounds[0][0])+'\n')
-        f.write('Max Latitude,'+str(bounds[1][1])+'\n')
-        f.write('Max Longitude,'+str(bounds[1][0])+'\n')
-        f.write('Mean,'+str(round(weighted_stats.mean,3))+'\n')
-        f.write('Std,'+str(round(weighted_stats.std,3))+'\n')
-        f.write('25 % Quantile,'+str(round(quant[0],3))+'\n')
-        f.write('50 % Quantile,'+str(round(quant[1],3))+'\n')
-        f.write('75 % Quantile,'+str(round(quant[2],3))+'\n')
-        f.write('No of Segments,'+str(len(df))+'\n')
-        f.write('No of Routes,'+str(len(df.route_id.unique()))+'\n')
-        f.write('No of Traversals,'+str(sum(df.traversals))+'\n')
-        f.write('Max Spacing,'+str(max_spacing)+'\n')
-        f.write('% Segments w/ spacing > max_spacing,'+str(percent_spacing))
-        f.close()
-    summary_df = pd.read_csv(csv_path)
-    summary_df.set_index(summary_df.columns[0],inplace=True)
+    df_dict = {
+            'Mean': round(weighted_stats.mean,3),
+            'Std': round(weighted_stats.std,3),
+            '25 % Quantile': round(quant[0],3),
+            '50 % Quantile': round(quant[1],3),
+            '75 % Quantile': round(quant[2],3),
+            'No of Segments':int(len(df)),
+            'No of Routes':int(len(df.route_id.unique())),
+            'No of Traversals':int(sum(df.traversals)),  
+            'Max Spacing':int(max_spacing),
+            '% Segments w/ spacing > max_spacing':percent_spacing}
+    summary_df = pd.DataFrame([df_dict])
+    # df.set_index(summary_df.columns[0],inplace=True)
+    if export:
+        assert "file_path" in kwargs.keys(), "Please pass in the `file_path`"
+        summary_df.to_csv(kwargs['file_path'],index = False)
+        print("Saved the summary in "+kwargs['file_path'])
     summary_df = summary_df.T
-    summary_df.to_csv(csv_path,index = False)
-
+    return summary_df 
+        
 def export_segments(df,file_path,output_format, geometry = True):
     """Write the DataFrame as csv and geojson
 

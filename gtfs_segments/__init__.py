@@ -6,7 +6,13 @@ from .gtfs_segments import (
 )
 from .utils import (
     export_segments,
-    plot_hist
+    plot_hist,
+    process,
+    summary_stats
+)
+
+from .mobility import(
+    read_moblity_sources
 )
 
 __all__ = [
@@ -15,5 +21,7 @@ __all__ = [
     "pipeline_gtfs",
     "process_feed",
     "export_segments",
-    "plot_hist"
+    "plot_hist",
+    "read_moblity_sources",
+    "summary_stats"
 ]

@@ -21,3 +21,4 @@ var/
 
 # Jupyter notebook
 *.ipynb
+*.csv

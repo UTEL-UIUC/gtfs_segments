@@ -2,6 +2,7 @@ import geopandas as gpd
 from .partridge_func import ptg_read_file
 from .geom_utils import *
 from .utils import *
+from .mobility import *
 
 
 def merge_trip_geom(trip_df,shape_df):
@@ -164,7 +165,7 @@ def pipeline_gtfs(filename,url,bounds,max_spacing):
     if len(df_sub) == 0:
         return failed_pipeline('Only Long Bus Routes in ',filename,folder_path)
     ## Output files and Stats
-    summary_stats(df,folder_path,filename,busisest_day,url,bounds,max_spacing)
+    summary_stats__mobility(df,folder_path,filename,busisest_day,url,bounds,max_spacing,export=True)
 
     plot_hist(df,file_path = os.path.join(folder_path,'spacings.png'),title = filename.split(".")[0],max_spacing = max_spacing,save_fig=True)
     export_segments(df,os.path.join(folder_path,'geojson'), output_format ='geojson',geometry = True)

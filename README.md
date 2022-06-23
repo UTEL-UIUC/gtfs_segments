@@ -82,7 +82,7 @@
   <img src="https://github.com/UTEL-UIUC/gtfs_segments/blob/main/images/example.jpg" alt="map" width="400"/>
 </div>
 
-Transit agencies use the General Transit Feed Specification (GTFS) to publish transit data. More and more cities are adopting the GTFS output_format across the globe. The GTFS feed can be downloaded from [@transitfeeds](https://transitfeeds.com/) and [@mobility data](https://mobilitydata.org/). The GTFS segments is a concise representation of GTFS files removing unnecessary repetitions in the data and representing data in the form of segements. 
+Transit agencies use the General Transit Feed Specification (GTFS) to publish transit data. More and more cities across the globe are adopting this GTFS format to represent their transit network. The GTFS feed can be downloaded from [@transitfeeds](https://transitfeeds.com/) and [@mobility data](https://mobilitydata.org/). The GTFS segments is a concise representation of GTFS files removing unnecessary repetitions in the data. We do that by considering the services offered only the busiest day(in the data) and representing data in the form of segements. 
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
@@ -179,6 +179,16 @@ Optionally save figure using
 plot_hist(segments_df,file_path = "spacings_hist.png",save_fig = True)
 ```
 
+## Get Summary Stats
+```python
+from gtfs_segments import summary_stats
+summary_stats(segments_df,max_spacing = 3000,export = True,file_path = "summary.csv")
+```
+<a href="https://github.com/UTEL-UIUC/gtfs_segments">
+    <img src="https://github.com/UTEL-UIUC/gtfs_segments/blob/main/images/summary.jpg" alt="histogram" width=800>
+</a>
+
+
 ## Dowload Data
 Download the data as either `.csv` or `.geojson`
 ```python
@@ -231,7 +241,7 @@ Don't forget to give the project a star! Thanks again!
 <!-- LICENSE -->
 # License
 
-Distributed under the MIT License. See `LICENSE.txt` for more inoutput_formation.
+Distributed under the MIT License. See `LICENSE.txt` for more information.
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
