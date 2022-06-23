@@ -1,3 +1,5 @@
+import os
+from statsmodels.stats.weightstats import DescrStatsW
 import pandas as pd
 
 def read_moblity_sources(abb_path,mob_path):
@@ -25,7 +27,7 @@ def read_moblity_sources(abb_path,mob_path):
     sources_df['file_name'] = file_names
     return sources_df
 
-def summary_stats__mobility(df,folder_path,filename,b_day,link,bounds,max_spacing = 3000,export = False):
+def summary_stats_mobility(df,folder_path,filename,b_day,link,bounds,max_spacing = 3000,export = False):
     """Generate a report of summary statistics for the gtfs file
 
     Args:
