@@ -185,7 +185,7 @@ from gtfs_segments import summary_stats
 summary_stats(segments_df,max_spacing = 3000,export = True,file_path = "summary.csv")
 ```
 <a href="https://github.com/UTEL-UIUC/gtfs_segments">
-    <img src="https://github.com/UTEL-UIUC/gtfs_segments/blob/main/images/summary.jpg" alt="histogram" width=800>
+    <img src="https://github.com/UTEL-UIUC/gtfs_segments/blob/main/images/summary.jpg" alt="histogram" width=400>
 </a>
 
 
