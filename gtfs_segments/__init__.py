@@ -12,7 +12,8 @@ from .utils import (
 )
 
 from .mobility import(
-    read_moblity_sources
+    read_moblity_sources,
+    summary_stats_mobility
 )
 
 __all__ = [
@@ -23,5 +24,8 @@ __all__ = [
     "export_segments",
     "plot_hist",
     "read_moblity_sources",
-    "summary_stats"
+    "summary_stats",
+    "process",
+    "process",
+    "summary_stats_mobility"
 ]

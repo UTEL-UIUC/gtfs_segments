@@ -34,6 +34,7 @@ def plot_hist(df,save_fig = False,**kwargs):
         ax = kwargs['ax']
     else:
         fig, ax = plt.subplots(figsize=(10,8))
+    df = df[df['distance'] < max_spacing]
     data = np.hstack([np.repeat(x, y) for x, y in zip(df['distance'], df.traversals)])
     sns.histplot(data,binwidth=50,stat = "density",kde=True,ax=ax)
     plt.xlim([0,max_spacing])
@@ -44,7 +45,7 @@ def plot_hist(df,save_fig = False,**kwargs):
         plt.title(kwargs['title'])
     if save_fig == True:
         assert "file_path" in kwargs.keys(), "Please pass in the `file_path`"
-        plt.savefig(kwargs['file_path'], dpi=200)
+        plt.savefig(kwargs['file_path'], dpi=300)
     plt.show()
     plt.close(fig)
     return ax
@@ -63,15 +64,22 @@ def summary_stats(df,export = False,**kwargs):
         print("Using max_spacing = 3000")
     else:
         max_spacing = kwargs['max_spacing']
+    percent_spacing = round(df[df["distance"] > max_spacing]['traversals'].sum()/df['traversals'].sum() *100,3)
+    df = df[df["distance"] > max_spacing]
     weighted_stats = DescrStatsW(df["distance"], weights=df.traversals, ddof=0)
     quant = weighted_stats.quantile([0.25,0.5,0.75],return_pandas=False)
-    percent_spacing = round(df[df["distance"] > max_spacing]['traversals'].sum()/df['traversals'].sum() *100,3)
+    stop_weighted_mean = df.groupby(['segment_id','distance']).first().reset_index()["distance"].mean()
+    route_weighted_mean = df.groupby(['route_id','segment_id','distance']).first().reset_index()["distance"].mean()
+    # passenger_weighted_mean = (df["distance"] * df.traversal_load).sum() / df.traversal_load.sum()
+    
     df_dict = {
-            'Mean': round(weighted_stats.mean,3),
-            'Std': round(weighted_stats.std,3),
-            '25 % Quantile': round(quant[0],3),
-            '50 % Quantile': round(quant[1],3),
-            '75 % Quantile': round(quant[2],3),
+            'Stop Weighted Mean' : stop_weighted_mean,
+            'Route Weighted Mean' : route_weighted_mean,
+            'Traversal Weighted Mean': round(weighted_stats.mean,3),
+            'Traversal Weighted Std': round(weighted_stats.std,3),
+            'Traversal Weighted 25 % Quantile': round(quant[0],3),
+            'Traversal Weighted 50 % Quantile': round(quant[1],3),
+            'Traversal Weighted 75 % Quantile': round(quant[2],3),
             'No of Segments':int(len(df)),
             'No of Routes':int(len(df.route_id.unique())),
             'No of Traversals':int(sum(df.traversals)),  
