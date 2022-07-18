@@ -4,14 +4,13 @@ import requests
 import traceback
 import numpy as np
 import pandas as pd
-import seaborn as sns
 import matplotlib.pyplot as plt
 ## Plot style
 plt.style.use('ggplot')
+from scipy.stats import gaussian_kde
 from shapely.geometry import Point
-from statsmodels.stats.weightstats import DescrStatsW
 
-def plot_hist(df,save_fig = False,**kwargs):
+def plot_hist(df,save_fig = False,show_mean = False,**kwargs):
     # df,file_path,filename,save_fig = True
     """Used to Plot Weighted Histogram of distributions
 
@@ -33,14 +32,21 @@ def plot_hist(df,save_fig = False,**kwargs):
     if "ax" in kwargs.keys():
         ax = kwargs['ax']
     else:
-        fig, ax = plt.subplots(figsize=(10,8))
+        fig, ax = plt.subplots(figsize=(8,6))
     df = df[df['distance'] < max_spacing]
     data = np.hstack([np.repeat(x, y) for x, y in zip(df['distance'], df.traversals)])
-    sns.histplot(data,binwidth=50,stat = "density",kde=True,ax=ax)
+    plt.hist(data,range=(0,max_spacing),density = True,bins = int(max_spacing/50),fc=(0, 105/255, 160/255, 0.4),ec = "white",lw =0.8)
+    x = np.arange(0,max_spacing,5)
+    plt.plot(x,gaussian_kde(data)(x),lw = 1.5,color=(0, 85/255, 120/255, 1))
+    # sns.histplot(data,binwidth=50,stat = "density",kde=True,ax=ax)
     plt.xlim([0,max_spacing])
     plt.xlabel('Stop Spacing [m]')
     plt.ylabel('Density - Traversal Weighted')
     plt.title("Histogram of Spacing")
+    if show_mean:
+        plt.axvline(np.mean(data), color='k', linestyle='dashed', linewidth=2)
+        min_ylim, max_ylim = plt.ylim()
+        plt.text(np.mean(data)*1.1, max_ylim*0.9, 'Mean: {:.0f}'.format(np.mean(data)),fontsize=12)
     if "title" in kwargs.keys():
         plt.title(kwargs['title'])
     if save_fig == True:
@@ -66,20 +72,18 @@ def summary_stats(df,export = False,**kwargs):
         max_spacing = kwargs['max_spacing']
     percent_spacing = round(df[df["distance"] > max_spacing]['traversals'].sum()/df['traversals'].sum() *100,3)
     df = df[df["distance"] > max_spacing]
-    weighted_stats = DescrStatsW(df["distance"], weights=df.traversals, ddof=0)
-    quant = weighted_stats.quantile([0.25,0.5,0.75],return_pandas=False)
     stop_weighted_mean = df.groupby(['segment_id','distance']).first().reset_index()["distance"].mean()
     route_weighted_mean = df.groupby(['route_id','segment_id','distance']).first().reset_index()["distance"].mean()
-    # passenger_weighted_mean = (df["distance"] * df.traversal_load).sum() / df.traversal_load.sum()
+    weighted_data =  np.hstack([np.repeat(x, y) for x, y in zip(df['distance'], df.traversals)])
     
     df_dict = {
             'Stop Weighted Mean' : stop_weighted_mean,
             'Route Weighted Mean' : route_weighted_mean,
-            'Traversal Weighted Mean': round(weighted_stats.mean,3),
-            'Traversal Weighted Std': round(weighted_stats.std,3),
-            'Traversal Weighted 25 % Quantile': round(quant[0],3),
-            'Traversal Weighted 50 % Quantile': round(quant[1],3),
-            'Traversal Weighted 75 % Quantile': round(quant[2],3),
+            'Traversal Weighted Mean': round(np.mean(weighted_data),3),
+            'Traversal Weighted Std': round(np.std(weighted_data),3),
+            'Traversal Weighted 25 % Quantile': round(np.quantile(weighted_data,0.25),3),
+            'Traversal Weighted 50 % Quantile': round(np.quantile(weighted_data,0.50),3),
+            'Traversal Weighted 75 % Quantile': round(np.quantile(weighted_data,0.75),3),
             'No of Segments':int(len(df)),
             'No of Routes':int(len(df.route_id.unique())),
             'No of Traversals':int(sum(df.traversals)),  

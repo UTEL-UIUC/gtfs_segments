@@ -8,11 +8,9 @@ with open("README.md", "r") as fh:
 REQUIREMENTS = ['geopandas',
                 'scipy',
                 'partridge',
-                'statsmodels',
                 'shapely',
                 'numpy',
                 'pandas',
-                'seaborn',
                 'matplotlib',
                 'utm']
 # Setting up
