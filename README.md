@@ -99,9 +99,7 @@ The major dependencies of this library are the following packages.
 * pandas
 * geopandas
 * partridge
-* seaborn
 * matplotlib
-* statsmodels
 
 The detailed list of package dependencies can be found in `requirements.txt`
 

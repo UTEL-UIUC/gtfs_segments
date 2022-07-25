@@ -2,18 +2,17 @@ import os
 from statsmodels.stats.weightstats import DescrStatsW
 import pandas as pd
 
-def read_moblity_sources(abb_path,mob_path):
-    """Read mobility Data csv and generate DataFrame
+MOBILITY_SOURCES_link = "https://bit.ly/catalogs-csv"
+ABBREV_link = 'https://github.com/UTEL-UIUC/gtfs_segments/raw/master/state_abbreviations.json'
 
-    Args:
-        abb_path (str): path to state abbreviations csv 
-        mob_path (_type_): path to sources csv
+def read_moblity_sources():
+    """Read mobility Data csv and generate DataFrame
 
     Returns:
         DataFrame: Sources DataFrame
     """
-    abb_df = pd.read_csv(abb_path)
-    sources_df = pd.read_csv(mob_path)
+    abb_df = pd.read_json(ABBREV_link)
+    sources_df = pd.read_csv(MOBILITY_SOURCES_link)
     sources_df = sources_df[sources_df['location.country_code'] == 'US']
     sources_df = sources_df[sources_df['data_type'] == 'gtfs']
     sources_df = pd.merge(sources_df,abb_df,how='left',left_on='location.subdivision_name',right_on='State')
@@ -79,4 +78,4 @@ def summary_stats_mobility(df,folder_path,filename,b_day,link,bounds,max_spacing
         return "Saved the summary.csv in "+folder_path
     else:
        summary_df = summary_df.T
-       return summary_df 
+       return summary_df
