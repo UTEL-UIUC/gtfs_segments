@@ -172,6 +172,9 @@ def download_write_file(url,folder_path):
     Returns:
         str: Path to downloaded file
     """
+    # Create a new directory if it does not exist
+    if not os.path.exists(folder_path):
+      os.makedirs(folder_path)
     ## Download file from URL
     r = requests.get(url, allow_redirects=True)
     gtfs_file_loc = folder_path+"/gtfs.zip"

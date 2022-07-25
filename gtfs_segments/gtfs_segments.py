@@ -147,10 +147,6 @@ def pipeline_gtfs(filename,url,bounds,max_spacing):
         str: Status of pipeline
     """
     folder_path  = os.path.join('output_files',filename)
-    if not os.path.exists(folder_path):
-      # Create a new directory because it does not exist 
-      os.makedirs(folder_path)
-    
     gtfs_file_loc = download_write_file(url,folder_path)
     
     ## read file using GTFS Fucntions

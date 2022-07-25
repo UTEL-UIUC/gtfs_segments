@@ -1,4 +1,5 @@
 import os
+import re
 from .utils import *
 import pandas as pd
 import numpy as np
@@ -16,21 +17,25 @@ def read_moblity_sources():
     sources_df = pd.read_csv(MOBILITY_SOURCES_link)
     sources_df = sources_df[sources_df['location.country_code'] == 'US']
     sources_df = sources_df[sources_df['data_type'] == 'gtfs']
-    sources_df = pd.merge(sources_df,abb_df,how='left',left_on='location.subdivision_name',right_on='State')
-    sources_df = sources_df[~sources_df.Code.isna()]
+    sources_df = pd.merge(sources_df,abb_df,how='left',left_on='location.subdivision_name',right_on='state')
+    sources_df = sources_df[~sources_df.state_code.isna()]
     sources_df['location.municipality'] = sources_df['location.municipality'].astype("str")
+    sources_df.drop(['entity_type','mdb_source_id','data_type','location.country_code','note',
+                     'static_reference','urls.direct_download','urls.authentication_type', 'urls.authentication_info','urls.api_key_parameter_name','features'],axis=1,inplace=True)
     file_names = []
     for i,row in sources_df.iterrows():
         if row['location.municipality'] != 'nan':
             if len(sources_df[(sources_df['location.municipality'] == row['location.municipality']) & (sources_df['provider'] == row['provider'])]) <= 1:
-                file_names.append(str(row['location.municipality'])+'-'+str(row['provider'])+'-'+str(row['Code']))
+                f_name = str(row['location.municipality'])+'-'+str(row['provider'])+'-'+str(row['state_code'])
             else:
-                file_names.append(str(row['location.municipality'])+'-'+str(row['provider'])+'-'+str(row['name'])+'-'+str(row['Code']))
+                f_name = str(row['location.municipality'])+'-'+str(row['provider'])+'-'+str(row['name'])+'-'+str(row['state_code'])
         else:
             if len(sources_df[(sources_df['location.subdivision_name'] == row['location.subdivision_name']) & (sources_df['provider'] == row['provider'])]) <= 1:
-                file_names.append(str(row['location.subdivision_name'])+'-'+str(row['provider'])+'-'+str(row['Code']))
+                f_name = str(row['location.subdivision_name'])+'-'+str(row['provider'])+'-'+str(row['state_code'])
             else:
-                file_names.append(str(row['location.subdivision_name'])+'-'+str(row['provider'])+'-'+str(row['name'])+'-'+str(row['Code']))
+                f_name =str(row['location.subdivision_name'])+'-'+str(row['provider'])+'-'+str(row['name'])+'-'+str(row['state_code'])
+        f_name = f_name.replace('/','')
+        file_names.append(f_name)
     sources_df['file_name'] = file_names
     return sources_df
 
@@ -80,3 +85,8 @@ def summary_stats_mobility(df,folder_path,filename,b_day,link,bounds,max_spacing
     else:
        summary_df = summary_df.T
        return summary_df
+   
+def download_latest_data(out_folder_path):
+    sources_df = read_moblity_sources()
+    for i,row in sources_df.iterrows():
+        download_write_file(row['url'],os.path.join(out_folder_path,row['file_name']+'.zip'))
