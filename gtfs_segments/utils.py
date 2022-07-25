@@ -80,7 +80,7 @@ def summary_stats(df,export = False,**kwargs):
             'Stop Weighted Mean' : stop_weighted_mean,
             'Route Weighted Mean' : route_weighted_mean,
             'Traversal Weighted Mean': round(np.mean(weighted_data),3),
-            'Traversal Weighted Std': round(np.std(weighted_data),3),
+            'Traversal Weighted Std': round(np.mean(weighted_data),3),
             'Traversal Weighted 25 % Quantile': round(np.quantile(weighted_data,0.25),3),
             'Traversal Weighted 50 % Quantile': round(np.quantile(weighted_data,0.50),3),
             'Traversal Weighted 75 % Quantile': round(np.quantile(weighted_data,0.75),3),

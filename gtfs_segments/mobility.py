@@ -1,9 +1,10 @@
 import os
-from statsmodels.stats.weightstats import DescrStatsW
+from .utils import *
 import pandas as pd
+import numpy as np
 
 MOBILITY_SOURCES_link = "https://bit.ly/catalogs-csv"
-ABBREV_link = 'https://github.com/UTEL-UIUC/gtfs_segments/raw/master/state_abbreviations.json'
+ABBREV_link = 'https://raw.githubusercontent.com/UTEL-UIUC/gtfs_segments/main/state_abbreviations.json'
 
 def read_moblity_sources():
     """Read mobility Data csv and generate DataFrame
@@ -45,13 +46,13 @@ def summary_stats_mobility(df,folder_path,filename,b_day,link,bounds,max_spacing
         bounds (tuple): Lat Long bounds
         max_spacing (int, optional): Maximum Allowed Spacing between two consecutive stops. Defaults to 3000.
     """
-    weighted_stats = DescrStatsW(df["distance"], weights=df.traversals, ddof=0)
     quant = weighted_stats.quantile([0.25,0.5,0.75],return_pandas=False)
     percent_spacing = round(df[df["distance"] > max_spacing]['traversals'].sum()/df['traversals'].sum() *100,3)
+    df = df[df["distance"] > max_spacing]
     csv_path = os.path.join(folder_path,'summary.csv')
     stop_weighted_mean = df.groupby(['segment_id','distance']).first().reset_index()["distance"].mean()
     route_weighted_mean = df.groupby(['route_id','segment_id','distance']).first().reset_index()["distance"].mean()
-    
+    weighted_data =  np.hstack([np.repeat(x, y) for x, y in zip(df['distance'], df.traversals)])
     df_dict = {"Name":filename,
             'Busiest Day': b_day,
             'Link': link,
@@ -61,11 +62,11 @@ def summary_stats_mobility(df,folder_path,filename,b_day,link,bounds,max_spacing
             'Max Longitude': bounds[1][0],
             'Stop Weighted Mean' : stop_weighted_mean,
             'Route Weighted Mean' : route_weighted_mean,
-            'Traversal Weighted Mean': round(weighted_stats.mean,3),
-            'Traversal Weighted Std': round(weighted_stats.std,3),
-            'Traversal Weighted 25 % Quantile': round(quant[0],3),
-            'Traversal Weighted 50 % Quantile': round(quant[1],3),
-            'Traversal Weighted 75 % Quantile': round(quant[2],3),
+            'Traversal Weighted Mean': round(np.mean(weighted_data),3),
+            'Traversal Weighted Std': round(np.mean(weighted_data),3),
+            'Traversal Weighted 25 % Quantile': round(np.quantile(weighted_data,0.25),3),
+            'Traversal Weighted 50 % Quantile': round(np.quantile(weighted_data,0.25),3),
+            'Traversal Weighted 75 % Quantile': round(np.quantile(weighted_data,0.25),3),
             'No of Segments':len(df),
             'No of Routes':len(df.route_id.unique()),
             'No of Traversals':sum(df.traversals),  
