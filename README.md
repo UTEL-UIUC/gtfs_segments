@@ -150,10 +150,30 @@ Import whole package using
 ```python
 import gtfs_segments
 ```
-## Get GTFS segments
+## Get GTFS Files
 
-Download the GTFS .zip file from [@transitfeeds](https://transitfeeds.com/) or [@mobility data](https://mobilitydata.org/).
+### Automated Download  
 
+#### Get latest GTFS source list from Mobility Database Catalogs
+```python
+from gtfs_segments import read_moblity_sources
+sources_df = read_moblity_sources()
+sources_df.head()
+```
+<a href="https://github.com/UTEL-UIUC/gtfs_segments">
+    <img src="https://github.com/UTEL-UIUC/gtfs_segments/blob/main/images/sources.jpg" alt="sources" width=400>
+</a>
+
+#### Download the latest GTFS source files
+```python
+from gtfs_segments import download_latest_data
+download_latest_data("output_folder")
+```
+### Manual Download
+Download the GTFS `.zip` files from [@transitfeeds](https://transitfeeds.com/) or [@mobility data](https://mobilitydata.org/).
+
+
+## Get GTFS Segments
 ```python
 from gtfs_segments import get_gtfs_segments
 segments_df = get_gtfs_segments("path_to_gtfs_zip_file")
@@ -195,23 +215,7 @@ export_segments(segments_df,'filename', output_format ='geojson')
 # Get csv without geometry
 export_segments(segments_df,'filename', output_format ='csv',geometry = False)
 ```
-# Mobility Data
 
-## Get latest GTFS source list
-```python
-from gtfs_segments import read_moblity_sources
-sources_df = read_moblity_sources()
-sources_df.head()
-```
-<a href="https://github.com/UTEL-UIUC/gtfs_segments">
-    <img src="https://github.com/UTEL-UIUC/gtfs_segments/blob/main/images/sources.jpg" alt="histogram" width=400>
-</a>
-
-## Download the latest GTFS source files
-```python
-from gtfs_segments import download_latest_data
-download_latest_data("output_folder")
-```
 
 <!-- 
 _For more examples, please refer to the [Documentation](https://example.com)_ -->

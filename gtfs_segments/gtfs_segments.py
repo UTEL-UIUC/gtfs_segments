@@ -23,8 +23,9 @@ def merge_trip_geom(trip_df,shape_df):
         grp = trip_df.groupby(['route_id','shape_id'])
     trip_df = grp.first().reset_index()
     trip_df['traversals'] = grp.count().reset_index(drop=True)['trip_id']
-    col_subset = set(['route_id','trip_id','shape_id','service_id','direction_id','traversals'])
-    trip_df = trip_df[trip_df.columns.intersection(col_subset)]
+    subset_list = np.array(['route_id','trip_id','shape_id','service_id','direction_id','traversals'])
+    col_subset = subset_list[np.in1d(subset_list,trip_df.columns)]
+    trip_df = trip_df[col_subset]
     trip_df = trip_df.dropna(how='all', axis=1)
     trip_df = shape_df.merge(trip_df, on='shape_id',how='left')
     
@@ -46,7 +47,7 @@ def create_segments(stop_df):
     grp = stop_df.groupby('trip_id').apply(lambda df: df.shift(-1)).reset_index(drop=True)
     stop_df[['stop_id2','end']] = grp[['stop_id1','start']]
     stop_df = stop_df.dropna().reset_index(drop=True)
-    stop_df['segment_id'] = stop_df.apply(lambda row: str(row['stop_id1']) +'-'+ str(row['stop_id2']),axis =1)
+    stop_df['segment_id'] = stop_df.apply(lambda row: str(row['stop_id1']) +'-'+ str(row['stop_id2'])+'-'+ str(row['shape_id']),axis =1)
     stop_df['snapped_start_id'] = stop_df.apply(lambda row: row['start'].within(row['geometry']), axis = 1)
     stop_df['snapped_end_id'] = stop_df.apply(lambda row: row['end'].within(row['geometry']), axis = 1)
     split_routes = stop_df.apply(lambda row: split_route(row),axis = 1)
@@ -100,8 +101,9 @@ def process_feed(feed):
     stop_df = create_segments(stop_df)
     # return stop_df
     epsg_zone = get_zone_epsg(stop_df)
-    col_subset = set(['route_id','service_id','segment_id','stop_id1','stop_id2','direction_id','traversals','geometry'])
-    stop_df = stop_df[stop_df.columns.intersection(col_subset)]
+    subset_list = np.array(['route_id','service_id','segment_id','stop_id1','stop_id2','direction_id','traversals','geometry'])
+    col_subset = subset_list[np.in1d(subset_list,stop_df.columns)]
+    stop_df = stop_df[col_subset]
     stop_df = make_gdf(stop_df)    
     stop_df['distance'] = stop_df.to_crs(epsg_zone).geometry.length
     return stop_df
