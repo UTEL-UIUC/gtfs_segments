@@ -135,9 +135,9 @@ def process(pipeline_gtfs,row,max_spacing):
         row (row): row in sources_df
         max_spacing (int): Maximum Allowed Spacing between two consecutive stops.
     """
-    filename = row['file_name']
+    filename = row['provider']
     url = row['urls.latest']
-    bounds = [[row['location.bounding_box.minimum_longitude'],row['location.bounding_box.minimum_latitude']],[row['location.bounding_box.maximum_longitude'],row['location.bounding_box.maximum_latitude']]]
+    bounds = [[row['minimum_longitude'],row['minimum_latitude']],[row['maximum_longitude'],row['maximum_latitude']]]
     print(filename)
 #     pipeline_gtfs(filename,url,bounds,max_spacing)
     try:
@@ -174,10 +174,10 @@ def download_write_file(url,folder_path):
     """
     # Create a new directory if it does not exist
     if not os.path.exists(folder_path):
-      os.makedirs(folder_path)
+        os.makedirs(folder_path)
     ## Download file from URL
     r = requests.get(url, allow_redirects=True)
-    gtfs_file_loc = folder_path+"/gtfs.zip"
+    gtfs_file_loc = os.path.join(folder_path,"gtfs.zip")
     
     ## Write file locally
     file = open(gtfs_file_loc, "wb")

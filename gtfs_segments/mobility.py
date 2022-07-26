@@ -21,7 +21,7 @@ def read_moblity_sources():
     sources_df = sources_df[~sources_df.state_code.isna()]
     sources_df['location.municipality'] = sources_df['location.municipality'].astype("str")
     sources_df.drop(['entity_type','mdb_source_id','data_type','location.country_code','note',
-                     'static_reference','urls.direct_download','urls.authentication_type', 'urls.authentication_info','urls.api_key_parameter_name','features'],axis=1,inplace=True)
+                     'static_reference','urls.direct_download','urls.authentication_type','urls.license','location.bounding_box.extracted_on', 'urls.authentication_info','urls.api_key_parameter_name','features'],axis=1,inplace=True)
     file_names = []
     for i,row in sources_df.iterrows():
         if row['location.municipality'] != 'nan':
@@ -34,10 +34,13 @@ def read_moblity_sources():
                 f_name = str(row['location.subdivision_name'])+'-'+str(row['provider'])+'-'+str(row['state_code'])
             else:
                 f_name =str(row['location.subdivision_name'])+'-'+str(row['provider'])+'-'+str(row['name'])+'-'+str(row['state_code'])
-        f_name = f_name.replace('/','')
+        f_name = f_name.replace('/','').strip()
         file_names.append(f_name)
-    sources_df['file_name'] = file_names
+    sources_df.drop(['provider','location.municipality','location.subdivision_name','name','state_code','state'],axis=1,inplace=True)
+    sources_df.insert(0,'provider',file_names)
+    sources_df.columns = sources_df.columns.str.replace('location.bounding_box.',"")
     return sources_df
+
 
 def summary_stats_mobility(df,folder_path,filename,b_day,link,bounds,max_spacing = 3000,export = False):
     """Generate a report of summary statistics for the gtfs file
@@ -51,7 +54,6 @@ def summary_stats_mobility(df,folder_path,filename,b_day,link,bounds,max_spacing
         bounds (tuple): Lat Long bounds
         max_spacing (int, optional): Maximum Allowed Spacing between two consecutive stops. Defaults to 3000.
     """
-    quant = weighted_stats.quantile([0.25,0.5,0.75],return_pandas=False)
     percent_spacing = round(df[df["distance"] > max_spacing]['traversals'].sum()/df['traversals'].sum() *100,3)
     df = df[df["distance"] > max_spacing]
     csv_path = os.path.join(folder_path,'summary.csv')
@@ -89,4 +91,9 @@ def summary_stats_mobility(df,folder_path,filename,b_day,link,bounds,max_spacing
 def download_latest_data(out_folder_path):
     sources_df = read_moblity_sources()
     for i,row in sources_df.iterrows():
-        download_write_file(row['url'],os.path.join(out_folder_path,row['file_name']+'.zip'))
+        try:
+            download_write_file(row['urls.latest'],os.path.join(out_folder_path,row['provider']))
+        except:
+            continue
+    print("Downloaded the latest data")    
+    

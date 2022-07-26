@@ -195,7 +195,23 @@ export_segments(segments_df,'filename', output_format ='geojson')
 # Get csv without geometry
 export_segments(segments_df,'filename', output_format ='csv',geometry = False)
 ```
+# Mobility Data
 
+## Get latest GTFS source list
+```python
+from gtfs_segments import read_moblity_sources
+sources_df = read_moblity_sources()
+sources_df.head()
+```
+<a href="https://github.com/UTEL-UIUC/gtfs_segments">
+    <img src="https://github.com/UTEL-UIUC/gtfs_segments/blob/main/images/sources.jpg" alt="histogram" width=400>
+</a>
+
+## Download the latest GTFS source files
+```python
+from gtfs_segments import download_latest_data
+download_latest_data("output_folder")
+```
 
 <!-- 
 _For more examples, please refer to the [Documentation](https://example.com)_ -->

@@ -13,7 +13,8 @@ from .utils import (
 
 from .mobility import(
     read_moblity_sources,
-    summary_stats_mobility
+    summary_stats_mobility,
+    download_latest_data
 )
 
 __all__ = [
@@ -27,5 +28,6 @@ __all__ = [
     "summary_stats",
     "process",
     "process",
-    "summary_stats_mobility"
+    "summary_stats_mobility",
+    "download_latest_data"
 ]
