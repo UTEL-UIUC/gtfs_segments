@@ -161,7 +161,7 @@ sources_df = read_moblity_sources()
 sources_df.head()
 ```
 <a href="https://github.com/UTEL-UIUC/gtfs_segments">
-    <img src="https://github.com/UTEL-UIUC/gtfs_segments/blob/main/images/sources.jpg" alt="sources" width=400>
+    <img src="https://github.com/UTEL-UIUC/gtfs_segments/blob/main/images/sources.jpg" alt="sources" width=800>
 </a>
 
 #### Download the latest GTFS source files
