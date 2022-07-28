@@ -38,7 +38,7 @@ def fetch_gtfs_source(place ='ALL'):
         file_names.append(f_name)
     sources_df.drop(['provider','location.municipality','location.subdivision_name','name','state_code','state'],axis=1,inplace=True)
     sources_df.insert(0,'provider',file_names)
-    sources_df.columns = sources_df.columns.str.replace('location.bounding_box.',"",regex=True))
+    sources_df.columns = sources_df.columns.str.replace('location.bounding_box.',"",regex=True)
     if place == 'ALL':
         return sources_df
     else:
