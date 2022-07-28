@@ -71,13 +71,13 @@ def summary_stats(df,export = False,**kwargs):
     else:
         max_spacing = kwargs['max_spacing']
     percent_spacing = round(df[df["distance"] > max_spacing]['traversals'].sum()/df['traversals'].sum() *100,3)
-    df = df[df["distance"] > max_spacing]
+    df = df[df["distance"] <= max_spacing]
     stop_weighted_mean = df.groupby(['segment_id','distance']).first().reset_index()["distance"].mean()
     route_weighted_mean = df.groupby(['route_id','segment_id','distance']).first().reset_index()["distance"].mean()
     weighted_data =  np.hstack([np.repeat(x, y) for x, y in zip(df['distance'], df.traversals)])
     
     df_dict = {
-            'Stop Weighted Mean' : stop_weighted_mean,
+            'Segment Weighted Mean' : stop_weighted_mean,
             'Route Weighted Mean' : route_weighted_mean,
             'Traversal Weighted Mean': round(np.mean(weighted_data),3),
             'Traversal Weighted Std': round(np.mean(weighted_data),3),
@@ -139,7 +139,6 @@ def process(pipeline_gtfs,row,max_spacing):
     url = row['urls.latest']
     bounds = [[row['minimum_longitude'],row['minimum_latitude']],[row['maximum_longitude'],row['maximum_latitude']]]
     print(filename)
-#     pipeline_gtfs(filename,url,bounds,max_spacing)
     try:
         return pipeline_gtfs(filename,url,bounds,max_spacing)
     except:

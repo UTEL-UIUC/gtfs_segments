@@ -4,6 +4,8 @@ import geopandas as gpd
 from shapely.ops import split
 from shapely.geometry import Point
 from scipy.spatial import cKDTree
+import contextily as cx
+import matplotlib.pyplot as plt
 
 def split_route(row):
     """Split route into segments
@@ -82,3 +84,23 @@ def get_zone_epsg(stop_df):
     lat = stop_df.start[0].y
     zone = utm.from_latlon(lat, lon)
     return code(zone,lat)
+
+def view_spacings(df,basemap=False,level = "whole", axis ='on' ,**kwargs):
+    """_summary_
+
+    Args:
+        df (_type_): _description_
+        basemap (bool, optional): _description_. Defaults to False.
+    """
+    fig,ax = plt.subplots(figsize = (8,6),dpi = 200)
+    if level == "whole": 
+        ax = df.plot(ax = ax,color='black',label='Bus network')
+    if "route" in kwargs.keys():
+        ax = df[df.route_id == kwargs['route']].plot(ax =ax, color = 'blue', label = kwargs['route'])
+    if "segment" in kwargs.keys():
+        ax = df[df.segment_id == kwargs['segment']].plot(ax =ax, color = 'brown', label = kwargs['segment'])
+    if basemap:
+        cx.add_basemap(ax,crs=df.crs)
+    plt.axis(axis)
+    plt.legend()
+    plt.show()

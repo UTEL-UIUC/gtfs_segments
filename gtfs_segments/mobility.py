@@ -7,7 +7,7 @@ import numpy as np
 MOBILITY_SOURCES_link = "https://bit.ly/catalogs-csv"
 ABBREV_link = 'https://raw.githubusercontent.com/UTEL-UIUC/gtfs_segments/main/state_abbreviations.json'
 
-def read_moblity_sources():
+def fetch_gtfs_source(place ='ALL'):
     """Read mobility Data csv and generate DataFrame
 
     Returns:
@@ -38,8 +38,15 @@ def read_moblity_sources():
         file_names.append(f_name)
     sources_df.drop(['provider','location.municipality','location.subdivision_name','name','state_code','state'],axis=1,inplace=True)
     sources_df.insert(0,'provider',file_names)
-    sources_df.columns = sources_df.columns.str.replace('location.bounding_box.',"")
-    return sources_df
+    sources_df.columns = sources_df.columns.str.replace('location.bounding_box.',"",regex=True))
+    if place == 'ALL':
+        return sources_df
+    else:
+        sources_df = sources_df[sources_df.apply(lambda row: row.astype(str).str.contains(place.lower(), case=False).any(), axis=1)]
+        if len(sources_df) == 0:
+            return "No sources found for the given place"
+        else:
+            return sources_df
 
 
 def summary_stats_mobility(df,folder_path,filename,b_day,link,bounds,max_spacing = 3000,export = False):
@@ -55,7 +62,7 @@ def summary_stats_mobility(df,folder_path,filename,b_day,link,bounds,max_spacing
         max_spacing (int, optional): Maximum Allowed Spacing between two consecutive stops. Defaults to 3000.
     """
     percent_spacing = round(df[df["distance"] > max_spacing]['traversals'].sum()/df['traversals'].sum() *100,3)
-    df = df[df["distance"] > max_spacing]
+    df = df[df["distance"] <= max_spacing]
     csv_path = os.path.join(folder_path,'summary.csv')
     stop_weighted_mean = df.groupby(['segment_id','distance']).first().reset_index()["distance"].mean()
     route_weighted_mean = df.groupby(['route_id','segment_id','distance']).first().reset_index()["distance"].mean()
@@ -67,13 +74,13 @@ def summary_stats_mobility(df,folder_path,filename,b_day,link,bounds,max_spacing
             'Min Longitude': bounds[0][0],
             'Max Latitude': bounds[1][1],
             'Max Longitude': bounds[1][0],
-            'Stop Weighted Mean' : stop_weighted_mean,
+            'Segment Weighted Mean' : stop_weighted_mean,
             'Route Weighted Mean' : route_weighted_mean,
             'Traversal Weighted Mean': round(np.mean(weighted_data),3),
-            'Traversal Weighted Std': round(np.mean(weighted_data),3),
+            'Traversal Weighted Std': round(np.std(weighted_data),3),
             'Traversal Weighted 25 % Quantile': round(np.quantile(weighted_data,0.25),3),
-            'Traversal Weighted 50 % Quantile': round(np.quantile(weighted_data,0.25),3),
-            'Traversal Weighted 75 % Quantile': round(np.quantile(weighted_data,0.25),3),
+            'Traversal Weighted 50 % Quantile': round(np.quantile(weighted_data,0.5),3),
+            'Traversal Weighted 75 % Quantile': round(np.quantile(weighted_data,0.75),3),
             'No of Segments':len(df),
             'No of Routes':len(df.route_id.unique()),
             'No of Traversals':sum(df.traversals),  
@@ -88,8 +95,7 @@ def summary_stats_mobility(df,folder_path,filename,b_day,link,bounds,max_spacing
        summary_df = summary_df.T
        return summary_df
    
-def download_latest_data(out_folder_path):
-    sources_df = read_moblity_sources()
+def download_latest_data(out_folder_path,sources_df):
     for i,row in sources_df.iterrows():
         try:
             download_write_file(row['urls.latest'],os.path.join(out_folder_path,row['provider']))

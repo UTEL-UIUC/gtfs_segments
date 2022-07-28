@@ -100,6 +100,7 @@ The major dependencies of this library are the following packages.
 * geopandas
 * partridge
 * matplotlib
+* contextily
 
 The detailed list of package dependencies can be found in `requirements.txt`
 
@@ -156,8 +157,8 @@ import gtfs_segments
 
 #### Get latest GTFS source list from Mobility Database Catalogs
 ```python
-from gtfs_segments import read_moblity_sources
-sources_df = read_moblity_sources()
+from gtfs_segments import fetch_gtfs_source
+sources_df = fetch_gtfs_source()
 sources_df.head()
 ```
 <a href="https://github.com/UTEL-UIUC/gtfs_segments">

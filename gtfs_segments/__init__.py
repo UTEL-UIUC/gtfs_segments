@@ -12,7 +12,7 @@ from .utils import (
 )
 
 from .mobility import(
-    read_moblity_sources,
+    fetch_gtfs_source,
     summary_stats_mobility,
     download_latest_data
 )
@@ -24,7 +24,7 @@ __all__ = [
     "process_feed",
     "export_segments",
     "plot_hist",
-    "read_moblity_sources",
+    "fetch_gtfs_source",
     "summary_stats",
     "process",
     "process",

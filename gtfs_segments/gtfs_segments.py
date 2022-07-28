@@ -47,7 +47,8 @@ def create_segments(stop_df):
     grp = stop_df.groupby('trip_id').apply(lambda df: df.shift(-1)).reset_index(drop=True)
     stop_df[['stop_id2','end']] = grp[['stop_id1','start']]
     stop_df = stop_df.dropna().reset_index(drop=True)
-    stop_df['segment_id'] = stop_df.apply(lambda row: str(row['stop_id1']) +'-'+ str(row['stop_id2'])+'-'+ str(row['shape_id']),axis =1)
+    stop_df['segment_id'] = stop_df.apply(lambda row: str(row['stop_id1']) +'-'+ str(row['stop_id2']),axis =1)
+    # stop_df['segment_id'] = stop_df.apply(lambda row: str(row['stop_id1']) +'-'+ str(row['stop_id2'])+'-'+ str(row['shape_id']),axis =1)
     stop_df['snapped_start_id'] = stop_df.apply(lambda row: row['start'].within(row['geometry']), axis = 1)
     stop_df['snapped_end_id'] = stop_df.apply(lambda row: row['end'].within(row['geometry']), axis = 1)
     split_routes = stop_df.apply(lambda row: split_route(row),axis = 1)
@@ -101,7 +102,7 @@ def process_feed(feed):
     stop_df = create_segments(stop_df)
     # return stop_df
     epsg_zone = get_zone_epsg(stop_df)
-    subset_list = np.array(['route_id','service_id','segment_id','stop_id1','stop_id2','direction_id','traversals','geometry'])
+    subset_list = np.array(['route_id','shape_id','service_id','segment_id','stop_id1','stop_id2','direction_id','traversals','geometry'])
     col_subset = subset_list[np.in1d(subset_list,stop_df.columns)]
     stop_df = stop_df[col_subset]
     stop_df = make_gdf(stop_df)    
