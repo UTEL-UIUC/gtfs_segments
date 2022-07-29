@@ -11,19 +11,18 @@ from scipy.stats import gaussian_kde
 from shapely.geometry import Point
 
 def plot_hist(df,save_fig = False,show_mean = False,**kwargs):
-    # df,file_path,filename,save_fig = True
-    """Used to Plot Weighted Histogram of distributions
-
+    """
+    It takes a dataframe with two columns, one with the distance between stops and the other with the
+    number of traversals between those stops, and plots a weighted histogram of the distances
+    
     Args:
-        df (DataFrame): Final DataFrame  
-        file_path (str): File Path
-        title (str): Title of plot
-        max_spacing (_type_): Maximum Allowed Spacing between two stops. Defaults to 3000.
-        save_fig (bool, optional): Field to save the generated figure. Defaults to True.
+      df: The dataframe that contains the data
+      save_fig: If True, the figure will be saved to the file_path. Defaults to False
+      show_mean: If True, will show the mean of the distribution. Defaults to False
     
     Returns:
-        axis: A matplotlib axis
-    """ 
+      A matplotlib axis
+    """
     if "max_spacing" not in kwargs.keys():
         max_spacing = 3000
         print("Using max_spacing = 3000")
@@ -57,14 +56,16 @@ def plot_hist(df,save_fig = False,show_mean = False,**kwargs):
     return ax
 
 def summary_stats(df,export = False,**kwargs):
-    """Generate a report of summary statistics for the gtfs file
-
-    Args:
-        df (DataFrame): DataFrame
-        file_path (str): File Path
-        max_spacing (int, optional): Maximum Allowed Spacing between two consecutive stops. Defaults to 3000.
     """
+    It takes in a dataframe, and returns a dataframe with summary statistics
     
+    Args:
+      df: The dataframe that you want to get the summary statistics for.
+      export: If True, the summary will be exported to a csv file. Defaults to False
+    
+    Returns:
+      A dataframe with the summary statistics
+    """
     if "max_spacing" not in kwargs.keys():
         max_spacing = 3000
         print("Using max_spacing = 3000")
@@ -99,11 +100,30 @@ def summary_stats(df,export = False,**kwargs):
     return summary_df 
         
 def export_segments(df,file_path,output_format, geometry = True):
-    """Write the DataFrame as csv and geojson
-
+    """
+    This function takes a GeoDataFrame of segments, a file path, an output format, and a boolean value
+    for whether or not to include the geometry in the output. 
+    
+    If the output format is GeoJSON, the function will output the GeoDataFrame to a GeoJSON file. 
+    
+    If the output format is CSV, the function will output the GeoDataFrame to a CSV file. If the
+    geometry boolean is set to True, the function will output the CSV file with the geometry column. If
+    the geometry boolean is set to False, the function will output the CSV file without the geometry
+    column. 
+    
+    The function will also add additional columns to the CSV file, including the start and end points of
+    the segments, the start and end longitude and latitude of the segments, and the distance of the
+    segments. 
+    
+    The function will also add a column to the CSV file that indicates the number of times the segment
+    was traversed.
+    
     Args:
-        df (DataFrame): DataFrame
-        file_path (str): Output File Path
+      df: the dataframe containing the segments
+      file_path: The path to the file you want to export to.
+      output_format: geojson or csv
+      geometry: If True, the output will include the geometry of the segments. If False, the output will
+    only include the start and end points of the segments. Defaults to True
     """
     ## Output to GeoJSON
     if output_format == 'geojson':
@@ -129,11 +149,17 @@ def export_segments(df,file_path,output_format, geometry = True):
 
 def process(pipeline_gtfs,row,max_spacing):
     """
-
+    It takes a pipeline, a row from the sources_df, and a max_spacing, and returns the output of the
+    pipeline
+    
     Args:
-        pipeline_gtfs (function): Pipeline that will return processed dataframe
-        row (row): row in sources_df
-        max_spacing (int): Maximum Allowed Spacing between two consecutive stops.
+      pipeline_gtfs: This is the function that will be used to process the GTFS data.
+      row: This is a row in the sources_df dataframe. It contains the name of the provider, the url to
+    the gtfs file, and the bounding box of the area that the gtfs file covers.
+      max_spacing: Maximum Allowed Spacing between two consecutive stops.
+    
+    Returns:
+      The return value is a tuple of the form (filename,folder_path,df)
     """
     filename = row['provider']
     url = row['urls.latest']
@@ -147,29 +173,33 @@ def process(pipeline_gtfs,row,max_spacing):
         return failed_pipeline("Failed for ",filename,folder_path)
 
 def failed_pipeline(message,filename,folder_path):
-    """Used to terminate the process and return error message
-
-    Args:
-        message (str): Failure cause
-        filename (str): Filename
-        folder_path (str): Folder path
-
-    Returns:
-        str: Failure Message
     """
+    "If the folder path exists, delete it and return the failure message."
+    
+    Args:
+      message: The message to be returned
+      filename: The name of the file that is being processed
+      folder_path: The path to the folder where the file is located
+    
+    Returns:
+      a string that is the concatenation of the message and the filename, indicating failure
+    """
+
     if os.path.exists(folder_path):
         shutil.rmtree(folder_path)
     return message + filename
 
 def download_write_file(url,folder_path):
-    """Function to download the gtfs file from url and save it in a folder
-
+    """
+    It takes a URL and a folder path as input, creates a new folder if it does not exist, downloads the
+    file from the URL, and writes the file to the folder path
+    
     Args:
-        url (str): URL to download
-        folder_path (str): Folder path
-
+      url: The URL of the GTFS file you want to download
+      folder_path: The path to the folder where you want to save the GTFS file.
+    
     Returns:
-        str: Path to downloaded file
+      The location of the file that was downloaded.
     """
     # Create a new directory if it does not exist
     if not os.path.exists(folder_path):

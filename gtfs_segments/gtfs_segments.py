@@ -6,11 +6,16 @@ from .mobility import *
 
 
 def merge_trip_geom(trip_df,shape_df):
-    """Merge Trips and Shapes
-
+    """
+    It takes a dataframe of trips and a dataframe of shapes, and returns a geodataframe of trips with
+    the geometry of the shapes
+    
     Args:
-        trip_df (DataFrame): DataFrame fo Trips
-        shape_df (DataFrame): DataFrame of Shapes
+      trip_df: a dataframe of trips
+      shape_df: a GeoDataFrame of the shapes.txt file
+    
+    Returns:
+      A GeoDataFrame
     """
     ## `direction_id` and `shape_id` are optional
     if ('direction_id' in trip_df.columns):
@@ -33,13 +38,14 @@ def merge_trip_geom(trip_df,shape_df):
     return make_gdf(trip_df)
 
 def create_segments(stop_df):
-    """Generate Segments and splice their geometry
-
+    """
+    It takes a dataframe of stops and returns a dataframe of segments
+    
     Args:
-        stop_df (DataFrame): DataFrame without segments
-
+      stop_df: a dataframe with the following columns:
+    
     Returns:
-        DataFrame: DataFrame with segments
+      A dataframe with the following columns:
     """
     stop_df = stop_df.rename({'stop_id':'stop_id1'},axis =1)
     start_wkts = stop_df.apply(lambda row: nearest_snap(row['geometry'],row['start']), axis = 1)
@@ -56,42 +62,49 @@ def create_segments(stop_df):
     return stop_df
 
 def filter_stop_df(stop_df,trip_ids):
-    """Filters DataFrame to contain only filtered trips
-
+    """
+    It takes a dataframe of stops and a list of trip IDs and returns a dataframe of stops that are in
+    the list of trip IDs
+    
     Args:
-        stop_df (DataFrame): DataFrame containing stop times
-        trip_ids (list): List of trip ids that have a unique `route_id`, `direction_id` & `shape_id`
-
+      stop_df: the dataframe of all stops
+      trip_ids: a list of trip_ids that you want to filter the stop_df by
+    
     Returns:
-        _type_: _description_
+      A dataframe with the trip_id, stop_id, and stop_sequence for the trips in the trip_ids list.
     """
     stop_df = stop_df[['trip_id','stop_id','stop_sequence']]
     stop_df = stop_df[stop_df.trip_id.isin(trip_ids)].reset_index(drop=True)
     stop_df = stop_df.sort_values(['trip_id','stop_sequence']).reset_index(drop=True)
     return stop_df
 
-def merge_stop_geom(stop_df,stop_loc_df):
-    """Merge stop_times and stops to obtain stop locations
-
+def merge_stop_geom(stop_df,stop_loc_df):      
+    """
+    > Merge the stop_loc_df with the stop_df, and then convert the result to a GeoDataFrame
+    
     Args:
-        stop_df (DataFrame): Contains stop times for all trip_id
-        stop_loc_df (DataFrame): Consists of stop location corresponding to a stop_id
-
+      stop_df: a dataframe of stops
+      stop_loc_df: a GeoDataFrame of the stops
+    
     Returns:
-        GeoDataFrame: GeoDataFrame containing stops with geometry
-    """       
+      A GeoDataFrame
+    """
     stop_df['start'] = stop_df.copy().merge(stop_loc_df,how='left',on='stop_id')['geometry']
     stop_df = gpd.GeoDataFrame(stop_df,geometry='start')
     return make_gdf(stop_df)
     
 def process_feed(feed):
-    """Process the feed to generate Segments and Stop Spacings 
-
+    """
+    It takes a GTFS feed, merges the trip and shape data, filters the stop_times data to only include
+    the trips that are in the feed, merges the stop_times data with the stop data, creates a segment for
+    each stop pair, gets the EPSG zone for the feed, creates a GeoDataFrame, and calculates the length
+    of each segment
+    
     Args:
-        feed (Feed): GTFS feed
-
+      feed: a GTFS feed object
+    
     Returns:
-        GeoDataFrame: Consists of segements with Traversals and Geometries
+      A GeoDataFrame with the following columns:
     """
     trip_df = merge_trip_geom(feed.trips,feed.shapes)
     trip_ids = trip_df.trip_id.unique()
@@ -110,13 +123,15 @@ def process_feed(feed):
     return stop_df
 
 def inspect_feed(feed):
-    """Inspect Feed before processing           
-
+    """
+    It checks to see if the feed has any bus routes and if it has a `shape_id` column in the `trips`
+    table
+    
     Args:
-        feed (Feed): GTFS Feed
-
+      feed: The feed object that you want to inspect.
+    
     Returns:
-        str: Message about feed characteristics
+      A message
     """
     message = True
     if len(feed.stop_times) == 0:
@@ -126,28 +141,46 @@ def inspect_feed(feed):
     return message 
 
 def get_gtfs_segments(path):
-    """Combined Function to get segments from GTFS File
-
+    """
+    > It reads a GTFS file, and returns a list of segments
+    
     Args:
-        path (str): Path to GTFS File
-
+      path: the path to the GTFS file
+    
     Returns:
-        GeoDataFrame: GeoDataFrame containing the segments and stop spacings with geometries
+      A list of segments.
     """
     bday ,feed = ptg_read_file(path)
     return process_feed(feed)
 
 def pipeline_gtfs(filename,url,bounds,max_spacing):
-    """Pipeline for handling Mobility data
-
+    """
+    It takes a GTFS file, downloads it, reads it, processes it, and then outputs a bunch of files. 
+    
+    Let's go through the function step by step. 
+    
+    First, we define the function and give it a name. We also give it a few arguments: 
+    
+    - filename: the name of the file we want to save the output to. 
+    - url: the url of the GTFS file we want to download. 
+    - bounds: the bounding box of the area we want to analyze. 
+    - max_spacing: the maximum spacing we want to analyze. 
+    
+    We then create a folder to save the output to. 
+    
+    Next, we download the GTFS file and save it to the folder we just created. 
+    
+    Then, we read the GTFS file using the `ptg_read_file` function. 
+    
     Args:
-        filename (str): Filename
-        url (str): Link to the GTFS file
-        bounds (tuple): Lat long bounds of the gtfs file
-        max_spacing (int): Maximum Allowed Spacing between two consecutive stops.
-
+      filename: the name of the file you want to save the output to
+      url: the url of the GTFS file
+      bounds: the bounding box of the area you want to analyze. This is in the format
+    [min_lat,min_lon,max_lat,max_lon]
+      max_spacing: The maximum distance between stops that you want to consider.
+    
     Returns:
-        str: Status of pipeline
+      a string with the name of the file that was processed.
     """
     folder_path  = os.path.join('output_files',filename)
     gtfs_file_loc = download_write_file(url,folder_path)

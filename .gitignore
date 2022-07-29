@@ -22,3 +22,6 @@ var/
 # Jupyter notebook
 *.ipynb
 *.csv
+
+# VsCode
+.vscode/

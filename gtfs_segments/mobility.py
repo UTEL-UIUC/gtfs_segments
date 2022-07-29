@@ -8,10 +8,16 @@ MOBILITY_SOURCES_link = "https://bit.ly/catalogs-csv"
 ABBREV_link = 'https://raw.githubusercontent.com/UTEL-UIUC/gtfs_segments/main/state_abbreviations.json'
 
 def fetch_gtfs_source(place ='ALL'):
-    """Read mobility Data csv and generate DataFrame
-
+    """
+    It reads the mobility data sources csv file and generates a dataframe with the sources that are of
+    type gtfs and are from the US
+    
+    Args:
+      place: The place you want to get the GTFS data for. This can be a city, state, or country.
+    Defaults to ALL
+    
     Returns:
-        DataFrame: Sources DataFrame
+      A dataframe with sources
     """
     abb_df = pd.read_json(ABBREV_link)
     sources_df = pd.read_csv(MOBILITY_SOURCES_link)
@@ -50,16 +56,32 @@ def fetch_gtfs_source(place ='ALL'):
 
 
 def summary_stats_mobility(df,folder_path,filename,b_day,link,bounds,max_spacing = 3000,export = False):
-    """Generate a report of summary statistics for the gtfs file
-
+    """
+    It takes in a dataframe, a folder path, a filename, a busiest day, a link, a bounding box, a max
+    spacing, and a boolean for exporting the summary to a csv. 
+    
+    It then calculates the percentage of segments that have a spacing greater than the max spacing. It
+    then filters the dataframe to only include segments with a spacing less than the max spacing. It
+    then calculates the segment weighted mean, route weighted mean, traversal weighted mean, traversal
+    weighted standard deviation, traversal weighted 25th percentile, traversal weighted 50th percentile,
+    traversal weighted 75th percentile, number of segments, number of routes, number of traversals, and
+    the max spacing. It then creates a dictionary with all of the above values and creates a dataframe
+    from the dictionary. It then exports the dataframe to a csv if the export boolean is true. If the
+    export boolean is false, it transposes the dataframe and returns it.
+    
     Args:
-        df (DataFrame): DataFrame
-        folder_path (str): Folder Path
-        filename (str): Filename
-        b_day (date): Busiest Day
-        link (str): Download URL
-        bounds (tuple): Lat Long bounds
-        max_spacing (int, optional): Maximum Allowed Spacing between two consecutive stops. Defaults to 3000.
+      df: the dataframe containing the mobility data
+      folder_path: The path to the folder where you want to save the summary.csv file.
+      filename: The name of the file you want to save the data as.
+      b_day: The busiest day of the week
+      link: The link of the map you want to use.
+      bounds: The bounding box of the area you want to analyze.
+      max_spacing: The maximum distance between two stops that you want to consider. Defaults to 3000
+      export: If True, the summary will be saved as a csv file in the folder_path. If False, the summary
+    will be returned as a dataframe. Defaults to False
+    
+    Returns:
+      A dataframe with the summary statistics of the mobility data.
     """
     percent_spacing = round(df[df["distance"] > max_spacing]['traversals'].sum()/df['traversals'].sum() *100,3)
     df = df[df["distance"] <= max_spacing]
@@ -96,6 +118,14 @@ def summary_stats_mobility(df,folder_path,filename,b_day,link,bounds,max_spacing
        return summary_df
    
 def download_latest_data(out_folder_path,sources_df):
+    """
+    It iterates over the rows of the dataframe, and for each row, it tries to download the file from the
+    URL in the `urls.latest` column, and write it to the folder specified in the `provider` column
+    
+    Args:
+      out_folder_path: The path to the folder where you want to save the data
+      sources_df: This is the dataframe that contains the urls for the data.
+    """
     for i,row in sources_df.iterrows():
         try:
             download_write_file(row['urls.latest'],os.path.join(out_folder_path,row['provider']))

@@ -1,10 +1,14 @@
 import partridge as ptg
 
 def ptg_read_file(path):
-    """Use Partridge library to read the gtfs file and get the busiest day. Also filter bus routes
-
+    """
+    It reads the gtfs file and returns the busiest day and the feed object
+    
     Args:
-        path (_type_): _description_
+      path: The path to the GTFS file
+    
+    Returns:
+      The busiest day and the feed object
     """
     _date, service_ids = ptg.read_busiest_date(path)
     view = {
