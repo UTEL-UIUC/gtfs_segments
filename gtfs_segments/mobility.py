@@ -103,7 +103,7 @@ def summary_stats_mobility(df,folder_path,filename,b_day,link,bounds,max_spacing
             'Traversal Weighted 25 % Quantile': round(np.quantile(weighted_data,0.25),3),
             'Traversal Weighted 50 % Quantile': round(np.quantile(weighted_data,0.5),3),
             'Traversal Weighted 75 % Quantile': round(np.quantile(weighted_data,0.75),3),
-            'No of Segments':len(df),
+            'No of Segments':len(df.segment_id.unique()),
             'No of Routes':len(df.route_id.unique()),
             'No of Traversals':sum(df.traversals),  
             'Max Spacing':max_spacing,
@@ -117,7 +117,7 @@ def summary_stats_mobility(df,folder_path,filename,b_day,link,bounds,max_spacing
        summary_df = summary_df.T
        return summary_df
    
-def download_latest_data(out_folder_path,sources_df):
+def download_latest_data(sources_df,out_folder_path):
     """
     It iterates over the rows of the dataframe, and for each row, it tries to download the file from the
     URL in the `urls.latest` column, and write it to the folder specified in the `provider` column

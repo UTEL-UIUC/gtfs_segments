@@ -147,7 +147,7 @@ pip install gtfs-segments
 <!-- USAGE EXAMPLES -->
 # Usage
 
-Import whole package using 
+Import the package using 
 ```python
 import gtfs_segments
 ```
@@ -155,20 +155,30 @@ import gtfs_segments
 
 ### Automated Download  
 
-#### Get latest GTFS source list from Mobility Database Catalogs
+#### Fetch all sources
 ```python
 from gtfs_segments import fetch_gtfs_source
 sources_df = fetch_gtfs_source()
 sources_df.head()
 ```
 <a href="https://github.com/UTEL-UIUC/gtfs_segments">
-    <img src="https://github.com/UTEL-UIUC/gtfs_segments/blob/main/images/sources.jpg" alt="sources" width=800>
+    <img src="images/sources.jpg" alt="sources" width=800>
+</a>
+
+#### Fetch source by name/provider/state
+```python
+from gtfs_segments import fetch_gtfs_source
+sources_df = fetch_gtfs_source(place ='Chicago')
+sources_df
+```
+<a href="https://github.com/UTEL-UIUC/gtfs_segments">
+    <img src="images/sources_chicago.jpg" alt="sources" width=800>
 </a>
 
 #### Download the latest GTFS source files
 ```python
 from gtfs_segments import download_latest_data
-download_latest_data("output_folder")
+download_latest_data(sources,"output_folder")
 ```
 ### Manual Download
 Download the GTFS `.zip` files from [@transitfeeds](https://transitfeeds.com/) or [@mobility data](https://mobilitydata.org/).
@@ -181,7 +191,7 @@ segments_df = get_gtfs_segments("path_to_gtfs_zip_file")
 segments_df
 ```
 <a href="https://github.com/UTEL-UIUC/gtfs_segments">
-    <img src="https://github.com/UTEL-UIUC/gtfs_segments/blob/main/images/data.jpg" alt="data" width=800>
+    <img src="images/data.jpg" alt="data" width=800>
 </a>
 
 ## Plot Histogram
@@ -190,7 +200,7 @@ from gtfs_segments import plot_hist
 plot_hist(segments_df)
 ```
 <a href="https://github.com/UTEL-UIUC/gtfs_segments">
-    <img src="https://github.com/UTEL-UIUC/gtfs_segments/blob/main/images/hist.jpg" alt="histogram" width=800>
+    <img src="images/hist.jpg" alt="histogram" width=800>
 </a>
 
 Optionally save figure using
@@ -204,7 +214,7 @@ from gtfs_segments import summary_stats
 summary_stats(segments_df,max_spacing = 3000,export = True,file_path = "summary.csv")
 ```
 <a href="https://github.com/UTEL-UIUC/gtfs_segments">
-    <img src="https://github.com/UTEL-UIUC/gtfs_segments/blob/main/images/summary.jpg" alt="histogram" width=400>
+    <img src="images/summary.jpg" alt="histogram" width=400>
 </a>
 
 
@@ -239,6 +249,30 @@ See the [open issues](https://github.com/UTEL-UIUC/gtfs_segments/issues) for a f
  -->
 
 
+
+
+
+
+<!-- LICENSE -->
+# License
+
+Distributed under the MIT License. See `LICENSE.txt` for more information.
+
+<p align="right">(<a href="#top">back to top</a>)</p>
+
+## Citing gtfs-segments
+If you use gtfs-segments in your research please use the following BibTeX entry:
+
+```
+@Misc{gtfs,
+    author =       {Devunuri, Saipraneeth},
+    title =        {gtfs-segments - A fast and efficient library to generate bus stop spacings},
+    howpublished = {Github},
+    year =         {2022},
+    url =          {https://github.com/UTEL-UIUC/gtfs_segments}
+}
+```
+
 <!-- CONTRIBUTING -->
 # Contributing
 
@@ -256,16 +290,6 @@ Don't forget to give the project a star! Thanks again!
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 
-
-<!-- LICENSE -->
-# License
-
-Distributed under the MIT License. See `LICENSE.txt` for more information.
-
-<p align="right">(<a href="#top">back to top</a>)</p>
-
-
-
 <!-- CONTACT -->
 # Contact
 
@@ -273,7 +297,7 @@ Saipraneeth Devunuri - [@praneethDevunu1](https://twitter.com/praneethDevunu1) -
 
 Project Link: [https://github.com/UTEL-UIUC/gtfs_segments](https://github.com/UTEL-UIUC/gtfs_segments)
 
-<p align="right">(<a href="#top">back to top</a>)</p>
+<!-- <p align="right">(<a href="#top">back to top</a>)</p> -->
 
 
 

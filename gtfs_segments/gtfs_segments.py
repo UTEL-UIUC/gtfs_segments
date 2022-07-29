@@ -53,13 +53,34 @@ def create_segments(stop_df):
     grp = stop_df.groupby('trip_id').apply(lambda df: df.shift(-1)).reset_index(drop=True)
     stop_df[['stop_id2','end']] = grp[['stop_id1','start']]
     stop_df = stop_df.dropna().reset_index(drop=True)
-    stop_df['segment_id'] = stop_df.apply(lambda row: str(row['stop_id1']) +'-'+ str(row['stop_id2']),axis =1)
+    stop_df['segment_id'] = stop_df.apply(lambda row: str(row['stop_id1']) +'-'+ str(row['stop_id2'])+'-1',axis =1)
     # stop_df['segment_id'] = stop_df.apply(lambda row: str(row['stop_id1']) +'-'+ str(row['stop_id2'])+'-'+ str(row['shape_id']),axis =1)
     stop_df['snapped_start_id'] = stop_df.apply(lambda row: row['start'].within(row['geometry']), axis = 1)
     stop_df['snapped_end_id'] = stop_df.apply(lambda row: row['end'].within(row['geometry']), axis = 1)
     split_routes = stop_df.apply(lambda row: split_route(row),axis = 1)
     stop_df['geometry'] = gpd.GeoSeries.from_wkt(split_routes)
     return stop_df
+
+def make_segments_unique(df):
+    """
+    For each route_id and segment_id combination, if there are more than one unique distance values,
+    then split the segment_id into three parts, and add a number to the end of the segment_id
+    
+    Args:
+      df: the dataframe
+    
+    Returns:
+      A dataframe with unique segment_ids
+    """
+    grp_filter = df.groupby(['route_id','segment_id']).filter(lambda row : row['distance'].nunique() > 1)
+    grp_dict = grp_filter.groupby(['route_id','segment_id']).groups
+    for key in grp_dict.keys():
+        inds = grp_dict[key]
+        for i,index in enumerate(inds):
+            if i != 0:
+                seg_split = key[1].split('-')
+                df.loc[index,'segment_id'] = seg_split[0]+'-'+seg_split[1]+'-'+str(i+1)
+    return df
 
 def filter_stop_df(stop_df,trip_ids):
     """
@@ -115,12 +136,13 @@ def process_feed(feed):
     stop_df = create_segments(stop_df)
     # return stop_df
     epsg_zone = get_zone_epsg(stop_df)
-    subset_list = np.array(['route_id','shape_id','service_id','segment_id','stop_id1','stop_id2','direction_id','traversals','geometry'])
+    stop_df = make_gdf(stop_df)    
+    stop_df['distance'] = stop_df.set_geometry('geometry').to_crs(epsg_zone).geometry.length
+    stop_df = make_segments_unique(stop_df)
+    subset_list = np.array(['segment_id','route_id','traversals','distance','stop_id1','stop_id2','geometry'])
     col_subset = subset_list[np.in1d(subset_list,stop_df.columns)]
     stop_df = stop_df[col_subset]
-    stop_df = make_gdf(stop_df)    
-    stop_df['distance'] = stop_df.to_crs(epsg_zone).geometry.length
-    return stop_df
+    return make_gdf(stop_df)
 
 def inspect_feed(feed):
     """
