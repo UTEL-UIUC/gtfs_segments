@@ -117,3 +117,4 @@ def view_spacings(df,basemap=False,level = "whole", axis ='on' ,**kwargs):
     plt.axis(axis)
     plt.legend()
     plt.show()
+    return fig

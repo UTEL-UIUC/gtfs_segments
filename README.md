@@ -1,22 +1,8 @@
 <div id="top"></div>
 <!--
-*** Thanks for checking out the Best-README-Template. If you have a suggestion
-*** that would make this better, please fork the repo and create a pull request
-*** or simply open an issue with the tag "enhancement".
-*** Don't forget to give the project a star!
-*** Thanks again! Now go create something AMAZING! :D
+*** Adapted from Best-README-Template
 -->
 
-
-
-<!-- PROJECT SHIELDS -->
-<!--
-*** I'm using markdown "reference style" links for readability.
-*** Reference links are enclosed in brackets [ ] instead of parentheses ( ).
-*** See the bottom of this document for the declaration of the reference variables
-*** for contributors-url, forks-url, etc. This is an optional, concise syntax you may use.
-*** https://www.markdownguide.org/basic-syntax/#reference-style-links
--->
 [![Contributors][contributors-shield]][contributors-url]
 [![Forks][forks-shield]][forks-url]
 [![Stargazers][stars-shield]][stars-url]
@@ -30,7 +16,7 @@
 <br />
 <div align="center">
   <a href="https://github.com/UTEL-UIUC/gtfs_segments">
-    <img src="https://github.com/UTEL-UIUC/gtfs_segments/blob/main/images/logo.jpg" alt="Logo" width=200 height=200>
+    <img src="images/logo.jpg" alt="Logo" width=200 height=200>
   </a>
 
 <h3 align="center">GTFS Segments</h3>
@@ -66,6 +52,12 @@
       </ul>
     </li>
     <li><a href="#usage">Usage</a></li>
+      <ul>
+        <li><a href="#get-gtfs-files">Get GTFS Files</a></li>
+        <li><a href="#get-gtfs-segments">Get GTFS Segments</a></li>
+        <li><a href="#visualize-spacings">Visualize Spacings</a></li>
+        <li><a href="#plot-distributions"> Plot Distributions</a></li>
+      </ul>
     <!-- <li><a href="#roadmap">Roadmap</a></li> -->
     <li><a href="#contributing">Contributing</a></li>
     <li><a href="#license">License</a></li>
@@ -78,21 +70,17 @@
 
 <!-- ABOUT THE PROJECT -->
 # About The Project
-<div align="center">
-  <img src="https://github.com/UTEL-UIUC/gtfs_segments/blob/main/images/example.jpg" alt="map" width="400"/>
-</div>
+<!-- <div align="center">
+  <img src="images/example.jpg" alt="map" width="400"/>
+</div> -->
 
 Transit agencies use the General Transit Feed Specification (GTFS) to publish transit data. More and more cities across the globe are adopting this GTFS format to represent their transit network. The GTFS feed can be downloaded from [@transitfeeds](https://transitfeeds.com/) and [@mobility data](https://mobilitydata.org/). The GTFS segments is a concise representation of GTFS files removing unnecessary repetitions in the data. We do that by considering the services offered only the busiest day(in the data) and representing data in the form of segements. 
-
 <p align="right">(<a href="#top">back to top</a>)</p>
-
 
 <!-- GETTING STARTED -->
 # Getting Started
 
 ## Prerequisites
-
-
 The major dependencies of this library are the following packages. 
 * numpy
 * shapely
@@ -147,6 +135,8 @@ pip install gtfs-segments
 <!-- USAGE EXAMPLES -->
 # Usage
 
+For documentation, please refer to the [Documentation](https://utel-uiuc.github.io/gtfs_segments_docs/)_
+
 Import the package using 
 ```python
 import gtfs_segments
@@ -161,7 +151,7 @@ from gtfs_segments import fetch_gtfs_source
 sources_df = fetch_gtfs_source()
 sources_df.head()
 ```
-<a href="https://github.com/UTEL-UIUC/gtfs_segments">
+<a>
     <img src="images/sources.jpg" alt="sources" width=800>
 </a>
 
@@ -171,7 +161,7 @@ from gtfs_segments import fetch_gtfs_source
 sources_df = fetch_gtfs_source(place ='Chicago')
 sources_df
 ```
-<a href="https://github.com/UTEL-UIUC/gtfs_segments">
+<a>
     <img src="images/sources_chicago.jpg" alt="sources" width=800>
 </a>
 
@@ -190,16 +180,26 @@ from gtfs_segments import get_gtfs_segments
 segments_df = get_gtfs_segments("path_to_gtfs_zip_file")
 segments_df
 ```
-<a href="https://github.com/UTEL-UIUC/gtfs_segments">
+<a>
     <img src="images/data.jpg" alt="data" width=800>
 </a>
 
-## Plot Histogram
+## Visualize Spacings
+
+```python
+from gtfs_segments import view_spacings
+view_spacings(df,route = '18131',segment = '6294-6290-1',basemap=True)
+```
+<center><a>
+    <img src="images/visualize.jpg" alt="data" width=600>
+</a></center>
+
+## Plot Distributions
 ```python
 from gtfs_segments import plot_hist
 plot_hist(segments_df)
 ```
-<a href="https://github.com/UTEL-UIUC/gtfs_segments">
+<a>
     <img src="images/hist.jpg" alt="histogram" width=800>
 </a>
 
@@ -213,12 +213,12 @@ plot_hist(segments_df,file_path = "spacings_hist.png",save_fig = True)
 from gtfs_segments import summary_stats
 summary_stats(segments_df,max_spacing = 3000,export = True,file_path = "summary.csv")
 ```
-<a href="https://github.com/UTEL-UIUC/gtfs_segments">
+<a>
     <img src="images/summary.jpg" alt="histogram" width=400>
 </a>
 
 
-## Dowload Data
+## Download Data
 Download the data as either `.csv` or `.geojson`
 ```python
 from gtfs_segments import export_segments
@@ -226,10 +226,6 @@ export_segments(segments_df,'filename', output_format ='geojson')
 # Get csv without geometry
 export_segments(segments_df,'filename', output_format ='csv',geometry = False)
 ```
-
-
-<!-- 
-_For more examples, please refer to the [Documentation](https://example.com)_ -->
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
