@@ -143,9 +143,7 @@ import gtfs_segments
 ```
 ## Get GTFS Files
 
-### Automated Download  
-
-#### Fetch all sources
+### Fetch all sources
 ```python
 from gtfs_segments import fetch_gtfs_source
 sources_df = fetch_gtfs_source()
@@ -155,7 +153,7 @@ sources_df.head()
     <img src="images/sources.jpg" alt="sources" width=800>
 </a>
 
-#### Fetch source by name/provider/state
+### Fetch source by name/provider/state
 ```python
 from gtfs_segments import fetch_gtfs_source
 sources_df = fetch_gtfs_source(place ='Chicago')
@@ -165,12 +163,12 @@ sources_df
     <img src="images/sources_chicago.jpg" alt="sources" width=800>
 </a>
 
-#### Download the latest GTFS source files
+## Automated Download  
 ```python
 from gtfs_segments import download_latest_data
-download_latest_data(sources,"output_folder")
+download_latest_data(sources_df,"output_folder")
 ```
-### Manual Download
+## Manual Download
 Download the GTFS `.zip` files from [@transitfeeds](https://transitfeeds.com/) or [@mobility data](https://mobilitydata.org/).
 
 
@@ -188,7 +186,7 @@ segments_df
 
 ```python
 from gtfs_segments import view_spacings
-view_spacings(df,route = '18131',segment = '6294-6290-1',basemap=True)
+view_spacings(segments_df,route = '18131',segment = '6294-6290-1',basemap=True)
 ```
 <center><a>
     <img src="images/visualize.jpg" alt="data" width=600>
@@ -197,7 +195,7 @@ view_spacings(df,route = '18131',segment = '6294-6290-1',basemap=True)
 ## Plot Distributions
 ```python
 from gtfs_segments import plot_hist
-plot_hist(segments_df)
+plot_hist(segments_df, max_spacing = 1200)
 ```
 <a>
     <img src="images/hist.jpg" alt="histogram" width=800>

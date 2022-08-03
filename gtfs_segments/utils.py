@@ -51,11 +51,10 @@ def plot_hist(df,save_fig = False,show_mean = False,**kwargs):
     if save_fig == True:
         assert "file_path" in kwargs.keys(), "Please pass in the `file_path`"
         plt.savefig(kwargs['file_path'], dpi=300)
-    plt.show()
     plt.close(fig)
-    return ax
+    return fig
 
-def summary_stats(df,export = False,**kwargs):
+def summary_stats(df,max_spacing = 3000,export = False,**kwargs):
     """
     It takes in a dataframe, and returns a dataframe with summary statistics
     
@@ -66,11 +65,7 @@ def summary_stats(df,export = False,**kwargs):
     Returns:
       A dataframe with the summary statistics
     """
-    if "max_spacing" not in kwargs.keys():
-        max_spacing = 3000
-        print("Using max_spacing = 3000")
-    else:
-        max_spacing = kwargs['max_spacing']
+    print("Using max_spacing = ",max_spacing)
     percent_spacing = round(df[df["distance"] > max_spacing]['traversals'].sum()/df['traversals'].sum() *100,3)
     df = df[df["distance"] <= max_spacing]
     stop_weighted_mean = df.groupby(['segment_id','distance']).first().reset_index()["distance"].mean()
