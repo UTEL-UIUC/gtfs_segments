@@ -149,9 +149,10 @@ from gtfs_segments import fetch_gtfs_source
 sources_df = fetch_gtfs_source()
 sources_df.head()
 ```
-<a>
+
+<a align='center'>
     <img src="images/sources.jpg" alt="sources" width=800>
-</a>
+</a><br clear='center'/>  
 
 ### Fetch source by name/provider/state
 ```python
@@ -159,10 +160,9 @@ from gtfs_segments import fetch_gtfs_source
 sources_df = fetch_gtfs_source(place ='Chicago')
 sources_df
 ```
-<a>
+<a align='center'>
     <img src="images/sources_chicago.jpg" alt="sources" width=800>
-</a>
-
+</a><br clear='center'/>  
 ## Automated Download  
 ```python
 from gtfs_segments import download_latest_data
@@ -178,28 +178,27 @@ from gtfs_segments import get_gtfs_segments
 segments_df = get_gtfs_segments("path_to_gtfs_zip_file")
 segments_df
 ```
-<a>
+<a align='center'>
     <img src="images/data.jpg" alt="data" width=800>
-</a>
-
+</a><br clear='center'/>  
 ## Visualize Spacings
 
 ```python
 from gtfs_segments import view_spacings
 view_spacings(segments_df,route = '18131',segment = '6294-6290-1',basemap=True)
 ```
-<center><a>
+<a align='center'>
     <img src="images/visualize.jpg" alt="data" width=600>
-</a></center>
+</a><br clear='center'/>  
 
 ## Plot Distributions
 ```python
 from gtfs_segments import plot_hist
 plot_hist(segments_df, max_spacing = 1200)
 ```
-<a>
+<a align='center'>>
     <img src="images/hist.jpg" alt="histogram" width=800>
-</a>
+</a><br clear='center'/>  
 
 Optionally save figure using
 ```python
@@ -211,9 +210,9 @@ plot_hist(segments_df,file_path = "spacings_hist.png",save_fig = True)
 from gtfs_segments import summary_stats
 summary_stats(segments_df,max_spacing = 3000,export = True,file_path = "summary.csv")
 ```
-<a>
+<a align ='center'>
     <img src="images/summary.jpg" alt="histogram" width=400>
-</a>
+</a><br clear='center'/>  
 
 
 ## Download Data
