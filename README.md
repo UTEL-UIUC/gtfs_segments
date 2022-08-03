@@ -181,6 +181,7 @@ segments_df
 <a align='center'>
     <img src="images/data.jpg" alt="data" width=800>
 </a><br clear='center'/>  
+
 ## Visualize Spacings
 
 ```python
