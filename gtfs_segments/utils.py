@@ -127,9 +127,9 @@ def export_segments(df,file_path,output_format, geometry = True):
     """
     ## Output to GeoJSON
     if output_format == 'geojson':
-        df.to_file(file_path+'.json', driver="GeoJSON")
+        df.to_file(file_path+'.geojson', driver="GeoJSON")
     elif output_format == 'csv':
-        s_df = df[['route_id','segment_id','stop_id1','stop_id2','distance','traversals','geometry']].copy()
+        s_df = df[['segment_id','route_id','traversals','direction_id','distance','stop_id1','stop_id2','geometry']].copy()
         geom_list =  s_df.geometry.apply(lambda g: np.array(g.coords))
         s_df['start_point'] = [Point(g[0]).wkt for g in geom_list]
         s_df['end_point'] = [Point(g[-1]).wkt for g in geom_list]
@@ -137,12 +137,12 @@ def export_segments(df,file_path,output_format, geometry = True):
         s_df['start_lat'] = [g[0][1] for g in geom_list]
         s_df['end_lon'] = [g[-1][0] for g in geom_list]
         s_df['end_lat'] = [g[-1][1] for g in geom_list]
-        sg_df = s_df[['route_id','segment_id','stop_id1','stop_id2','distance','traversals','start_point','end_point','geometry']]
+        sg_df = s_df[['segment_id','route_id','direction_id','traversals','distance','stop_id1','stop_id2','start_point','end_point','geometry']]
         if geometry == True:
             ## Output With LS
             sg_df.to_csv(file_path+'.csv',index = False)
         else:
-            d_df = s_df[['route_id','segment_id','stop_id1','stop_id2','start_lat','start_lon','end_lat','end_lon','distance','traversals']]
+            d_df = s_df[['segment_id','route_id','traversals','direction_id','distance','stop_id1','stop_id2','start_lat','start_lon','end_lat','end_lon']]
             ## Output without LS
             d_df.to_csv(file_path+'.csv',index = False)
 

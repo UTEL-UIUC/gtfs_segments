@@ -260,7 +260,7 @@ Distributed under the MIT License. See `LICENSE.txt` for more information.
 If you use gtfs-segments in your research please use the following BibTeX entry:
 
 ```
-@Misc{gtfs,
+@Misc{gtfs_segments,
     author =       {Devunuri, Saipraneeth},
     title =        {gtfs-segments - A fast and efficient library to generate bus stop spacings},
     howpublished = {Github},

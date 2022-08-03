@@ -92,8 +92,19 @@ def filter_stop_df(stop_df,trip_ids):
       trip_ids: a list of trip_ids that you want to filter the stop_df by
     
     Returns:
-      A dataframe with the trip_id, stop_id, and stop_sequence for the trips in the trip_ids list.
+      A dataframe with the trip_id, s top_id, and stop_sequence for the trips in the trip_ids list.
     """
+    stop_df = stop_df.sort_values(['trip_id','stop_sequence']).reset_index(drop=True)
+    stop_df['main_index'] = stop_df.index
+    stop_df_grp = stop_df.groupby('trip_id')
+    drop_inds = []
+    if "pickup_type" in stop_df.columns:
+      grp_f = stop_df_grp.first()
+      drop_inds.append(grp_f.loc[grp_f['pickup_type'] == 1,'main_index'])
+    if "drop_off_type" in stop_df.columns:
+      grp_l = stop_df_grp.last()
+      drop_inds.append(grp_l.loc[grp_f['drop_off_type'] == 1,'main_index'])
+    stop_df = stop_df[~stop_df['main_index'].isin(drop_inds)].reset_index(drop=True)
     stop_df = stop_df[['trip_id','stop_id','stop_sequence']]
     stop_df = stop_df[stop_df.trip_id.isin(trip_ids)].reset_index(drop=True)
     stop_df = stop_df.sort_values(['trip_id','stop_sequence']).reset_index(drop=True)
@@ -139,7 +150,7 @@ def process_feed(feed):
     stop_df = make_gdf(stop_df)    
     stop_df['distance'] = stop_df.set_geometry('geometry').to_crs(epsg_zone).geometry.length
     stop_df = make_segments_unique(stop_df)
-    subset_list = np.array(['segment_id','route_id','traversals','distance','stop_id1','stop_id2','geometry'])
+    subset_list = np.array(['segment_id','route_id','direction_id','traversals','distance','stop_id1','stop_id2','geometry'])
     col_subset = subset_list[np.in1d(subset_list,stop_df.columns)]
     stop_df = stop_df[col_subset]
     return make_gdf(stop_df)
