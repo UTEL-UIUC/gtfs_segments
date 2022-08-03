@@ -95,7 +95,38 @@ def get_zone_epsg(stop_df):
     zone = utm.from_latlon(lat, lon)
     return code(zone,lat)
 
-def view_spacings(df,basemap=False,level = "whole", axis ='on' ,**kwargs):
+def view_spacings(df,basemap=False,show_stops = False,level = "whole", show_axis ='on' ,**kwargs):
+  """
+  Plots the whole bus network. You can plot a specific route, segment, or direction instead of whole network.
+  
+  Args:
+    df: the dataframe containing the spacings
+    basemap: if True, adds a basemap to the plot. Defaults to False
+    show_stops: if True, will show the stops on the map. Defaults to False
+    level: "whole" or "segment" or "route". Defaults to whole
+    show_axis: Plot axis option: 'on' or 'off'. Defaults to on.
+  
+  Returns:
+    A figure object
+  """
+  fig,ax = plt.subplots(figsize = (10,10),dpi = 100)
+  if "direction" in kwargs.keys():
+      df = df[df.direction_id == kwargs['direction']].copy()
+  if level == "whole": 
+      ax = df.plot(ax = ax,color='y',linewidth = 0.50,edgecolor='black',label='Bus network',zorder = 1)
+  if "route" in kwargs.keys():
+      df = df[df.route_id == kwargs['route']].copy()
+      ax = df.plot(ax =ax,linewidth = 1.5, color = 'dodgerblue', label = 'Route ID:'+kwargs['route_id'],zorder = 2)
+  if "segment" in kwargs.keys():
+      ax = df[df.segment_id == kwargs['segment']].plot(ax =ax, color = 'brown', label = 'Segment ID:'+kwargs['segment'])
+  if basemap:
+      cx.add_basemap(ax,crs=df.crs)
+  plt.axis(show_axis)
+  plt.legend()
+  plt.close(fig)
+  return fig
+  
+def view_spacings(df,basemap=False,show_stops = False,level = "whole", axis ='on' ,**kwargs):
     """
     > This function plots the spacings of the bus network, or a specific route, or a specific segment
     
@@ -105,16 +136,27 @@ def view_spacings(df,basemap=False,level = "whole", axis ='on' ,**kwargs):
       level: "whole" or "route" or "segment". Defaults to whole
       axis: 'on' or 'off'. Defaults to on
     """
-    fig,ax = plt.subplots(figsize = (8,6),dpi = 200)
-    if level == "whole": 
-        ax = df.plot(ax = ax,color='black',label='Bus network')
+    fig,ax = plt.subplots(figsize = (10,10),dpi = 100)
+    if "direction" in kwargs.keys():
+        df = df[df.direction_id == kwargs['direction']].copy()
+    if level == "whole":
+        ax = df.plot(ax = ax,color='y',linewidth = 0.50,edgecolor='black',label='SFMTA Bus network',zorder = 1)
     if "route" in kwargs.keys():
-        ax = df[df.route_id == kwargs['route']].plot(ax =ax, color = 'blue', label = kwargs['route'])
+        df = df[df.route_id == kwargs['route']].copy()
+        ax = df.plot(ax =ax,linewidth = 1.5, color = 'dodgerblue', label = 'DART Route - 383',zorder = 2)
+        ## K Ingleside Bus ## DART Route - 383
     if "segment" in kwargs.keys():
-        ax = df[df.segment_id == kwargs['segment']].plot(ax =ax, color = 'brown', label = kwargs['segment'])
+        df = df[df.segment_id == kwargs['segment']].copy()
+        ax = df.plot(ax =ax,linewidth = 2,color = 'red', label = 'segment_id : '+str(kwargs['segment']),zorder = 3)
+    if show_stops:
+        geo_series = df.geometry.apply(lambda line : Point(line.coords[0]))
+        geo_series = pd.concat([geo_series,gpd.GeoSeries(Point(df.iloc[-1].geometry.coords[-1]))])
+#         geo_series.set_crs(crs = df.crs).plot(ax =ax, label = 'Bus stops',color='#ED811F',edgecolor = '#B2222F',linewidth = 1.5, markersize = 25, alpha=0.95,zorder = 10)
+        geo_series.set_crs(crs = df.crs).plot(ax =ax,color='white',edgecolor = '#3700b3',linewidth = 2, markersize = 50, alpha=0.95,zorder = 10)
+
     if basemap:
-        cx.add_basemap(ax,crs=df.crs)
+        cx.add_basemap(ax,crs=df.crs,source=cx.providers.Stamen.TonerLite)
     plt.axis(axis)
-    plt.legend()
+    plt.legend(loc = 'lower right')
     plt.show()
     return fig
