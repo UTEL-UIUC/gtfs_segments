@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-__version__ = '0.0.4' 
+__version__ = '0.0.5' 
 DESCRIPTION = 'GTFS segments'
 with open("README.md", "r") as fh:
     LONG_DESCRIPTION = fh.read()

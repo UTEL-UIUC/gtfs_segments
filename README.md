@@ -16,7 +16,7 @@
 <br />
 <div align="center">
   <a href="https://github.com/UTEL-UIUC/gtfs_segments">
-    <img src="images/logo.jpg" alt="Logo" width=200 height=200>
+    <img src="https://raw.githubusercontent.com/UTEL-UIUC/gtfs_segments/main/images/logo.jpg" alt="Logo" width=200 height=200>
   </a>
 
 <h3 align="center">GTFS Segments</h3>
@@ -82,13 +82,27 @@ Transit agencies use the General Transit Feed Specification (GTFS) to publish tr
 
 ## Prerequisites
 The major dependencies of this library are the following packages. 
-* numpy
-* shapely
-* pandas
-* geopandas
-* partridge
-* matplotlib
-* contextily
+<table>
+<tr>
+</tr>
+<tr>
+<td>
+<ul>
+  <li>numpy</li>
+  <li>shapely</li>
+  <li>pandas</li>
+  <li>geopandas</li>
+</ul>
+</td>
+<td>
+<ul>
+  <li>partridge</li>
+  <li>matplotlib</li>
+  <li>contextily</li>
+</ul>
+</td>
+</tr>
+</table>
 
 The detailed list of package dependencies can be found in `requirements.txt`
 
@@ -151,7 +165,7 @@ sources_df.head()
 ```
 
 <div align='center'><a>
-    <img src="images/sources.jpg" alt="sources" width=800>
+    <img src="https://raw.githubusercontent.com/UTEL-UIUC/gtfs_segments/main/images/sources.jpg" alt="sources" width=800>
 </a></div>  
 
 ### Fetch source by name/provider/state
@@ -161,7 +175,7 @@ sources_df = fetch_gtfs_source(place ='Chicago')
 sources_df
 ```
 <div align='center'><a>
-    <img src="images/sources_chicago.jpg" alt="sources" width=800>
+    <img src="https://raw.githubusercontent.com/UTEL-UIUC/gtfs_segments/main/images/sources_chicago.jpg" alt="sources" width=800>
 </a></div>   
 
 ## Automated Download  
@@ -180,7 +194,7 @@ segments_df = get_gtfs_segments("path_to_gtfs_zip_file")
 segments_df
 ```
 <div align='center'><a>
-    <img src="images/data.jpg" alt="data" width=800>
+    <img src="https://raw.githubusercontent.com/UTEL-UIUC/gtfs_segments/main/images/data.jpg" alt="data" width=800>
 </a></div>  
 
 ## Visualize Spacings
@@ -190,7 +204,7 @@ from gtfs_segments import view_spacings
 view_spacings(segments_df,route = '18131',segment = '6294-6290-1',basemap=True)
 ```
 <div align='center'><a>
-    <img src="images/visualize.jpg" alt="data" width=600>
+    <img src="https://raw.githubusercontent.com/UTEL-UIUC/gtfs_segments/main/images/visualize.jpg" alt="data" width=600>
 </a></div>  
 
 ## Plot Distributions
@@ -199,7 +213,7 @@ from gtfs_segments import plot_hist
 plot_hist(segments_df, max_spacing = 1200)
 ```
 <div align='center'><a>
-    <img src="images/hist.jpg" alt="histogram" width=800>
+    <img src="https://raw.githubusercontent.com/UTEL-UIUC/gtfs_segments/main/images/hist.jpg" alt="histogram" width=800>
 </a></div>  
 
 Optionally save figure using
@@ -214,7 +228,7 @@ summary_stats(segments_df,max_spacing = 3000,export = True,file_path = "summary.
 ```
 
 <div align='center'><a>
-    <img src="images/summary.jpg" alt="histogram" width=400>
+    <img src="https://raw.githubusercontent.com/UTEL-UIUC/gtfs_segments/main/images/summary.jpg" alt="histogram" width=400>
 </a></div>  
 
 
