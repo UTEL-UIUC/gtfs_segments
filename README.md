@@ -74,7 +74,12 @@
   <img src="images/example.jpg" alt="map" width="400"/>
 </div> -->
 
-Transit agencies use the General Transit Feed Specification (GTFS) to publish transit data. More and more cities across the globe are adopting this GTFS format to represent their transit network. The GTFS feed can be downloaded from [@transitfeeds](https://transitfeeds.com/) and [@mobility data](https://mobilitydata.org/). The GTFS segments is a concise representation of GTFS files removing unnecessary repetitions in the data. We do that by considering the services offered only the busiest day(in the data) and representing data in the form of segements. 
+ The `gtfs-segments` is a Python package that represents GTFS data for **buses** in a concise tabular manner using segments. The distribution of bus stop spacings can be viewed by generating histograms. The stop spacings can be visualized at network, route or segment level. The segments data can be exported to well know formats such as `.csv` or `.geojson` for further analysis. Additionally, the package provides commands to download latest data from [@mobility data](https://mobilitydata.org/) sources.
+
+The package condenses the raw GTFS data by considering the services offered only the `busiest day`(in the data). More discussion on the interpretation of different weightings for stop spacings,  and the process in which the package condenses information can be seen in our [arXiv paper](https://arxiv.org/abs/2208.04394). The usage of the package is detailed in [documentation](https://utel-uiuc.github.io/gtfs_segments_docs/)
+
+ 
+
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 <!-- GETTING STARTED -->
@@ -194,7 +199,7 @@ segments_df = get_gtfs_segments("path_to_gtfs_zip_file")
 segments_df
 ```
 <div align='center'><a>
-    <img src="https://raw.githubusercontent.com/UTEL-UIUC/gtfs_segments/main/images/data.jpg" alt="data" width=800>
+    <img src="https://raw.githubusercontent.com/UTEL-UIUC/gtfs_segments/main/images/data.jpg" alt="data" width=600>
 </a></div>  
 
 ## Visualize Spacings
@@ -204,7 +209,7 @@ from gtfs_segments import view_spacings
 view_spacings(segments_df,route = '18131',segment = '6294-6290-1',basemap=True)
 ```
 <div align='center'><a>
-    <img src="https://raw.githubusercontent.com/UTEL-UIUC/gtfs_segments/main/images/visualize.jpg" alt="data" width=600>
+    <img src="https://raw.githubusercontent.com/UTEL-UIUC/gtfs_segments/main/images/visualize.jpg" alt="data" width=400>
 </a></div>  
 
 ## Plot Distributions
@@ -213,7 +218,7 @@ from gtfs_segments import plot_hist
 plot_hist(segments_df, max_spacing = 1200)
 ```
 <div align='center'><a>
-    <img src="https://raw.githubusercontent.com/UTEL-UIUC/gtfs_segments/main/images/hist.jpg" alt="histogram" width=800>
+    <img src="https://raw.githubusercontent.com/UTEL-UIUC/gtfs_segments/main/images/hist.jpg" alt="histogram" width=400>
 </a></div>  
 
 Optionally save figure using
@@ -228,11 +233,11 @@ summary_stats(segments_df,max_spacing = 3000,export = True,file_path = "summary.
 ```
 
 <div align='center'><a>
-    <img src="https://raw.githubusercontent.com/UTEL-UIUC/gtfs_segments/main/images/summary.jpg" alt="histogram" width=400>
+    <img src="https://raw.githubusercontent.com/UTEL-UIUC/gtfs_segments/main/images/summary.jpg" alt="histogram" width=300>
 </a></div>  
 
 
-## Download Data
+## Download Segments Data
 Download the data as either `.csv` or `.geojson`
 ```python
 from gtfs_segments import export_segments
@@ -246,17 +251,14 @@ export_segments(segments_df,'filename', output_format ='csv',geometry = False)
 
 
 <!-- ROADMAP -->
-<!-- ## Roadmap
+# Roadmap
 
-- [ ] Feature 1
-- [ ] Feature 2
-- [ ] Feature 3
-    - [ ] Nested Feature
+- [ ] Add `.ipynb` examples
+- [ ] Visualize catchment areas for stops
 
 See the [open issues](https://github.com/UTEL-UIUC/gtfs_segments/issues) for a full list of proposed features (and known issues).
 
 <p align="right">(<a href="#top">back to top</a>)</p>
- -->
 
 
 
@@ -268,7 +270,7 @@ See the [open issues](https://github.com/UTEL-UIUC/gtfs_segments/issues) for a f
 
 Distributed under the MIT License. See `LICENSE.txt` for more information.
 
-<p align="right">(<a href="#top">back to top</a>)</p>
+<!-- <p align="right">(<a href="#top">back to top</a>)</p> -->
 
 ## Citing gtfs-segments
 If you use gtfs-segments in your research please use the following BibTeX entry:
@@ -282,6 +284,7 @@ If you use gtfs-segments in your research please use the following BibTeX entry:
     url =          {https://github.com/UTEL-UIUC/gtfs_segments}
 }
 ```
+<p align="right">(<a href="#top">back to top</a>)</p>
 
 <!-- CONTRIBUTING -->
 # Contributing
@@ -297,7 +300,6 @@ Don't forget to give the project a star! Thanks again!
 4. Push to the Branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
-<p align="right">(<a href="#top">back to top</a>)</p>
 
 
 <!-- CONTACT -->
