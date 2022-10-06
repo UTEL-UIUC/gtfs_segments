@@ -408,5 +408,5 @@ def get_route_stats(feed):
         ret_dict.update(get_stop_spacing(df_route,ret_dict))
         route_dict[route] =  ret_dict
     df = pd.DataFrame.from_dict(route_dict).T
-    # df = df.insert(0,'route_id',df.index)
+    df.insert(0,'route_id',df.index)
     return df.reset_index(drop =True)

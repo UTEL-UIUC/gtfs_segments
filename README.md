@@ -237,6 +237,17 @@ summary_stats(segments_df,max_spacing = 3000,export = True,file_path = "summary.
 </a></div>  
 
 
+## Get Route Summary Stats
+```python
+from gtfs_segments import get_route_stats
+get_route_stats(chicago_feed)
+```
+
+<div align='center'><a>
+    <img src="https://raw.githubusercontent.com/UTEL-UIUC/gtfs_segments/main/images/route_stats.jpg" alt="histogram" width=300>
+</a></div>
+
+
 ## Download Segments Data
 Download the data as either `.csv` or `.geojson`
 ```python
