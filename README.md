@@ -239,8 +239,9 @@ summary_stats(segments_df,max_spacing = 3000,export = True,file_path = "summary.
 
 ## Get Route Summary Stats
 ```python
-from gtfs_segments import get_route_stats
-get_route_stats(chicago_feed)
+from gtfs_segments import get_route_stats,get_bus_feed
+_,feed = get_bus_feed('path_to_gtfs.zip')
+get_route_stats(feed)
 ```
 
 <div align='center'><a>
