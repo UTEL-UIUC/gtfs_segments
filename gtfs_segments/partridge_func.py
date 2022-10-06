@@ -1,6 +1,6 @@
 import partridge as ptg
 
-def ptg_read_file(path):
+def get_bus_feed(path):
     """
     It reads the gtfs file and returns the busiest day and the feed object
     

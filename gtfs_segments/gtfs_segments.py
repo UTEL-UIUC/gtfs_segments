@@ -1,5 +1,5 @@
 import geopandas as gpd
-from .partridge_func import ptg_read_file
+from .partridge_func import get_bus_feed
 from .geom_utils import *
 from .utils import *
 from .mobility import *
@@ -183,7 +183,7 @@ def get_gtfs_segments(path):
     Returns:
       A list of segments.
     """
-    bday ,feed = ptg_read_file(path)
+    bday ,feed = get_bus_feed(path)
     return process_feed(feed)
 
 def pipeline_gtfs(filename,url,bounds,max_spacing):
@@ -203,7 +203,7 @@ def pipeline_gtfs(filename,url,bounds,max_spacing):
     
     Next, we download the GTFS file and save it to the folder we just created. 
     
-    Then, we read the GTFS file using the `ptg_read_file` function. 
+    Then, we read the GTFS file using the `get_bus_feed` function. 
     
     Args:
       filename: the name of the file you want to save the output to
@@ -219,7 +219,7 @@ def pipeline_gtfs(filename,url,bounds,max_spacing):
     gtfs_file_loc = download_write_file(url,folder_path)
     
     ## read file using GTFS Fucntions
-    busisest_day, feed = ptg_read_file(gtfs_file_loc)
+    busisest_day, feed = get_bus_feed(gtfs_file_loc)
     ## Remove Null entries
     message =  inspect_feed(feed)
     if message != True:

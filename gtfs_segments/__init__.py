@@ -20,6 +20,10 @@ from .mobility import(
 from .geom_utils import(
     view_spacings
 )
+
+from .route_stats import(
+    get_route_stats
+)
 __all__ = [
     "__version__",
     "get_gtfs_segments",
@@ -32,5 +36,6 @@ __all__ = [
     "process",
     "view_spacings",
     "summary_stats_mobility",
-    "download_latest_data"
+    "download_latest_data",
+    "get_route_stats"
 ]
