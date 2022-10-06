@@ -245,7 +245,7 @@ get_route_stats(feed)
 ```
 
 <div align='center'><a>
-    <img src="https://raw.githubusercontent.com/UTEL-UIUC/gtfs_segments/main/images/route_stats.JPG" alt="histogram" width=600>
+    <img src="https://raw.githubusercontent.com/UTEL-UIUC/gtfs_segments/main/images/route_stats.JPG" alt="histogram" width=800>
 </a></div>
 
 
