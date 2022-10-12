@@ -271,7 +271,7 @@ def average_active_buses(df_dir):
     df = get_route_grp(df_dir)
     start_time = int(min(df.start_time))
     end_time = int(max(df.end_time))
-    for time in range(start_time,end_time-15*60,5*60):
+    for time in range(start_time,end_time,5*60):
         no_buses = get_trips_len(df,time)
         n_buses.append(no_buses)
     n_buses = np.array(n_buses)
