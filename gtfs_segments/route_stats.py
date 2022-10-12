@@ -271,7 +271,7 @@ def average_active_buses(df_dir):
     df = get_route_grp(df_dir)
     start_time = int(min(df.start_time))
     end_time = int(max(df.end_time))
-    for time in range(start_time+3600,end_time-3600,10*60):
+    for time in range(start_time,end_time-15*60,5*60):
         no_buses = get_trips_len(df,time)
         n_buses.append(no_buses)
     n_buses = np.array(n_buses)
@@ -368,5 +368,4 @@ def get_route_stats(feed):
         ret_dict.update(get_stop_spacing(df_dir,ret_dict))
         route_list.append(ret_dict)
     df = pd.DataFrame.from_records(route_list)
-    # df.insert(0,'route_id',df.index)
     return df.reset_index(drop =True)
