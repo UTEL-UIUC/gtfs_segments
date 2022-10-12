@@ -141,7 +141,7 @@ def get_route_grp(route_df):
     col_subset = col_filter[np.in1d(col_filter,route_df_grp.columns)]
     return route_df_grp[col_subset]
 
-def get_all_peak_times(df):
+def get_all_peak_times(df_dir):
     """
     It takes a dataframe of bus trips and returns the peak number of buses and the time of the peak
     
@@ -152,25 +152,17 @@ def get_all_peak_times(df):
       A dictionary with the peak number of buses in each direction, and the peak times.
     """
     best = 0
-    best_0 = 0 
-    best_1 = 0 
     peak_times = []
-    df = get_route_grp(df)
+    df = get_route_grp(df_dir)
     start_time = int(min(df.start_time))
     end_time = int(max(df.end_time))
     for time in range(start_time,end_time,60):
         trips_df = get_trips(df,time)
         no_buses = get_trips_len(df,time)
-        no_buses_0 = len(trips_df[trips_df.direction_id == 0])
-        no_buses_1 = len(trips_df[trips_df.direction_id == 1])
         if no_buses == best:
             peak_times.append(time)
         if no_buses > best:
             peak_times = [time]
-        if no_buses_0 > best_0:    
-            best_0 = no_buses_0
-        if no_buses_1 > best_1:    
-            best_1 = no_buses_1
     peak_time_condensed = np.array([str(timedelta(seconds = peak_times[0]))],dtype='object')
     for i,time in enumerate(peak_times):
         if i > 0:
@@ -183,7 +175,7 @@ def get_all_peak_times(df):
             else:
                 if i == len(peak_times) -1:
                     peak_time_condensed[-1] =  str(peak_time_condensed[-1] + '-' + str(timedelta(seconds = peak_times[i])))
-    return {"peak_no_buses dir 0":best_0,"peak_no_buses dir 1":best_1,"peak_buses":peak_time_condensed}
+    return {"peak_buses":peak_time_condensed}
 
 def get_cmap_string(palette, domain):
     """
@@ -206,7 +198,7 @@ def get_cmap_string(palette, domain):
 
     return cmap_out
 
-def get_average_headway(df_route):
+def get_average_headway(df_dir):
     """
     For each route, find the shape with the most trips, then find the stop with the most trips on that
     shape, then find the average headway for that stop
@@ -217,24 +209,15 @@ def get_average_headway(df_route):
     Returns:
       A dictionary with the average headway for each direction.
     """
-    shapes = df_route.shape_id.unique()
-    df_dir_0 = df_route[df_route.direction_id == 0]
-    df_dir_1 = df_route[df_route.direction_id == 1]
     hdw_0 = np.array([0])
-    hdw_1 = np.array([0])
-    if len(df_dir_0) > 1:
-        shape_0 = df_dir_0.groupby('shape_id').count().trip_id.idxmax()
-        df_dir_0 = df_dir_0[df_dir_0.shape_id == shape_0]
-        stop_id0 = df_dir_0.stop_id.unique()[0]
-        hdw_0 = df_dir_0[df_dir_0.stop_id == stop_id0].sort_values(['arrival_time']).arrival_time.astype(int).diff()
-    if len(df_dir_1) > 1:
-        shape_1 = df_dir_1.groupby('shape_id').count().trip_id.idxmax()
-        df_dir_1 = df_dir_1[df_dir_1.shape_id == shape_1]
-        stop_id1 = df_dir_1.stop_id.unique()[0]
-        hdw_1 = df_dir_1[df_dir_1.stop_id == stop_id1].sort_values(['arrival_time']).arrival_time.astype(int).diff()
-    return {'headway dir 0' : np.round(hdw_0[hdw_0 <= 3*60*60].mean()/60,2), 'headway dir 1' : np.round(hdw_1[hdw_1 <= 3*60*60].mean()/60,2)}
+    if len(df_dir) > 1:
+        shape_0 = df_dir.groupby('shape_id').count().trip_id.idxmax()
+        df_dir = df_dir[df_dir.shape_id == shape_0]
+        stop_id0 = df_dir.stop_id.unique()[0]
+        hdw_0 = df_dir[df_dir.stop_id == stop_id0].sort_values(['arrival_time']).arrival_time.astype(int).diff()
+    return {'headway' : np.round(hdw_0[hdw_0 <= 3*60*60].mean()/3600,2)}
 
-def get_average_speed(df_route, route_dict):
+def get_average_speed(df_dir, route_dict):
     """
     It takes a dataframe of a route and a dictionary of route information and returns a dictionary of
     average speeds for each direction
@@ -246,16 +229,12 @@ def get_average_speed(df_route, route_dict):
     Returns:
       A dictionary with the average speed for each direction.
     """
-    df_dir_0 = df_route[df_route.direction_id == 0]
-    df_dir_1 = df_route[df_route.direction_id == 1]
     ret_dict = {}
-    if len(df_dir_0) > 1:
-        ret_dict['average speed dir 0'] = np.round(route_dict['route length 0'] / route_dict['total time dir 0'],2)
-    if len(df_dir_1) > 1:
-        ret_dict['average speed dir 1'] = np.round(route_dict['route length 1'] / route_dict['total time dir 1'],2)
+    if len(df_dir) > 1:
+        ret_dict['average speed'] = np.round(route_dict['route length'] / route_dict['total time'],2)
     return ret_dict
 
-def get_route_time(df_route):
+def get_route_time(df_dir):
     """
     For each route, find the shape_id that has the most trips, then find the trip_id that has that
     shape_id, then find the arrival_time of the first and last stop of that trip_id, then subtract the
@@ -267,21 +246,13 @@ def get_route_time(df_route):
     Returns:
       A dictionary with the total time for each direction.
     """
-    df_dir_0 = df_route[df_route.direction_id == 0]
-    df_dir_1 = df_route[df_route.direction_id == 1]
-    time_0 = 0
-    time_1 = 0
-    if len(df_dir_0) > 1:
-        shape_0 =df_dir_0.groupby('shape_id').count().trip_id.idxmax()
-        trip_0 = df_route[df_route.trip_id == df_route[df_route.shape_id == shape_0].trip_id.unique()[0]]
+    if len(df_dir) > 1:
+        shape_0 =df_dir.groupby('shape_id').count().trip_id.idxmax()
+        trip_0 = df_dir[df_dir.trip_id == df_dir[df_dir.shape_id == shape_0].trip_id.unique()[0]]
         time_0 = trip_0.arrival_time.max() - trip_0.arrival_time.min()
-    if len(df_dir_1) > 1:
-        shape_1 = df_dir_1.groupby('shape_id').count().trip_id.idxmax()
-        trip_1 = df_route[df_route.trip_id == df_route[df_route.shape_id == shape_1].trip_id.unique()[0]]
-        time_1 = trip_1.arrival_time.max() - trip_1.arrival_time.min()
-    return {'total time dir 0' : np.round(time_0/3600,2) if time_0 !=0 else 0 , 'total time dir 1' : np.round(time_1/3600,2) if time_1 !=0 else 0}
+    return {'total time' : np.round(time_0/3600,2) if time_0 !=0 else 0}
 
-def get_min_spacing(df_route,route_dict):
+def get_bus_spacing(df_route,route_dict):
     """
     It takes a dataframe of a route and a dictionary of route information and returns a dictionary of
     the minimum spacing between buses on the route
@@ -293,24 +264,20 @@ def get_min_spacing(df_route,route_dict):
     Returns:
       A dictionary with the keys 'spacing dir 0' and 'spacing dir 1'
     """
-    n_bus0,n_bus1 =  route_dict['peak_no_buses dir 0'],route_dict['peak_no_buses dir 1']
-    df_dir_0 = df_route[df_route.direction_id == 0]
-    df_dir_1 = df_route[df_route.direction_id == 1]
-    spc_0 = 0
-    spc_1 = 0
-    
-    count = 0
-    if len(df_dir_0) > 1:
-        shape_0 =df_dir_0.groupby('shape_id').count().trip_id.idxmax()
-        spc_0 = route_dict['route length 0']
-        count += 1
-    if len(df_dir_1) > 1:
-        shape_1 = df_dir_1.groupby('shape_id').count().trip_id.idxmax()
-        spc_1 = route_dict['route length 1']
-        count += 1
-    return {'spacing dir 0' : np.round((spc_0/(n_bus0)),2) if (spc_0 !=0 and n_bus0 != 0) else 0 , 'spacing dir 1' : np.round((spc_1/(n_bus1)),2) if (spc_1 !=0 and n_bus1 != 0)else 0}
+    return {'spacing' : np.round(route_dict['route length']/route_dict['n bus avg'],3)}
+  
+def average_active_buses(df_dir):
+    n_buses = []
+    df = get_route_grp(df_dir)
+    start_time = int(min(df.start_time))
+    end_time = int(max(df.end_time))
+    for time in range(start_time+3600,end_time-3600,10*60):
+        no_buses = get_trips_len(df,time)
+        n_buses.append(no_buses)
+    n_buses = np.array(n_buses)
+    return {'n bus avg':np.round(np.mean(n_buses[n_buses > 0]),3)}
 
-def get_stop_spacing(df_route,route_dict):
+def get_stop_spacing(df_dir,route_dict):
     """
     For each route, find the shape with the most trips, and then find the number of stops on that trip.
     Then divide the route length by the number of stops to get the stop spacing
@@ -323,21 +290,15 @@ def get_stop_spacing(df_route,route_dict):
     Returns:
       A dictionary with the stop spacing for each direction.
     """
-    df_dir_0 = df_route[df_route.direction_id == 0]
-    df_dir_1 = df_route[df_route.direction_id == 1]
     spc_0 = 0
     spc_1 = 0
-    if len(df_dir_0) > 1:
-        shape_0 =df_dir_0.groupby('shape_id').count().trip_id.idxmax()
-        n_stops = len(df_route[df_route.trip_id == df_route[df_route.shape_id == shape_0].trip_id.unique()[0]])
-        spc_0 = route_dict['route length 0']/n_stops
-    if len(df_dir_1) > 1:
-        shape_1 = df_dir_1.groupby('shape_id').count().trip_id.idxmax()
-        n_stops = len(df_route[df_route.trip_id == df_route[df_route.shape_id == shape_1].trip_id.unique()[0]])
-        spc_1 =  route_dict['route length 1']/n_stops
-    return {'stop spacing dir 0' : np.round(spc_0,2) if spc_0 !=0 else 0 , 'stop spacing dir 1' : np.round(spc_1,2) if spc_1 !=0 else 0}
+    if len(df_dir) > 1:
+        shape_0 =df_dir.groupby('shape_id').count().trip_id.idxmax()
+        n_stops = len(df_dir[df_dir.trip_id == df_dir[df_dir.shape_id == shape_0].trip_id.unique()[0]])
+        spc_0 = route_dict['route length']/n_stops
+    return {'stop spacing' : np.round(spc_0,2) if spc_0 !=0 else 0}
 
-def get_route_lens(df_route, df_shapes):
+def get_route_lens(df_dir, df_shapes):
     """
     It takes a dataframe of trips for a given route and a dataframe of shapes for a given route, and
     returns a dictionary with the length of the route in each direction
@@ -350,17 +311,11 @@ def get_route_lens(df_route, df_shapes):
       A dictionary with the route lengths for each direction.
     """
     epsg_zone = get_zone_epsg_from_ls(df_shapes.iloc[0]['geometry'])
-    df_dir_0 = df_route[df_route.direction_id == 0]
-    df_dir_1 = df_route[df_route.direction_id == 1]
     len_0 = 0
-    len_1 = 0
-    if len(df_dir_0) > 1:
-        shape_0 = df_dir_0.groupby('shape_id').count().trip_id.idxmax()
+    if len(df_dir) > 1:
+        shape_0 = df_dir.groupby('shape_id').count().trip_id.idxmax()
         len_0 =  df_shapes.loc[df_shapes.shape_id == shape_0].to_crs(epsg_zone).geometry.length.iloc[0]
-    if len(df_dir_1) > 1:
-        shape_1 = df_dir_1.groupby('shape_id').count().trip_id.idxmax()
-        len_1 =  df_shapes.loc[df_shapes.shape_id == shape_1].to_crs(epsg_zone).geometry.length.iloc[0]
-    return {'route length 0' : np.round(len_0/1000,2), 'route length 1' : np.round(len_1/1000,2)}
+    return {'route length' : np.round(len_0/1000,2)}
 
 def get_route_stats(feed):
     """
@@ -395,18 +350,23 @@ def get_route_stats(feed):
     """
     df_merge = feed.stop_times.merge(feed.trips, how='left',on='trip_id')
     df_shapes = feed.shapes
-    route_dict = {}
+    route_list = []
     for route in df_merge.route_id.unique():
+      df_route = df_merge[df_merge.route_id == route]
+      for direction in  df_route.direction_id.unique():
+        df_dir = df_route[df_route.direction_id == direction]
         ret_dict = {}
-        df_route = df_merge[df_merge.route_id == route]
-        ret_dict.update(get_route_lens(df_route,df_shapes))
-        ret_dict.update(get_route_time(df_route))
-        ret_dict.update(get_average_headway(df_route))
-        ret_dict.update(get_all_peak_times(df_route))
-        ret_dict.update(get_average_speed(df_route,ret_dict))
-        ret_dict.update(get_min_spacing(df_route,ret_dict))
-        ret_dict.update(get_stop_spacing(df_route,ret_dict))
-        route_dict[route] =  ret_dict
-    df = pd.DataFrame.from_dict(route_dict).T
-    df.insert(0,'route_id',df.index)
+        ret_dict['route'] = route
+        ret_dict['direction'] = direction
+        ret_dict.update(get_route_lens(df_dir,df_shapes))
+        ret_dict.update(get_route_time(df_dir))
+        ret_dict.update(get_average_headway(df_dir))
+        ret_dict.update(get_all_peak_times(df_dir))
+        ret_dict.update(get_average_speed(df_dir,ret_dict))
+        ret_dict.update(average_active_buses(df_dir))
+        ret_dict.update(get_bus_spacing(df_dir,ret_dict))
+        ret_dict.update(get_stop_spacing(df_dir,ret_dict))
+        route_list.append(ret_dict)
+    df = pd.DataFrame.from_records(route_list)
+    # df.insert(0,'route_id',df.index)
     return df.reset_index(drop =True)

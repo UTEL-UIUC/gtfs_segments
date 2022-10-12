@@ -1,5 +1,6 @@
 import utm
 import numpy as np
+import pandas as pd
 import geopandas as gpd
 from shapely.ops import split
 from shapely.geometry import Point
