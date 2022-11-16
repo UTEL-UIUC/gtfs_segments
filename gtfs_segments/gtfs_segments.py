@@ -125,7 +125,7 @@ def merge_stop_geom(stop_df,stop_loc_df):
     stop_df = gpd.GeoDataFrame(stop_df,geometry='start')
     return make_gdf(stop_df)
     
-def process_feed(feed):
+def process_feed(feed,max_spacing = None):
     """
     It takes a GTFS feed, merges the trip and shape data, filters the stop_times data to only include
     the trips that are in the feed, merges the stop_times data with the stop data, creates a segment for
@@ -153,6 +153,8 @@ def process_feed(feed):
     subset_list = np.array(['segment_id','route_id','direction_id','traversals','distance','stop_id1','stop_id2','geometry'])
     col_subset = subset_list[np.in1d(subset_list,stop_df.columns)]
     stop_df = stop_df[col_subset]
+    if max_spacing != None:
+        stop_df = stop_df[stop_df['distance'] <= max_spacing]
     return make_gdf(stop_df)
 
 def inspect_feed(feed):
@@ -173,7 +175,7 @@ def inspect_feed(feed):
         message = "Missing `shape_id` column in "
     return message 
 
-def get_gtfs_segments(path):
+def get_gtfs_segments(path,max_spacing = None):
     """
     > It reads a GTFS file, and returns a list of segments
     
@@ -184,7 +186,7 @@ def get_gtfs_segments(path):
       A list of segments.
     """
     bday ,feed = get_bus_feed(path)
-    return process_feed(feed)
+    return process_feed(feed,max_spacing)
 
 def pipeline_gtfs(filename,url,bounds,max_spacing):
     """

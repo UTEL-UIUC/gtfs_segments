@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-__version__ = '0.0.5' 
+__version__ = '0.0.6' 
 DESCRIPTION = 'GTFS segments'
 with open("README.md", "r") as fh:
     LONG_DESCRIPTION = fh.read()
@@ -12,7 +12,9 @@ REQUIREMENTS = ['geopandas',
                 'numpy',
                 'pandas',
                 'matplotlib',
-                'utm']
+                'utm',
+                'contextily',
+                'requests                                                       ']
 # Setting up
 setup(
         name="gtfs_segments", 

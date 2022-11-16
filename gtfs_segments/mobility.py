@@ -7,14 +7,16 @@ import numpy as np
 MOBILITY_SOURCES_link = "https://bit.ly/catalogs-csv"
 ABBREV_link = 'https://raw.githubusercontent.com/UTEL-UIUC/gtfs_segments/main/state_abbreviations.json'
 
-def fetch_gtfs_source(place ='ALL'):
+def fetch_gtfs_source(place ='ALL',active = True):
     """
     It reads the mobility data sources csv file and generates a dataframe with the sources that are of
     type gtfs and are from the US
     
     Args:
       place: The place you want to get the GTFS data for. This can be a city, state, or country.
-    Defaults to ALL
+    Defaults to ALL. Defaults to ALL
+      active: If True, it will only download active feeds. If False, it will download all feeds.
+    Defaults to True
     
     Returns:
       A dataframe with sources
@@ -23,6 +25,10 @@ def fetch_gtfs_source(place ='ALL'):
     sources_df = pd.read_csv(MOBILITY_SOURCES_link)
     sources_df = sources_df[sources_df['location.country_code'] == 'US']
     sources_df = sources_df[sources_df['data_type'] == 'gtfs']
+    ## Download only active feeds
+    if active:
+        sources_df = sources_df[sources_df['status'].isin(['active',np.NAN]) ]
+        sources_df.drop(['status'],axis=1,inplace=True)
     sources_df = pd.merge(sources_df,abb_df,how='left',left_on='location.subdivision_name',right_on='state')
     sources_df = sources_df[~sources_df.state_code.isna()]
     sources_df['location.municipality'] = sources_df['location.municipality'].astype("str")
@@ -46,13 +52,13 @@ def fetch_gtfs_source(place ='ALL'):
     sources_df.insert(0,'provider',file_names)
     sources_df.columns = sources_df.columns.str.replace('location.bounding_box.',"",regex=True)
     if place == 'ALL':
-        return sources_df
+        return sources_df.reset_index(drop=True)
     else:
         sources_df = sources_df[sources_df.apply(lambda row: row.astype(str).str.contains(place.lower(), case=False).any(), axis=1)]
         if len(sources_df) == 0:
             return "No sources found for the given place"
         else:
-            return sources_df
+            return sources_df.reset_index(drop=True)
 
 
 def summary_stats_mobility(df,folder_path,filename,b_day,link,bounds,max_spacing = 3000,export = False):
