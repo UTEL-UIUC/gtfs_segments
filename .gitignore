@@ -3,11 +3,13 @@ __pycache__/
 
 # Distribution / packaging
 .Python
-env/
+
 build/
+data/
 develop-eggs/
 dist/
 downloads/
+env/
 eggs/
 .eggs/
 lib/
