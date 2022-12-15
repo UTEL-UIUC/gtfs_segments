@@ -50,7 +50,7 @@ def create_segments(stop_df):
     stop_df = stop_df.rename({'stop_id':'stop_id1'},axis =1)
     start_wkts = stop_df.apply(lambda row: nearest_snap(row['geometry'],row['start']), axis = 1)
     stop_df['start'] = gpd.GeoSeries.from_wkt(start_wkts)
-    grp = stop_df.groupby('trip_id').apply(lambda df: df.shift(-1)).reset_index(drop=True)
+    grp = stop_df.groupby('trip_id',group_keys= False).apply(lambda df: df.shift(-1)).reset_index(drop=True)
     stop_df[['stop_id2','end']] = grp[['stop_id1','start']]
     stop_df = stop_df.dropna().reset_index(drop=True)
     stop_df['segment_id'] = stop_df.apply(lambda row: str(row['stop_id1']) +'-'+ str(row['stop_id2'])+'-1',axis =1)
@@ -72,7 +72,8 @@ def make_segments_unique(df):
     Returns:
       A dataframe with unique segment_ids
     """
-    grp_filter = df.groupby(['route_id','segment_id']).filter(lambda row : row['distance'].nunique() > 1)
+    
+    grp_filter = df.groupby(['route_id','segment_id']).filter(lambda row : row['distance'].round().nunique() > 1)
     grp_dict = grp_filter.groupby(['route_id','segment_id']).groups
     for key in grp_dict.keys():
         inds = grp_dict[key]
@@ -80,6 +81,9 @@ def make_segments_unique(df):
             if i != 0:
                 seg_split = key[1].split('-')
                 df.loc[index,'segment_id'] = seg_split[0]+'-'+seg_split[1]+'-'+str(i+1)
+    grp_again = df.groupby(['route_id','segment_id'])
+    df = grp_again.first().reset_index()
+    df['traversals'] = grp_again['traversals'].sum().values
     return df
 
 def filter_stop_df(stop_df,trip_ids):
@@ -149,6 +153,7 @@ def process_feed(feed,max_spacing = None):
     epsg_zone = get_zone_epsg(stop_df)
     stop_df = make_gdf(stop_df)    
     stop_df['distance'] = stop_df.set_geometry('geometry').to_crs(epsg_zone).geometry.length
+    stop_df['distance'] =  stop_df['distance'].round(2) # round to 2 decimal places
     stop_df = make_segments_unique(stop_df)
     subset_list = np.array(['segment_id','route_id','direction_id','traversals','distance','stop_id1','stop_id2','geometry'])
     col_subset = subset_list[np.in1d(subset_list,stop_df.columns)]

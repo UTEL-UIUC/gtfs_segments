@@ -134,17 +134,11 @@ pip install gtfs-segments
     conda config --env --set channel_priority strict
     conda install python=3 geopandas
     ```
-3. [Optional] Download modified version of `partridge` library and install it manually.
+3. [Optional] Install modified version of `partridge` library and install it manually.
     ```sh
-    git clone https://github.com/praneethd7/partridge
-    cd partridge
-    python setup.py install
-    ```
-4. Install requirements using
-    ```sh
-    pip install -r requirements.txt
-    ```     
-5. Install the `gtfs_segments` package
+    pip install -e git+https://github.com/praneethd7/partridge.git@fix_geopandas_projection#egg=partridge
+    ```  
+4. Install the `gtfs_segments` package
     ```sh
     cd gtfs_segments
     python setup.py install
@@ -189,7 +183,7 @@ from gtfs_segments import download_latest_data
 download_latest_data(sources_df,"output_folder")
 ```
 ## Manual Download
-Download the GTFS `.zip` files from [@transitfeeds](https://transitfeeds.com/) or [@mobility data](https://mobilitydata.org/).
+Download the GTFS `.zip` files from [@transitfeeds](https://transitfeeds.com/) or [@mobility data](https://database.mobilitydata.org/).
 
 
 ## Get GTFS Segments
@@ -268,6 +262,7 @@ export_segments(segments_df,'filename', output_format ='csv',geometry = False)
 - [ ] Add `.ipynb` examples
 - [ ] Visualize catchment areas for stops
 - [ ] Add unit tests for package
+- [ ] Integrate partridge library dependency 
 
 See the [open issues](https://github.com/UTEL-UIUC/gtfs_segments/issues) for a full list of proposed features (and known issues).
 

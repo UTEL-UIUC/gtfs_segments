@@ -1,3 +1,4 @@
+import os
 from setuptools import setup, find_packages
 
 __version__ = '0.0.6' 
@@ -14,7 +15,10 @@ REQUIREMENTS = ['geopandas',
                 'matplotlib',
                 'utm',
                 'contextily',
-                'requests                                                       ']
+                'requests']
+
+os.system('pip install -e git+https://github.com/praneethd7/partridge.git@fix_geopandas_projection#egg=partridge')
+
 # Setting up
 setup(
         name="gtfs_segments", 
