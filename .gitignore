@@ -20,7 +20,7 @@ var/
 *.egg-info/
 .installed.cfg
 *.egg
-
+src/
 # Jupyter notebook
 *.ipynb
 *.csv
