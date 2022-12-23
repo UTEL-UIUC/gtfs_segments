@@ -51,6 +51,7 @@ def fetch_gtfs_source(place ='ALL',active = True):
     sources_df.drop(['provider','location.municipality','location.subdivision_name','name','state_code','state'],axis=1,inplace=True)
     sources_df.insert(0,'provider',file_names)
     sources_df.columns = sources_df.columns.str.replace('location.bounding_box.',"",regex=True)
+    sources_df.rename(columns={'minimum_longitude':'min_lon','maximum_longitude':'max_lon','minimum_latitude':'min_lat','maximum_latitude':'max_lat','urls.latest':'url'},inplace=True)
     if place == 'ALL':
         return sources_df.reset_index(drop=True)
     else:
@@ -134,7 +135,7 @@ def download_latest_data(sources_df,out_folder_path):
     """
     for i,row in sources_df.iterrows():
         try:
-            download_write_file(row['urls.latest'],os.path.join(out_folder_path,row['provider']))
+            download_write_file(row['url'],os.path.join(out_folder_path,row['provider']))
         except:
             continue
     print("Downloaded the latest data")    

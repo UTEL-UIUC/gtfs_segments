@@ -10,17 +10,13 @@
 [![MIT License][license-shield]][license-url]
 <!-- [![LinkedIn][linkedin-shield]][linkedin-url] -->
 
-
-
 <!-- PROJECT LOGO -->
-<br />
 <div align="center">
   <a href="https://github.com/UTEL-UIUC/gtfs_segments">
     <img src="https://raw.githubusercontent.com/UTEL-UIUC/gtfs_segments/main/images/logo.jpg" alt="Logo" width=200 height=200>
   </a>
 
 <h3 align="center">GTFS Segments</h3>
-
   <p align="center">
     A fast and efficient library to generate bus stop spacings
     <br />
