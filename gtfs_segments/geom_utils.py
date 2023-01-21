@@ -185,7 +185,7 @@ def view_spacings(df, basemap=False, show_stops=False, level="whole", axis='on',
         geo_series.set_crs(crs=df.crs).plot(ax=ax, color='white', edgecolor='#3700b3', linewidth=1, markersize=markersize, alpha=0.95, zorder=10)
 
     if basemap:
-        cx.add_basemap(ax, crs=df.crs, source=cx.providers.Stamen.TonerLite)
+        cx.add_basemap(ax, crs=df.crs, source=cx.providers.Stamen.TonerLite, attribution_size=5)
     plt.axis(axis)
     plt.legend(loc='lower right')
     plt.close(fig)

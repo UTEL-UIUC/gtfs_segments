@@ -107,6 +107,7 @@ The major dependencies of this library are the following packages.
 
 The detailed list of package dependencies can be found in `requirements.txt`
 
+
 ## Installation
 
 ### Option A
@@ -116,6 +117,9 @@ Use pip to install the package. Windows users may have to download and install M
 ```sh
 pip install gtfs-segments
 ```
+<b> Google Colab :</b> You can install and use the `gtfs-segments` via google colab. Here is a [tutorial](https://colab.research.google.com/drive/1mGmFxw8G194bmg3VQm6vg7dVxCt715eD?usp=sharing
+) to help you get started. Make a copy and get started with your work!
+
 ### Option B
 
 1. Clone the repo
