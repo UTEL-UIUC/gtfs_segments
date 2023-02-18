@@ -356,6 +356,7 @@ Project Link: [https://github.com/UTEL-UIUC/gtfs_segments](https://github.com/UT
 # Acknowledgments
 
 * Parts of the code use the [Partridge](https://github.com/remix/partridge) library 
+* Do check out [gtfs_functions](https://github.com/Bondify/gtfs_functions) which was an inspiration for this project
 * Shoutout to [Mobility Data](https://mobilitydata.org) for compiling GTFS from around the globe and constantly maintaining them
 
 <p align="right">(<a href="#top">back to top</a>)</p>
