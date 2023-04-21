@@ -93,8 +93,10 @@ def summary_stats_mobility(df,folder_path,filename,b_day,link,bounds,max_spacing
     percent_spacing = round(df[df["distance"] > max_spacing]['traversals'].sum()/df['traversals'].sum() *100,3)
     df = df[df["distance"] <= max_spacing]
     csv_path = os.path.join(folder_path,'summary.csv')
-    stop_weighted_mean = df.groupby(['segment_id','distance']).first().reset_index()["distance"].mean()
-    route_weighted_mean = df.groupby(['route_id','segment_id','distance']).first().reset_index()["distance"].mean()
+    seg_weighted_mean = df.groupby(['segment_id','distance']).first().reset_index()["distance"].mean().round(2)
+    seg_weighted_median = df.groupby(['segment_id','distance']).first().reset_index()["distance"].median().round(2)
+    route_weighted_mean = df.groupby(['route_id','segment_id','distance']).first().reset_index()["distance"].mean().round(2)
+    route_weighted_median = df.groupby(['route_id','segment_id','distance']).first().reset_index()["distance"].median().round(2)
     weighted_data =  np.hstack([np.repeat(x, y) for x, y in zip(df['distance'], df.traversals)])
     df_dict = {"Name":filename,
             'Busiest Day': b_day,
@@ -103,9 +105,12 @@ def summary_stats_mobility(df,folder_path,filename,b_day,link,bounds,max_spacing
             'Min Longitude': bounds[0][0],
             'Max Latitude': bounds[1][1],
             'Max Longitude': bounds[1][0],
-            'Segment Weighted Mean' : stop_weighted_mean,
+            'Segment Weighted Mean' : seg_weighted_mean,
             'Route Weighted Mean' : route_weighted_mean,
             'Traversal Weighted Mean': round(np.mean(weighted_data),3),
+            'Segment Weighted Median' : seg_weighted_median,
+            'Route Weighted Median' : route_weighted_median,
+            'Traversal Weighted Median': round(np.median(weighted_data),2),
             'Traversal Weighted Std': round(np.std(weighted_data),3),
             'Traversal Weighted 25 % Quantile': round(np.quantile(weighted_data,0.25),3),
             'Traversal Weighted 50 % Quantile': round(np.quantile(weighted_data,0.5),3),
@@ -116,7 +121,6 @@ def summary_stats_mobility(df,folder_path,filename,b_day,link,bounds,max_spacing
             'Max Spacing':max_spacing,
             '% Segments w/ spacing > max_spacing':percent_spacing}
     summary_df = pd.DataFrame([df_dict])
-    # df.set_index(summary_df.columns[0],inplace=True)
     if export:
         summary_df.to_csv(csv_path,index = False)
         return "Saved the summary.csv in "+folder_path

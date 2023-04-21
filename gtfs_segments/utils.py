@@ -68,14 +68,19 @@ def summary_stats(df,max_spacing = 3000,export = False,**kwargs):
     print("Using max_spacing = ",max_spacing)
     percent_spacing = round(df[df["distance"] > max_spacing]['traversals'].sum()/df['traversals'].sum() *100,3)
     df = df[df["distance"] <= max_spacing]
-    stop_weighted_mean = df.groupby(['segment_id','distance']).first().reset_index()["distance"].mean()
-    route_weighted_mean = df.groupby(['route_id','segment_id','distance']).first().reset_index()["distance"].mean()
+    seg_weighted_mean = df.groupby(['segment_id','distance']).first().reset_index()["distance"].mean().round(2)
+    seg_weighted_median = df.groupby(['segment_id','distance']).first().reset_index()["distance"].median().round(2)
+    route_weighted_mean = df.groupby(['route_id','segment_id','distance']).first().reset_index()["distance"].mean().round(2)
+    route_weighted_median = df.groupby(['route_id','segment_id','distance']).first().reset_index()["distance"].median().round(2)
     weighted_data =  np.hstack([np.repeat(x, y) for x, y in zip(df['distance'], df.traversals)])
     
     df_dict = {
-            'Segment Weighted Mean' : stop_weighted_mean,
+            'Segment Weighted Mean' : seg_weighted_mean,
             'Route Weighted Mean' : route_weighted_mean,
             'Traversal Weighted Mean': round(np.mean(weighted_data),3),
+            'Segment Weighted Median' : seg_weighted_median,
+            'Route Weighted Median' : route_weighted_median,
+            'Traversal Weighted Median': round(np.median(weighted_data),2),
             'Traversal Weighted Std': round(np.std(weighted_data),3),
             'Traversal Weighted 25 % Quantile': round(np.quantile(weighted_data,0.25),3),
             'Traversal Weighted 50 % Quantile': round(np.quantile(weighted_data,0.50),3),
@@ -124,20 +129,20 @@ def export_segments(df,file_path,output_format, geometry = True):
     if output_format == 'geojson':
         df.to_file(file_path+'.geojson', driver="GeoJSON")
     elif output_format == 'csv':
-        s_df = df[['segment_id','route_id','traversals','direction_id','distance','stop_id1','stop_id2','geometry']].copy()
+        s_df = df.copy()
         geom_list =  s_df.geometry.apply(lambda g: np.array(g.coords))
         s_df['start_point'] = [Point(g[0]).wkt for g in geom_list]
         s_df['end_point'] = [Point(g[-1]).wkt for g in geom_list]
+        sg_df = s_df.copy()
         s_df['start_lon'] = [g[0][0] for g in geom_list]
         s_df['start_lat'] = [g[0][1] for g in geom_list]
         s_df['end_lon'] = [g[-1][0] for g in geom_list]
         s_df['end_lat'] = [g[-1][1] for g in geom_list]
-        sg_df = s_df[['segment_id','route_id','direction_id','traversals','distance','stop_id1','stop_id2','start_point','end_point','geometry']]
         if geometry == True:
             ## Output With LS
             sg_df.to_csv(file_path+'.csv',index = False)
         else:
-            d_df = s_df[['segment_id','route_id','traversals','direction_id','distance','stop_id1','stop_id2','start_lat','start_lon','end_lat','end_lon']]
+            d_df = s_df.drop(columns =['geometry','start_point','end_point'])
             ## Output without LS
             d_df.to_csv(file_path+'.csv',index = False)
 
@@ -182,7 +187,7 @@ def failed_pipeline(message,filename,folder_path):
 
     if os.path.exists(folder_path):
         shutil.rmtree(folder_path)
-    return message + filename
+    return message+" : "+ filename
 
 def download_write_file(url,folder_path):
     """

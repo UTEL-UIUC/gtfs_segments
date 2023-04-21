@@ -3,10 +3,12 @@ import numpy as np
 import pandas as pd
 import geopandas as gpd
 from shapely.ops import split
-from shapely.geometry import Point
+from shapely.geometry import Point, LineString
 from scipy.spatial import cKDTree
 import contextily as cx
 import matplotlib.pyplot as plt
+from pyproj import Geod
+geod = Geod(ellps="WGS84") 
 
 
 def split_route(row):
@@ -190,3 +192,130 @@ def view_spacings(df, basemap=False, show_stops=False, level="whole", axis='on',
     plt.legend(loc='lower right')
     plt.close(fig)
     return fig
+  
+def increase_resolution(geom, spat_res = 5):
+    """
+    This function increases the resolution of a LineString geometry by adding points along the line at a
+    specified spatial resolution.
+    
+    Args:
+      geom: The input geometry that needs to be modified (in this case, a LineString).
+      spat_res: spatial resolution, which is the desired distance between consecutive points on the
+    LineString. If the distance between two consecutive points is greater than the spatial resolution,
+    the function will add additional points to the LineString to increase its resolution. Defaults to 5
+    
+    Returns:
+      a LineString object with increased resolution based on the input spatial resolution.
+    """
+    coords = geom.coords
+    coord_pairs = np.array([coords[i:i+2] for i in range(len(coords)-1)])
+    coord_dists = np.array([geod.geometry_length(LineString(coords[i:i+2])) for i in range(len(coords)-1)])
+    new_ls = []
+    for i,dists in enumerate(coord_dists):
+        pair = coord_pairs[i]
+        if dists > spat_res:
+            factor = int(np.ceil(dists/spat_res))
+            ret_points = [tuple(pair[0])]
+            for j in range(1,factor):
+                new_point = (pair[0][0]+(pair[1][0]-pair[0][0])*j/factor,pair[0][1]+(pair[1][1]-pair[0][1])*j/factor)
+                ret_points.append(new_point)
+            for pt in ret_points:
+                new_ls.append(pt)
+        else:
+            new_ls.append(tuple(pair[0]))
+    new_ls.append(tuple(coord_pairs[-1][1]))
+    return LineString(new_ls)
+
+def ret_high_res_shape(shapes, spat_res = 5):
+    """
+    This function increases the resolution of the geometries in a given dataframe of shapes by a
+    specified spatial resolution.
+    
+    Args:
+      shapes: a pandas DataFrame containing a column named 'geometry' that contains shapely geometry
+    objects
+      spat_res: spatial resolution, which is the size of each pixel or cell in a raster dataset. In this
+    function, it is used to increase the resolution of the input shapes by creating more vertices in
+    their geometries. The default value is 5, which means that the resolution will be increased by
+    adding vertices. Defaults to 5
+    
+    Returns:
+      a GeoDataFrame with the geometry column updated to have higher resolution shapes.
+    """
+    high_res_shapes = []
+    for i,row in shapes.iterrows():
+        high_res_shapes.append(increase_resolution(row['geometry'],spat_res))
+    shapes.geometry = high_res_shapes
+    return shapes
+
+def nearest_points(stop_df, k_neighbors=5):
+    """
+    The function takes a dataframe of stops and snaps them to the nearest points on a line geometry,
+    with an option to specify the number of nearest neighbors to consider.
+    
+    Args:
+      stop_df: a pandas DataFrame containing information about stops along a set of trips, including the
+    trip ID, the stop location (as a Shapely Point object), and the geometry of the trip (as a Shapely
+    LineString object)
+      k_neighbors: The number of nearest neighbors to consider when snapping stops to a line geometry.
+    Default value is 5. Defaults to 5
+    
+    Returns:
+      the stop_df dataframe with an additional column 'snap_start_id' which contains the indices of the
+    nearest points on the trip route for each stop. If any trips failed to snap, they are excluded from
+    the returned dataframe.
+    """
+    stop_df['snap_start_id'] = -1
+    geo_const = 6371000* np.pi/180
+    failed_trips = []
+    count = 0
+    for name, group in stop_df.groupby('trip_id'):
+        count += 1
+        neighbors = k_neighbors
+        geom_line = group['geometry'].iloc[0]
+        # print(len(geom_line.coords))
+        tree = cKDTree(data=np.array(geom_line.coords))
+        stops = [x.coords[0] for x in group['start']]
+        failed_trip = False
+        solution_found = False
+        while solution_found == False:
+            np_dist, np_inds = tree.query(stops, workers=-1, k=neighbors)
+            np_dist = np_dist *  geo_const ##Approx distance in meters
+            prev_point = min(np_inds[0])
+            points = [prev_point]
+            for i, nps in enumerate(np_inds[1:-1]):
+                condition = (nps > prev_point) & (nps < max(np_inds[i+2]))
+                points_valid = nps[condition]
+                if len(points_valid) > 0:
+                    points_score = (np.power(points_valid - prev_point,3)) * np.power(np_dist[i+1,condition],1)
+                    prev_point = nps[condition][np.argmin(points_score)]
+                    points.append(prev_point)
+                else:
+                    ## No valid points found
+                    if neighbors != len(stops):
+                        # print('Expanding neighbors to ',neighbors*2)
+                        neighbors = max(neighbors*2,len(stops))
+                        break
+                    else:
+                        failed_trips.append(name)
+                        failed_trip = True
+                        solution_found = True ## Make this to exit the while loop
+                        print("Excluding Trip: "+name+" because of failed snap")
+                        break
+            if len(np_inds[-1][np_inds[-1] > prev_point]) > 0:
+                points.append(np_inds[-1][np_inds[-1] > prev_point][0])
+            else:
+                failed_trips.append(name)
+                failed_trip = True
+                solution_found = True ## Make this to exit the while loop
+                print("Excluding Trip: "+name+" because of failed snap")
+            if len(points) == len(stops):
+                solution_found = True                
+        if len(points) != len(set(points)):
+            print("Processing",count,len(stop_df.trip_id.unique()))
+            print('Points defective')
+            
+        if failed_trip == False:
+            stop_df.loc[stop_df.trip_id == name,'snap_start_id'] = points
+    stop_df = stop_df[~stop_df.trip_id.isin(failed_trips)].reset_index(drop=True)
+    return stop_df

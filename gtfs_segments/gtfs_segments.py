@@ -33,33 +33,7 @@ def merge_trip_geom(trip_df,shape_df):
     trip_df = trip_df[col_subset]
     trip_df = trip_df.dropna(how='all', axis=1)
     trip_df = shape_df.merge(trip_df, on='shape_id',how='left')
-    
-#     trip_df = trip_df.set_crs(epsg=4326,allow_override=True)
     return make_gdf(trip_df)
-
-def create_segments(stop_df):
-    """
-    It takes a dataframe of stops and returns a dataframe of segments
-    
-    Args:
-      stop_df: a dataframe with the following columns:
-    
-    Returns:
-      A dataframe with the following columns:
-    """
-    stop_df = stop_df.rename({'stop_id':'stop_id1'},axis =1)
-    start_wkts = stop_df.apply(lambda row: nearest_snap(row['geometry'],row['start']), axis = 1)
-    stop_df['start'] = gpd.GeoSeries.from_wkt(start_wkts)
-    grp = stop_df.groupby('trip_id',group_keys= False).apply(lambda df: df.shift(-1)).reset_index(drop=True)
-    stop_df[['stop_id2','end']] = grp[['stop_id1','start']]
-    stop_df = stop_df.dropna().reset_index(drop=True)
-    stop_df['segment_id'] = stop_df.apply(lambda row: str(row['stop_id1']) +'-'+ str(row['stop_id2'])+'-1',axis =1)
-    # stop_df['segment_id'] = stop_df.apply(lambda row: str(row['stop_id1']) +'-'+ str(row['stop_id2'])+'-'+ str(row['shape_id']),axis =1)
-    stop_df['snapped_start_id'] = stop_df.apply(lambda row: row['start'].within(row['geometry']), axis = 1)
-    stop_df['snapped_end_id'] = stop_df.apply(lambda row: row['end'].within(row['geometry']), axis = 1)
-    split_routes = stop_df.apply(lambda row: split_route(row),axis = 1)
-    stop_df['geometry'] = gpd.GeoSeries.from_wkt(split_routes)
-    return stop_df
 
 def make_segments_unique(df):
     """
@@ -102,6 +76,7 @@ def filter_stop_df(stop_df,trip_ids):
     stop_df['main_index'] = stop_df.index
     stop_df_grp = stop_df.groupby('trip_id')
     drop_inds = []
+    ## To eliminate deadheads
     if "pickup_type" in stop_df.columns:
       grp_f = stop_df_grp.first()
       drop_inds.append(grp_f.loc[grp_f['pickup_type'] == 1,'main_index'])
@@ -128,8 +103,62 @@ def merge_stop_geom(stop_df,stop_loc_df):
     stop_df['start'] = stop_df.copy().merge(stop_loc_df,how='left',on='stop_id')['geometry']
     stop_df = gpd.GeoDataFrame(stop_df,geometry='start')
     return make_gdf(stop_df)
+  
+def process_feed_stops(feed,max_spacing = None):
+    """
+    This function processes feed stops by merging trip and stop dataframes, calculating distances
+    between stops, and returning a geodataframe.
     
-def process_feed(feed,max_spacing = None):
+    Args:
+      feed: a GTFS feed object containing information about transit routes, stops, and schedules.
+      max_spacing: max_spacing is an optional parameter that can be passed to the function
+    process_feed_stops. It is used to filter out stops that are too close to each other. If two stops
+    are closer than max_spacing, only one of them will be included in the output. If max_spacing is not
+    provided,
+    
+    Returns:
+      A GeoDataFrame containing information about the stops in the feed, including their location, the
+    trips they are associated with, and the distance between stops. The function also calculates the
+    mean distance between stops and can optionally filter stops based on a maximum spacing parameter.
+    """
+    trip_df = merge_trip_geom(feed.trips,feed.shapes)
+    trip_ids = trip_df.trip_id.unique()
+    stop_df = filter_stop_df(feed.stop_times,trip_ids)
+    stop_loc_df = feed.stops[['stop_id','geometry']]
+    stop_df = merge_stop_geom(stop_df,stop_loc_df)    
+    stop_df = stop_df.merge(trip_df,on='trip_id',how='left')
+    stops = stop_df.groupby('shape_id').count().reset_index()['geometry']
+    stop_df = stop_df.groupby('shape_id').first().reset_index()
+    stop_df['n_stops'] = stops
+    epsg_zone = get_zone_epsg(stop_df)
+    stop_df = make_gdf(stop_df)    
+    stop_df['distance'] = stop_df.set_geometry('geometry').to_crs(epsg_zone).geometry.length
+    stop_df['mean_distance'] = stop_df['distance']/stop_df['n_stops']
+    return make_gdf(stop_df)
+    
+def create_segments(stop_df):
+    """
+    This function creates segments between stops based on their proximity and returns a GeoDataFrame.
+    
+    Args:
+      stop_df: A pandas DataFrame containing information about stops on a transit network, including
+    their stop_id, coordinates, and trip_id.
+    
+    Returns:
+      a GeoDataFrame with segments created from the input stop_df.
+    """
+    stop_df = nearest_points(stop_df)
+    stop_df = stop_df.rename({'stop_id':'stop_id1'},axis =1)
+    grp = pd.DataFrame(stop_df).groupby('trip_id',group_keys= False).shift(-1).reset_index(drop=True)
+    stop_df[['stop_id2','end','snap_end_id']] = grp[['stop_id1','start','snap_start_id']]
+    stop_df['segment_id'] = stop_df.apply(lambda row: str(row['stop_id1']) +'-'+ str(row['stop_id2'])+'-1',axis =1)
+    stop_df = stop_df.dropna().reset_index(drop=True)
+    stop_df.snap_end_id = stop_df.snap_end_id.astype(int)
+    stop_df = stop_df[stop_df['snap_end_id'] > stop_df['snap_start_id']].reset_index(drop=True)
+    stop_df['geometry'] = stop_df.apply(lambda row: LineString(row['geometry'].coords[row['snap_start_id']:row['snap_end_id']+1]),axis=1)
+    return make_gdf(stop_df)
+
+def process_feed_stops(feed,max_spacing = None):
     """
     It takes a GTFS feed, merges the trip and shape data, filters the stop_times data to only include
     the trips that are in the feed, merges the stop_times data with the stop data, creates a segment for
@@ -138,6 +167,8 @@ def process_feed(feed,max_spacing = None):
     
     Args:
       feed: a GTFS feed object
+      max_spacing: the maximum distance between stops in meters. If a stop is more than this distance
+    from the previous stop, it will be dropped.
     
     Returns:
       A GeoDataFrame with the following columns:
@@ -148,14 +179,31 @@ def process_feed(feed,max_spacing = None):
     stop_loc_df = feed.stops[['stop_id','geometry']]
     stop_df = merge_stop_geom(stop_df,stop_loc_df)    
     stop_df = stop_df.merge(trip_df,on='trip_id',how='left')
+    stops = stop_df.groupby('shape_id').count().reset_index()['geometry']
+    stop_df = stop_df.groupby('shape_id').first().reset_index()
+    stop_df['n_stops'] = stops
+    epsg_zone = get_zone_epsg(stop_df)
+    stop_df = make_gdf(stop_df)    
+    stop_df['distance'] = stop_df.set_geometry('geometry').to_crs(epsg_zone).geometry.length
+    stop_df['mean_distance'] = stop_df['distance']/stop_df['n_stops']
+    return make_gdf(stop_df)
+    
+def process_feed(feed,max_spacing = None):
+    ## Set a Spatial Resolution and increase the resolution of the shapes
+    shapes = ret_high_res_shape(feed.shapes,spat_res = 5)
+    trip_df = merge_trip_geom(feed.trips,shapes)
+    trip_ids = trip_df.trip_id.unique()
+    stop_df = filter_stop_df(feed.stop_times,trip_ids)
+    stop_loc_df = feed.stops[['stop_id','geometry']]
+    stop_df = merge_stop_geom(stop_df,stop_loc_df)    
+    stop_df = stop_df.merge(trip_df,on='trip_id',how='left')
     stop_df = create_segments(stop_df)
-    # return stop_df
     epsg_zone = get_zone_epsg(stop_df)
     stop_df = make_gdf(stop_df)    
     stop_df['distance'] = stop_df.set_geometry('geometry').to_crs(epsg_zone).geometry.length
     stop_df['distance'] =  stop_df['distance'].round(2) # round to 2 decimal places
     stop_df = make_segments_unique(stop_df)
-    subset_list = np.array(['segment_id','route_id','direction_id','traversals','distance','stop_id1','stop_id2','geometry'])
+    subset_list = np.array(['segment_id','route_id','direction_id','trip_id','traversals','distance','stop_id1','stop_id2','geometry'])
     col_subset = subset_list[np.in1d(subset_list,stop_df.columns)]
     stop_df = stop_df[col_subset]
     if max_spacing != None:
