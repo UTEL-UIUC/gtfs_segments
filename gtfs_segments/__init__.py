@@ -1,4 +1,4 @@
-__version__ = '0.0.7'
+__version__ = '0.0.8'
 from .gtfs_segments import (
     get_gtfs_segments,
     pipeline_gtfs,
@@ -24,6 +24,11 @@ from .geom_utils import(
 from .route_stats import(
     get_route_stats
 )
+
+from .partridge_func import(
+    get_bus_feed
+)    
+
 __all__ = [
     "__version__",
     "get_gtfs_segments",
@@ -37,5 +42,6 @@ __all__ = [
     "view_spacings",
     "summary_stats_mobility",
     "download_latest_data",
-    "get_route_stats"
+    "get_route_stats",
+    "get_bus_feed"
 ]

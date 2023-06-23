@@ -248,7 +248,7 @@ def ret_high_res_shape(shapes, spat_res = 5):
     shapes.geometry = high_res_shapes
     return shapes
 
-def nearest_points(stop_df, k_neighbors=5):
+def nearest_points(stop_df, k_neighbors=3):
     """
     The function takes a dataframe of stops and snaps them to the nearest points on a line geometry,
     with an option to specify the number of nearest neighbors to consider.
@@ -258,7 +258,7 @@ def nearest_points(stop_df, k_neighbors=5):
     trip ID, the stop location (as a Shapely Point object), and the geometry of the trip (as a Shapely
     LineString object)
       k_neighbors: The number of nearest neighbors to consider when snapping stops to a line geometry.
-    Default value is 5. Defaults to 5
+    Default value is 3. Defaults to 3
     
     Returns:
       the stop_df dataframe with an additional column 'snap_start_id' which contains the indices of the
@@ -270,12 +270,17 @@ def nearest_points(stop_df, k_neighbors=5):
     failed_trips = []
     count = 0
     for name, group in stop_df.groupby('trip_id'):
+        # print(name)
         count += 1
         neighbors = k_neighbors
         geom_line = group['geometry'].iloc[0]
         # print(len(geom_line.coords))
         tree = cKDTree(data=np.array(geom_line.coords))
         stops = [x.coords[0] for x in group['start']]
+        if len(stops) <= 1:
+            failed_trips.append(name)
+            print("Excluding Trip: "+name+" because of too few stops")
+            continue
         failed_trip = False
         solution_found = False
         while solution_found == False:
@@ -283,8 +288,8 @@ def nearest_points(stop_df, k_neighbors=5):
             np_dist = np_dist *  geo_const ##Approx distance in meters
             prev_point = min(np_inds[0])
             points = [prev_point]
-            for i, nps in enumerate(np_inds[1:-1]):
-                condition = (nps > prev_point) & (nps < max(np_inds[i+2]))
+            for i, nps in enumerate(np_inds[1:]):
+                condition = (nps > prev_point) & (nps < max(np_inds[i+1]))
                 points_valid = nps[condition]
                 if len(points_valid) > 0:
                     points_score = (np.power(points_valid - prev_point,3)) * np.power(np_dist[i+1,condition],1)
@@ -292,23 +297,16 @@ def nearest_points(stop_df, k_neighbors=5):
                     points.append(prev_point)
                 else:
                     ## No valid points found
-                    if neighbors != len(stops):
-                        # print('Expanding neighbors to ',neighbors*2)
-                        neighbors = max(neighbors*2,len(stops))
+                    if neighbors < len(stops):
+                        neighbors = min(neighbors+2,len(stops))
                         break
                     else:
                         failed_trips.append(name)
                         failed_trip = True
                         solution_found = True ## Make this to exit the while loop
-                        print("Excluding Trip: "+name+" because of failed snap")
+                        
+                        print("Excluding Trip: "+name+" because of failed snap!")
                         break
-            if len(np_inds[-1][np_inds[-1] > prev_point]) > 0:
-                points.append(np_inds[-1][np_inds[-1] > prev_point][0])
-            else:
-                failed_trips.append(name)
-                failed_trip = True
-                solution_found = True ## Make this to exit the while loop
-                print("Excluding Trip: "+name+" because of failed snap")
             if len(points) == len(stops):
                 solution_found = True                
         if len(points) != len(set(points)):

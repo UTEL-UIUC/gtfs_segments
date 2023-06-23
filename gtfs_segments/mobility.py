@@ -134,8 +134,8 @@ def download_latest_data(sources_df,out_folder_path):
     URL in the `urls.latest` column, and write it to the folder specified in the `provider` column
     
     Args:
-      out_folder_path: The path to the folder where you want to save the data
       sources_df: This is the dataframe that contains the urls for the data.
+      out_folder_path: The path to the folder where you want to save the data.
     """
     for i,row in sources_df.iterrows():
         try:

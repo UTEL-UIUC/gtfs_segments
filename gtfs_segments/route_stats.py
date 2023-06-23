@@ -317,7 +317,7 @@ def get_route_lens(df_dir, df_shapes):
         len_0 =  df_shapes.loc[df_shapes.shape_id == shape_0].to_crs(epsg_zone).geometry.length.iloc[0]
     return {'route length' : np.round(len_0/1000,2)}
 
-def get_route_stats(feed):
+def get_route_stats(feed, peak_time = False):
     """
     It takes a GTFS feed and a route_id and returns a dataframe with the following columns:
     
@@ -361,11 +361,13 @@ def get_route_stats(feed):
         ret_dict.update(get_route_lens(df_dir,df_shapes))
         ret_dict.update(get_route_time(df_dir))
         ret_dict.update(get_average_headway(df_dir))
-        ret_dict.update(get_all_peak_times(df_dir))
         ret_dict.update(get_average_speed(df_dir,ret_dict))
         ret_dict.update(average_active_buses(df_dir))
         ret_dict.update(get_bus_spacing(df_dir,ret_dict))
         ret_dict.update(get_stop_spacing(df_dir,ret_dict))
+        if peak_time:
+          ret_dict.update(get_all_peak_times(df_dir))
+  
         route_list.append(ret_dict)
     df = pd.DataFrame.from_records(route_list)
     return df.reset_index(drop =True)
