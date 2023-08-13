@@ -70,9 +70,9 @@
   <img src="images/example.jpg" alt="map" width="400"/>
 </div> -->
 
- The `gtfs-segments` is a Python package that represents GTFS data for **buses** in a concise tabular manner using segments. The distribution of bus stop spacings can be viewed by generating histograms. The stop spacings can be visualized at network, route or segment level. The segments data can be exported to well know formats such as `.csv` or `.geojson` for further analysis. Additionally, the package provides commands to download latest data from [@mobility data](https://mobilitydata.org/) sources.
+The `gtfs-segments` is a Python package that represents GTFS data for **buses** in a concise tabular manner using segments. The distribution of bus stop spacings can be viewed by generating histograms. The stop spacings can be visualized at the network, route, or segment level. The segment data can be exported to well known formats such as `.csv` or `.geojson` for further analysis. Additionally, the package provides commands to download the latest data from [@mobility data](https://mobilitydata.org/) sources.
 
-The package condenses the raw GTFS data by considering the services offered only the `busiest day`(in the data). More discussion on the interpretation of different weightings for stop spacings,  and the process in which the package condenses information can be seen in our [arXiv paper](https://arxiv.org/abs/2208.04394). The usage of the package is detailed in [documentation](https://utel-uiuc.github.io/gtfs_segments_docs/). The stop spacings dataset containing over 600 transit providers in the US generated using this package can be found on [Harvard Dataverse](https://doi.org/10.7910/DVN/SFBIVU).
+The package condenses the raw GTFS data by considering the services offered only on the `busiest day`(in the data). More discussion on the interpretation of different weightings for stop spacings,  and the process in which the package condenses information can be seen in our [arXiv paper](https://arxiv.org/abs/2208.04394). The usage of the package is detailed in [documentation](https://utel-uiuc.github.io/gtfs_segments_docs/). The stop spacings dataset containing over 600 transit providers in the US generated using this package can be found on [Harvard Dataverse](https://doi.org/10.7910/DVN/SFBIVU).
 
  
 
@@ -112,12 +112,14 @@ The detailed list of package dependencies can be found in `requirements.txt`
 
 ### Option A
 
-Use pip to install the package. Windows users may have to download and install Microsoft Visual C++ distributions. Follow [these](https://stackoverflow.com/questions/29846087/error-microsoft-visual-c-14-0-is-required-unable-to-find-vcvarsall-bat) instructions. 
+Use pip to install the package. 
 
 ```sh
 pip install gtfs-segments
 ```
-<b> Google Colab :</b> You can install and use the `gtfs-segments` via google colab. Here is a [tutorial](https://colab.research.google.com/drive/1mGmFxw8G194bmg3VQm6vg7dVxCt715eD?usp=sharing
+> ℹ️ Windows users may have to download and install Microsoft Visual C++ distributions. Follow [these](https://stackoverflow.com/questions/29846087/error-microsoft-visual-c-14-0-is-required-unable-to-find-vcvarsall-bat) instructions. 
+
+> 📓 <b> Google Colab :</b> You can install and use the `gtfs-segments` via google colab. Here is a [tutorial](https://colab.research.google.com/drive/1mGmFxw8G194bmg3VQm6vg7dVxCt715eD?usp=sharing
 ) to help you get started. Make a copy and get started with your work!
 
 ### Option B
@@ -148,7 +150,7 @@ pip install gtfs-segments
 <!-- USAGE EXAMPLES -->
 # Usage
 
-For documentation, please refer to the [Documentation](https://utel-uiuc.github.io/gtfs_segments_docs/)
+> ℹ️ For documentation, please refer to the [Documentation](https://utel-uiuc.github.io/gtfs_segments_docs/)
 
 Import the package using 
 ```python
@@ -272,10 +274,11 @@ export_segments(segments_df,'filename', output_format ='csv',geometry = False)
 <!-- ROADMAP -->
 # Roadmap
 
-- [ ] Add `.ipynb` examples
+- [x] Add `.ipynb` examples
+- [x] Integrate partridge library dependency 
 - [ ] Visualize catchment areas for stops
 - [ ] Add unit tests for package
-- [ ] Integrate partridge library dependency 
+
 
 See the [open issues](https://github.com/UTEL-UIUC/gtfs_segments/issues) for a full list of proposed features (and known issues).
 
