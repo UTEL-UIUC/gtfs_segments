@@ -245,7 +245,7 @@ def inspect_feed(feed):
     return message
 
 
-def get_gtfs_segments(path, agency_name=None, threshold=1, max_spacing=None):
+def get_gtfs_segments(path, agency_id =None, threshold=1, max_spacing=None):
     """
     The function `get_gtfs_segments` takes a path to a GTFS feed file, an optional agency name, a
     threshold value, and an optional maximum spacing value, and returns processed GTFS segments.
@@ -254,9 +254,9 @@ def get_gtfs_segments(path, agency_name=None, threshold=1, max_spacing=None):
       path: The path parameter is the file path to the GTFS (General Transit Feed Specification) data.
     This is the data format used by public transportation agencies to provide schedule and geographic
     information about their services.
-      agency_name: The `agency` parameter is an optional parameter that specifies the name of the transit
-    agency for which you want to retrieve the GTFS segments. If no agency name is provided, the function
-    will retrieve GTFS segments for all agencies in the feed.
+      agency_id: The agency_id of the transit agency for which you want to retrieve the bus feed. If this
+    parameter is not provided, the function will retrieve the bus feed for all transit agencies. You can pass
+    a list of agency_ids to retrieve the bus feed for multiple transit agencies.
       threshold: The threshold parameter is used to filter out bus trips that have fewer stops than the
     specified threshold. Trips with fewer stops than the threshold will be excluded from the result.
     Defaults to 1
@@ -267,7 +267,7 @@ def get_gtfs_segments(path, agency_name=None, threshold=1, max_spacing=None):
     Returns:
       the result of calling the "process_feed" function with the "feed" and "max_spacing" arguments.
     """
-    bday, feed = get_bus_feed(path, agency_name=agency_name, threshold=threshold)
+    bday, feed = get_bus_feed(path, agency_id =agency_id , threshold=threshold)
     return process_feed(feed, max_spacing)
 
 

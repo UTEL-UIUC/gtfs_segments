@@ -1,3 +1,4 @@
+cython==3.0.2
 cchardet==2.1.7
 contextily==1.2.0
 geopandas==0.12.2
@@ -12,3 +13,4 @@ scipy==1.9.3
 setuptools==65.6.3
 shapely==2.0.0
 utm==0.7.0
+partridge@git+https://github.com/praneethd7/partridge.git@fix_geopandas_projection

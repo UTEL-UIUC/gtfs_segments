@@ -280,6 +280,7 @@ export_segments(segments_df,'filename', output_format ='csv',geometry = False)
 
 - [x] Add `.ipynb` examples
 - [x] Integrate partridge library dependency 
+- [x] Remove unusual trips 
 - [ ] Visualize catchment areas for stops
 - [ ] Add unit tests for package
 

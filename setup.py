@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 __version__ = '0.0.8' 
 DESCRIPTION = 'GTFS segments'
-with open("README.md", "r") as fh:
+with open("README.md", "r", encoding="utf8") as fh:
     LONG_DESCRIPTION = fh.read()
     
 REQUIREMENTS = ['geopandas',
