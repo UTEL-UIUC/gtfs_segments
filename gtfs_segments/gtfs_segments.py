@@ -38,7 +38,7 @@ def merge_trip_geom(trip_df, shape_df):
     return make_gdf(trip_df)
 
 
-def make_segments_unique(df,travel_threshold):
+def make_segments_unique(df,traversal_threshold = 1):
     """
     For each route_id and segment_id combination, if there are more than one unique distance values,
     then split the segment_id into three parts, and add a number to the end of the segment_id
@@ -65,7 +65,7 @@ def make_segments_unique(df,travel_threshold):
     grp_again = df.groupby(["route_id", "segment_id"])
     df = grp_again.first().reset_index()
     df["traversals"] = grp_again["traversals"].sum().values
-    df = df[df.traversals > travel_threshold].reset_index(drop=True)
+    df = df[df.traversals > traversal_threshold].reset_index(drop=True)
     return df
 
 
