@@ -122,7 +122,7 @@ def export_segments(df,file_path,output_format, geometry = True):
       df: the dataframe containing the segments
       file_path: The path to the file you want to export to.
       output_format: geojson or csv
-      geometry: If True, the output will include the geometry of the segments. If False, the output will
+      [Optional] geometry: If True, the output will include the geometry of the segments. If False, the output will
     only include the start and end points of the segments. Defaults to True
     """
     ## Output to GeoJSON

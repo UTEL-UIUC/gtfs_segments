@@ -28,3 +28,6 @@ src/
 # VsCode
 .vscode/
 gtfs_tool/
+
+#Tests (In Progress)
+tests/

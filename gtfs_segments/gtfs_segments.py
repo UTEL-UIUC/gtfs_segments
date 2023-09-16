@@ -190,6 +190,22 @@ def process_feed_stops(feed, max_spacing=None):
 
 
 def process_feed(feed, max_spacing=None):
+    """
+    The function `process_feed` takes a feed and optional maximum spacing as input, performs various
+    data processing and filtering operations on the feed, and returns a GeoDataFrame containing the
+    processed data.
+    
+    Args:
+      feed: The `feed` parameter is a data structure that contains information about a transit network.
+    It likely includes data such as shapes (geometric representations of routes), trips (sequences of
+    stops), stop times (arrival and departure times at stops), and stops (locations of stops).
+      [Optional] max_spacing: The `max_spacing` parameter is an optional parameter that specifies the maximum
+    distance between stops. If provided, the function will filter out stops that are farther apart than
+    the specified maximum spacing.
+    
+    Returns:
+      A GeoDataFrame containing information about the stops and segments in the feed with segments smaller than the max_spacing values.
+    """
     ## Set a Spatial Resolution and increase the resolution of the shapes
     shapes = ret_high_res_shape(feed.shapes, spat_res=5)
     trip_df = merge_trip_geom(feed.trips, shapes)
@@ -254,19 +270,26 @@ def get_gtfs_segments(path, agency_id =None, threshold=1, max_spacing=None):
       path: The path parameter is the file path to the GTFS (General Transit Feed Specification) data.
     This is the data format used by public transportation agencies to provide schedule and geographic
     information about their services.
-      agency_id: The agency_id of the transit agency for which you want to retrieve the bus feed. If this
+      [Optional] agency_id: The agency_id of the transit agency for which you want to retrieve the bus feed. If this
     parameter is not provided, the function will retrieve the bus feed for all transit agencies. You can pass
     a list of agency_ids to retrieve the bus feed for multiple transit agencies.
-      threshold: The threshold parameter is used to filter out bus trips that have fewer stops than the
+      [Optional] threshold: The threshold parameter is used to filter out bus trips that have fewer stops than the
     specified threshold. Trips with fewer stops than the threshold will be excluded from the result.
     Defaults to 1
-      max_spacing: The `max_spacing` parameter is used to specify the maximum distance between two
+      [Optional] max_spacing: The `max_spacing` parameter is used to specify the maximum distance between two
     consecutive stops in a segment. If the distance between two stops exceeds the `max_spacing` value,
     the segment is split into multiple segments.
 
     Returns:
-      the result of calling the "process_feed" function with the "feed" and "max_spacing" arguments.
-    """
+      A GeoDataFrame containing information about the stops and segments in the feed with segments smaller than the max_spacing values. Each row contains the following columns:
+      segment_id: the segment's identifier, produced by gtfs-segments
+      stop_id1: The `stop_id` identifier of the segment's beginning stop. The identifier is the same one the agency has chosen in the stops.txt file of its GTFS package.
+      stop_id2: The `stop_id` identifier of the segment's ending stop.
+      route_id: The same route ID listed in the agency's routes.txt file.
+      direction_id: The route's direction identifier.
+      traversals: The number of times the indicated route traverses the segment during the "measurement interval." The "measurement interval" chosen is the busiest day in the GTFS schedule: the day which has the most bus services running.
+      distance: The length of the segment in meters.
+      geometry: The segment's LINESTRING (a format for encoding geographic paths). All geometries are re-projected onto Mercator (EPSG:4326/WGS84) to maintain consistency."""
     bday, feed = get_bus_feed(path, agency_id =agency_id , threshold=threshold)
     return process_feed(feed, max_spacing)
 
@@ -298,7 +321,7 @@ def pipeline_gtfs(filename, url, bounds, max_spacing):
       max_spacing: The maximum distance between stops that you want to consider.
 
     Returns:
-      a string with the name of the file that was processed.
+      Success or Failure of the pipeline
     """
     folder_path = os.path.join("output_files", filename)
     gtfs_file_loc = download_write_file(url, folder_path)

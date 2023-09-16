@@ -15,7 +15,7 @@ def fetch_gtfs_source(place ='ALL',active = True):
     Args:
       place: The place you want to get the GTFS data for. This can be a city, state, or country.
     Defaults to ALL. Defaults to ALL
-      active: If True, it will only download active feeds. If False, it will download all feeds.
+      [Optional] active: If True, it will only download active feeds. If False, it will download all feeds.
     Defaults to True
     
     Returns:

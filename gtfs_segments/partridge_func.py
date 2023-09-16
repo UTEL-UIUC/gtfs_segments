@@ -4,16 +4,22 @@ import pandas as pd
 
 def get_bus_feed(path, agency_id=None, threshold=1):
     """
-    This function retrieves the bus feed data from a specified path and returns the date and feed
-    information, with the option to filter by agency name.
-
+    The `get_bus_feed` function retrieves bus feed data from a specified path, with the option to filter
+    by agency name, and returns the busiest date and a GTFS feed object.
+    
     Args:
-      path: The path to the directory containing the GTFS files. GTFS (General Transit Feed
-    Specification) is a standard format for public transportation schedules and related geographic data.
-      agency_id: The agency_id of the transit agency for which you want to retrieve the bus feed. If this
-    parameter is not provided, the function will retrieve the bus feed for all transit agencies. You can pass
-    a list of agency_ids to retrieve the bus feed for multiple transit agencies.
-
+      path: The path parameter is the path to the directory containing the GTFS files. GTFS (General
+    Transit Feed Specification) is a standard format for public transportation schedules and related
+    geographic data.
+      [Optional] agency_id: The `agency_id` parameter is an optional parameter that allows you to filter the bus
+    feed data by the agency name. If you provide an `agency_id`, the function will retrieve the bus feed
+    for that specific transit agency. If you do not provide an `agency_id`, the function will retrieve
+    the
+      [Optional] threshold: The threshold parameter is used to filter out service IDs that have a low frequency. It
+    is set to a default value of 1, but you can adjust it to a different value if needed. Service IDs
+    with a sum of stop times greater than the threshold will be included in the returned bus feed data.
+    Defaults to 1
+    
     Returns:
       a tuple containing the busiest date and a GTFS feed object. The GTFS feed object contains
     information about routes, stops, stop times, trips, and shapes for a transit agency's schedule.

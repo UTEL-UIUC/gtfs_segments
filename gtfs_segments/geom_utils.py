@@ -103,42 +103,6 @@ def get_zone_epsg(stop_df):
     zone = utm.from_latlon(lat, lon)
     return code(zone, lat)
 
-
-def view_spacings(df, basemap=False, show_stops=False, level="whole", show_axis='on', **kwargs):
-  """
-  Plots the whole bus network. You can plot a specific route, segment, or direction instead of whole network.
-  
-  Args:
-    df: the dataframe containing the spacings
-    basemap: if True, adds a basemap to the plot. Defaults to False
-    show_stops: if True, will show the stops on the map. Defaults to False
-    level: "whole" or "route" or "segment". Defaults to whole
-    show_axis: Plot axis option: 'on' or 'off'. Defaults to on.
-  
-  Returns:
-    A figure object
-  """
-  fig, ax = plt.subplots(figsize=(10, 10), dpi=100)
-  if "direction" in kwargs.keys():
-      df = df[df.direction_id == kwargs['direction']].copy()
-  if level == "whole":
-      ax = df.plot(ax=ax, color='y', linewidth=0.50,
-                   edgecolor='black', label='Bus network', zorder=1)
-  if "route" in kwargs.keys():
-      df = df[df.route_id == kwargs['route']].copy()
-      ax = df.plot(ax=ax, linewidth=1.5, color='dodgerblue',
-                   label='Route ID:'+kwargs['route_id'], zorder=2)
-  if "segment" in kwargs.keys():
-      ax = df[df.segment_id == kwargs['segment']].plot(
-          ax=ax, color='brown', label='Segment ID:'+kwargs['segment'])
-  if basemap:
-      cx.add_basemap(ax, crs=df.crs)
-  plt.axis(show_axis)
-  plt.legend()
-  plt.close(fig)
-  return fig
-
-
 def view_spacings(df, basemap=False, show_stops=False, level="whole", axis='on', **kwargs):
     """
     > This function plots the spacings of the bus network, or a specific route, or a specific segment
@@ -150,7 +114,7 @@ def view_spacings(df, basemap=False, show_stops=False, level="whole", axis='on',
       axis: 'on' or 'off'. Defaults to on
     """
     fig, ax = plt.subplots(figsize=(10, 10), dpi=100)
-    
+    crs = df.crs
     ## Filter based on direction and level
     if "direction" in kwargs.keys():
       df = df[df.direction_id == kwargs['direction']].copy()
@@ -187,6 +151,7 @@ def view_spacings(df, basemap=False, show_stops=False, level="whole", axis='on',
         geo_series.set_crs(crs=df.crs).plot(ax=ax, color='white', edgecolor='#3700b3', linewidth=1, markersize=markersize, alpha=0.95, zorder=10)
 
     if basemap:
+        df = gpd.GeoDataFrame(df,crs=crs)
         cx.add_basemap(ax, crs=df.crs, source=cx.providers.Stamen.TonerLite, attribution_size=5)
     plt.axis(axis)
     plt.legend(loc='lower right')
