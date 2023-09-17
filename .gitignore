@@ -24,10 +24,9 @@ src/
 # Jupyter notebook
 *.ipynb
 *.csv
-
+*.png
+*.jpg
+*.geojson
 # VsCode
 .vscode/
 gtfs_tool/
-
-#Tests (In Progress)
-tests/

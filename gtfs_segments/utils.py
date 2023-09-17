@@ -127,7 +127,7 @@ def export_segments(df,file_path,output_format, geometry = True):
     """
     ## Output to GeoJSON
     if output_format == 'geojson':
-        df.to_file(file_path+'.geojson', driver="GeoJSON")
+        df.to_file(file_path, driver="GeoJSON")
     elif output_format == 'csv':
         s_df = df.copy()
         geom_list =  s_df.geometry.apply(lambda g: np.array(g.coords))
@@ -140,11 +140,11 @@ def export_segments(df,file_path,output_format, geometry = True):
         s_df['end_lat'] = [g[-1][1] for g in geom_list]
         if geometry == True:
             ## Output With LS
-            sg_df.to_csv(file_path+'.csv',index = False)
+            sg_df.to_csv(file_path,index = False)
         else:
             d_df = s_df.drop(columns =['geometry','start_point','end_point'])
             ## Output without LS
-            d_df.to_csv(file_path+'.csv',index = False)
+            d_df.to_csv(file_path,index = False)
 
 
 def process(pipeline_gtfs,row,max_spacing):
