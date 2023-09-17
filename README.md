@@ -290,10 +290,6 @@ See the [open issues](https://github.com/UTEL-UIUC/gtfs_segments/issues) for a f
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 
-
-
-
-
 <!-- LICENSE -->
 # License
 
@@ -360,7 +356,7 @@ Don't forget to give the project a star! Thanks again!
 4. Push to the Branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
-
+For more information refer to [CONTRIBUTING.md](https://github.com/UTEL-UIUC/gtfs_segments/CONTRIBUTING.md)
 
 <!-- CONTACT -->
 # Contact
