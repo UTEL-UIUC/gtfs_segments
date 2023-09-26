@@ -1,13 +1,13 @@
 import os
-import re
-from .utils import *
+from .utils import download_write_file
 import pandas as pd
 import numpy as np
 
 MOBILITY_SOURCES_link = "https://bit.ly/catalogs-csv"
 ABBREV_link = 'https://raw.githubusercontent.com/UTEL-UIUC/gtfs_segments/main/state_abbreviations.json'
 
-def fetch_gtfs_source(place ='ALL',active = True):
+
+def fetch_gtfs_source(place='ALL', active=True):
     """
     It reads the mobility data sources csv file and generates a dataframe with the sources that are of
     type gtfs and are from the US
@@ -25,15 +25,30 @@ def fetch_gtfs_source(place ='ALL',active = True):
     sources_df = pd.read_csv(MOBILITY_SOURCES_link)
     sources_df = sources_df[sources_df['location.country_code'] == 'US']
     sources_df = sources_df[sources_df['data_type'] == 'gtfs']
-    ## Download only active feeds
+    # Download only active feeds
     if active:
         sources_df = sources_df[sources_df['status'].isin(['active',np.NAN]) ]
-        sources_df.drop(['status'],axis=1,inplace=True)
-    sources_df = pd.merge(sources_df,abb_df,how='left',left_on='location.subdivision_name',right_on='state')
+        sources_df.drop(['status'], axis=1, inplace=True)
+    sources_df = pd.merge(sources_df,
+                          abb_df,
+                          how='left',
+                          left_on='location.subdivision_name',
+                          right_on='state')
     sources_df = sources_df[~sources_df.state_code.isna()]
     sources_df['location.municipality'] = sources_df['location.municipality'].astype("str")
-    sources_df.drop(['entity_type','mdb_source_id','data_type','location.country_code','note',
-                     'static_reference','urls.direct_download','urls.authentication_type','urls.license','location.bounding_box.extracted_on', 'urls.authentication_info','urls.api_key_parameter_name','features'],axis=1,inplace=True)
+    sources_df.drop(['entity_type',
+                     'mdb_source_id',
+                     'data_type',
+                     'location.country_code',
+                     'note',
+                     'static_reference',
+                     'urls.direct_download',
+                     'urls.authentication_type',
+                     'urls.license',
+                     'location.bounding_box.extracted_on',
+                     'urls.authentication_info',
+                     'urls.api_key_parameter_name',
+                     'features'], axis=1, inplace=True)
     file_names = []
     for i,row in sources_df.iterrows():
         if row['location.municipality'] != 'nan':
@@ -62,7 +77,7 @@ def fetch_gtfs_source(place ='ALL',active = True):
             return sources_df.reset_index(drop=True)
 
 
-def summary_stats_mobility(df,folder_path,filename,b_day,link,bounds,max_spacing = 3000,export = False):
+def summary_stats_mobility(df, folder_path, filename, b_day, link, bounds, max_spacing = 3000, export = False):
     """
     It takes in a dataframe, a folder path, a filename, a busiest day, a link, a bounding box, a max
     spacing, and a boolean for exporting the summary to a csv. 
@@ -97,38 +112,40 @@ def summary_stats_mobility(df,folder_path,filename,b_day,link,bounds,max_spacing
     seg_weighted_median = df.groupby(['segment_id','distance']).first().reset_index()["distance"].median().round(2)
     route_weighted_mean = df.groupby(['route_id','segment_id','distance']).first().reset_index()["distance"].mean().round(2)
     route_weighted_median = df.groupby(['route_id','segment_id','distance']).first().reset_index()["distance"].median().round(2)
-    weighted_data =  np.hstack([np.repeat(x, y) for x, y in zip(df['distance'], df.traversals)])
-    df_dict = {"Name":filename,
-            'Busiest Day': b_day,
-            'Link': link,
-            'Min Latitude': bounds[0][1],
-            'Min Longitude': bounds[0][0],
-            'Max Latitude': bounds[1][1],
-            'Max Longitude': bounds[1][0],
-            'Segment Weighted Mean' : seg_weighted_mean,
-            'Route Weighted Mean' : route_weighted_mean,
-            'Traversal Weighted Mean': round(np.mean(weighted_data),3),
-            'Segment Weighted Median' : seg_weighted_median,
-            'Route Weighted Median' : route_weighted_median,
-            'Traversal Weighted Median': round(np.median(weighted_data),2),
-            'Traversal Weighted Std': round(np.std(weighted_data),3),
-            'Traversal Weighted 25 % Quantile': round(np.quantile(weighted_data,0.25),3),
-            'Traversal Weighted 50 % Quantile': round(np.quantile(weighted_data,0.5),3),
-            'Traversal Weighted 75 % Quantile': round(np.quantile(weighted_data,0.75),3),
-            'No of Segments':len(df.segment_id.unique()),
-            'No of Routes':len(df.route_id.unique()),
-            'No of Traversals':sum(df.traversals),  
-            'Max Spacing':max_spacing,
-            '% Segments w/ spacing > max_spacing':percent_spacing}
+    weighted_data = np.hstack([np.repeat(x, y) for x, y in zip(df['distance'], df.traversals)])
+    df_dict = {
+        "Name": filename,
+        'Busiest Day': b_day,
+        'Link': link,
+        'Min Latitude': bounds[0][1],
+        'Min Longitude': bounds[0][0],
+        'Max Latitude': bounds[1][1],
+        'Max Longitude': bounds[1][0],
+        'Segment Weighted Mean': seg_weighted_mean,
+        'Route Weighted Mean': route_weighted_mean,
+        'Traversal Weighted Mean': round(np.mean(weighted_data), 3),
+        'Segment Weighted Median': seg_weighted_median,
+        'Route Weighted Median': route_weighted_median,
+        'Traversal Weighted Median': round(np.median(weighted_data), 2),
+        'Traversal Weighted Std': round(np.std(weighted_data), 3),
+        'Traversal Weighted 25 % Quantile': round(np.quantile(weighted_data, 0.25), 3),
+        'Traversal Weighted 50 % Quantile': round(np.quantile(weighted_data, 0.5), 3),
+        'Traversal Weighted 75 % Quantile': round(np.quantile(weighted_data, 0.75), 3),
+        'No of Segments': len(df.segment_id.unique()),
+        'No of Routes': len(df.route_id.unique()),
+        'No of Traversals': sum(df.traversals),  
+        'Max Spacing': max_spacing,
+        '% Segments w/ spacing > max_spacing': percent_spacing}
     summary_df = pd.DataFrame([df_dict])
     if export:
-        summary_df.to_csv(csv_path,index = False)
+        summary_df.to_csv(csv_path, index=False)
         return "Saved the summary.csv in "+folder_path
     else:
-       summary_df = summary_df.T
-       return summary_df
+        summary_df = summary_df.T
+        return summary_df
    
-def download_latest_data(sources_df,out_folder_path):
+   
+def download_latest_data(sources_df, out_folder_path):
     """
     It iterates over the rows of the dataframe, and for each row, it tries to download the file from the
     URL in the `urls.latest` column, and write it to the folder specified in the `provider` column
@@ -137,10 +154,11 @@ def download_latest_data(sources_df,out_folder_path):
       sources_df: This is the dataframe that contains the urls for the data.
       out_folder_path: The path to the folder where you want to save the data.
     """
-    for i,row in sources_df.iterrows():
+    for i, row in sources_df.iterrows():
         try:
-            download_write_file(row['url'],os.path.join(out_folder_path,row['provider']))
-        except:
+            download_write_file(row['url'], os.path.join(out_folder_path, row['provider']))
+        except Exception as e:
+            print("Error downloading the file for "+row['provider']+" : "+str(e))
             continue
-    print("Downloaded the latest data")    
+    print("Downloaded the latest data")
     

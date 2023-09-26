@@ -1,8 +1,20 @@
+import os
+import numpy as np
+import pandas as pd
 import geopandas as gpd
+from shapely.geometry import LineString
 from .partridge_func import get_bus_feed
-from .geom_utils import *
-from .utils import *
-from .mobility import *
+from .geom_utils import (
+  nearest_points,
+  get_zone_epsg,
+  ret_high_res_shape,
+  make_gdf)
+from .utils import (
+  failed_pipeline,
+  download_write_file,
+  export_segments,
+  plot_hist)
+from .mobility import summary_stats_mobility
 
 
 def merge_trip_geom(trip_df, shape_df):
@@ -17,9 +29,9 @@ def merge_trip_geom(trip_df, shape_df):
     Returns:
       A GeoDataFrame
     """
-    ## `direction_id` and `shape_id` are optional
+    # `direction_id` and `shape_id` are optional
     if "direction_id" in trip_df.columns:
-        ## Check is direction_ids are listed as null
+        # Check is direction_ids are listed as null
         if trip_df["direction_id"].isnull().sum() == 0:
             grp = trip_df.groupby(["route_id", "shape_id", "direction_id"])
         else:
@@ -93,7 +105,7 @@ def filter_stop_df(stop_df, trip_ids):
         grp_l = stop_df_grp.last()
         drop_inds.append(grp_l.loc[grp_f["drop_off_type"] == 1, "main_index"])
     if len(drop_inds[0]) > 0:
-      stop_df = stop_df[~stop_df["main_index"].isin(drop_inds)].reset_index(drop=True)
+        stop_df = stop_df[~stop_df["main_index"].isin(drop_inds)].reset_index(drop=True)
     stop_df = stop_df[["trip_id", "stop_id", "stop_sequence"]]
     stop_df = stop_df[stop_df.trip_id.isin(trip_ids)].reset_index(drop=True)
     stop_df = stop_df.sort_values(["trip_id", "stop_sequence"]).reset_index(drop=True)
@@ -207,7 +219,7 @@ def process_feed(feed, max_spacing=None):
     Returns:
       A GeoDataFrame containing information about the stops and segments in the feed with segments smaller than the max_spacing values.
     """
-    ## Set a Spatial Resolution and increase the resolution of the shapes
+    # Set a Spatial Resolution and increase the resolution of the shapes
     shapes = ret_high_res_shape(feed.shapes, spat_res=5)
     trip_df = merge_trip_geom(feed.trips, shapes)
     trip_ids = trip_df.trip_id.unique()
@@ -238,7 +250,7 @@ def process_feed(feed, max_spacing=None):
     )
     col_subset = subset_list[np.in1d(subset_list, stop_df.columns)]
     stop_df = stop_df[col_subset]
-    if max_spacing != None:
+    if max_spacing is not None:
         stop_df = stop_df[stop_df["distance"] <= max_spacing]
     return make_gdf(stop_df)
 
@@ -257,12 +269,13 @@ def inspect_feed(feed):
     message = True
     if len(feed.stop_times) == 0:
         message = "No Bus Routes in "
-    if not "shape_id" in feed.trips.columns:
+    if "shape_id" not in feed.trips.columns:
         message = "Missing `shape_id` column in "
     return message
 
 
-def get_gtfs_segments(path, agency_id =None, threshold=1, max_spacing=None):
+
+def get_gtfs_segments(path, agency_id=None, threshold=1, max_spacing=None):
     """
     The function `get_gtfs_segments` takes a path to a GTFS feed file, an optional agency name, a
     threshold value, and an optional maximum spacing value, and returns processed GTFS segments.
@@ -291,7 +304,7 @@ def get_gtfs_segments(path, agency_id =None, threshold=1, max_spacing=None):
       traversals: The number of times the indicated route traverses the segment during the "measurement interval." The "measurement interval" chosen is the busiest day in the GTFS schedule: the day which has the most bus services running.
       distance: The length of the segment in meters.
       geometry: The segment's LINESTRING (a format for encoding geographic paths). All geometries are re-projected onto Mercator (EPSG:4326/WGS84) to maintain consistency."""
-    bday, feed = get_bus_feed(path, agency_id =agency_id , threshold=threshold)
+    _, feed = get_bus_feed(path, agency_id=agency_id, threshold=threshold)
     return process_feed(feed, max_spacing)
 
 
@@ -327,18 +340,18 @@ def pipeline_gtfs(filename, url, bounds, max_spacing):
     folder_path = os.path.join("output_files", filename)
     gtfs_file_loc = download_write_file(url, folder_path)
 
-    ## read file using GTFS Fucntions
+    # read file using GTFS Fucntions
     busisest_day, feed = get_bus_feed(gtfs_file_loc)
-    ## Remove Null entries
+    # Remove Null entries
     message = inspect_feed(feed)
-    if message != True:
+    if message is not True:
         return failed_pipeline(message, filename, folder_path)
 
     df = process_feed(feed)
     df_sub = df[df["distance"] < 3000].copy().reset_index(drop=True)
     if len(df_sub) == 0:
         return failed_pipeline("Only Long Bus Routes in ", filename, folder_path)
-    ## Output files and Stats
+    # Output files and Stats
     summary_stats_mobility(
         df, folder_path, filename, busisest_day, url, bounds, max_spacing, export=True
     )

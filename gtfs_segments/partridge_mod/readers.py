@@ -12,8 +12,6 @@ from isoweek import Week
 from .gtfs import Feed, View
 from .parsers import vparse_date
 
-
-
 DAY_NAMES = (
     "monday",
     "tuesday",

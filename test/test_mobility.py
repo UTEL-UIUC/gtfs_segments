@@ -3,16 +3,21 @@
 import os
 import glob
 import unittest
-from gtfs_segments import *
+from gtfs_segments import fetch_gtfs_source, download_latest_data
 import pandas as pd
 
-dir = os.path.dirname(__file__)
+test_dir = os.path.dirname(__file__)
 class TestMobiliy(unittest.TestCase):
     """Tests for the mobility.py module."""
 
     def setUp(self):
         """Set up test fixtures, if any."""
-        self.gtfs_path = "data/San Francisco-San Francisco Municipal Transportation Agency (SFMTA, Muni)-CA/gtfs.zip"
+        self.gtfs_path = os.path.join(
+            test_dir,
+            'data',
+            'San Francisco-San Francisco Municipal Transportation Agency (SFMTA, Muni)-CA',
+            'gtfs.zip'
+        )
         
 
     def tearDown(self):
@@ -32,10 +37,10 @@ class TestMobiliy(unittest.TestCase):
     
     def test_download_gtfs(self):
         sources_df = fetch_gtfs_source('SFMTA', active = True)
-        download_latest_data(sources_df, os.path.join(dir,'data'))
-        self.assertTrue(os.path.exists(os.path.join(dir,'data')), 'Check if the data_test folder exists')
-        folders = glob.glob(os.path.join(dir,'data/*'))
+        download_latest_data(sources_df, os.path.join(test_dir,'data'))
+        self.assertTrue(os.path.exists(os.path.join(test_dir,'data')), 'Check if the data_test folder exists')
+        folders = glob.glob(os.path.join(test_dir,'data/*'))
         self.assertTrue(len(folders) > 0, 'Check if the data_test folder is not empty')
-        sub_folder = glob.glob(os.path.join(dir,'data/*'))
+        sub_folder = glob.glob(os.path.join(test_dir,'data/*'))
         file = os.listdir(sub_folder[0])[0]
         self.assertTrue(file.endswith('.zip'), 'Check if the data folder contains a zip file')

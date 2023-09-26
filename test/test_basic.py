@@ -6,13 +6,21 @@ import requests
 import gtfs_segments.partridge_mod as ptg
 from gtfs_segments import get_bus_feed
 
+test_dir = os.path.dirname(__file__)
+
+
 
 class TestBasic(unittest.TestCase):
     """Tests for some basic prerequisites for the package to work."""
 
     def setUp(self):
         """Set up test fixtures, if any."""
-        self.gtfs_path = "data/San Francisco-San Francisco Municipal Transportation Agency (SFMTA, Muni)-CA/gtfs.zip"
+        self.gtfs_path = os.path.join(
+            test_dir,
+            'data',
+            'San Francisco-San Francisco Municipal Transportation Agency (SFMTA, Muni)-CA',
+            'gtfs.zip'
+        )
 
     def tearDown(self):
         """Tear down test fixtures, if any."""
@@ -40,15 +48,15 @@ class TestBasic(unittest.TestCase):
 
     def test_partridge(self):
         """
-        The function tests if partridge is installed and specifically the version is from https://github.com/praneethd7/partridge.git@fix_geopandas_projection
+        The function tests if partridge is pointing to the modified version.
         """
         self.assertTrue(
             ptg.__version__ == "1.1.1b1",
-            "Please use the version of partridge from https://github.com/praneethd7/partridge.git@fix_geopandas_projection",
+            "Please use the following version of partridge 1.1.1b1",
         )
         _date, feed = get_bus_feed(self.gtfs_path)
         self.assertTrue(
-            isinstance(feed) == ptg.gtfs.Feed,
+            isinstance(feed, ptg.gtfs.Feed),
             "Error with feed type. Make sure the partridge library is installed correctly",
         )
         self.assertGreaterEqual(len(feed.agency), 1, "Some error with feed processing")

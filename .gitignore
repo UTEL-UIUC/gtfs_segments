@@ -1,6 +1,6 @@
 __pycache__/
 *.ai
-
+.tox
 # Distribution / packaging
 .Python
 
