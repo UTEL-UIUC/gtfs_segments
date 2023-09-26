@@ -1,0 +1,50 @@
+site_name: GTFS Segments
+repo_name: UTEL-UIUC/gtfs_segments
+repo_url: https://github.com/UTEL-UIUC/gtfs_segments
+theme:
+  name: material
+  logo: assets/logo.jpg
+  palette:
+    - scheme: default
+      primary: black
+      accent: blue
+  font:
+    text: Roboto
+    code: Roboto Mono
+  favicon: assets/logo.svg
+  icon:
+        repo: fontawesome/brands/github
+  
+  nav_style: dark
+  include_homepage_in_sidebar: true
+  prev_next_buttons_location: bottom
+  shortcuts:
+    help: 191    # ?
+    next: 78     # n
+    previous: 80 # p
+    search: 83   # s
+  highlightjs: true
+  hljs_languages:
+    - yaml
+    - python
+    - shell
+plugins:
+    - search
+    - mkdocstrings
+
+nav:
+    - Home: index.md
+    - Getting Started:
+        - Installation: installation.md
+        - Usage: usage.md
+    - API Reference:
+        - gtfs_segments: gtfs_segments.md
+        - gtfs_segments.utils: utils.md
+        - gtfs_segments.geom_utils: geom_utils.md
+        - gtfs_segments.route_stats: route_stats.md
+        - gtfs_segments.mobility: mobility.md
+        - gtfs_segments.partridge_func: partridge_func.md
+
+extra:
+  version:
+    provider: mike
