@@ -3,7 +3,7 @@ repo_name: UTEL-UIUC/gtfs_segments
 repo_url: https://github.com/UTEL-UIUC/gtfs_segments
 theme:
   name: material
-  logo: assets/logo.jpg
+  logo: https://github.com/UTEL-UIUC/gtfs_segments/blob/main/images/logo.jpg?raw=true
   palette:
     - scheme: default
       primary: black
@@ -44,6 +44,8 @@ nav:
         - gtfs_segments.route_stats: route_stats.md
         - gtfs_segments.mobility: mobility.md
         - gtfs_segments.partridge_func: partridge_func.md
+    - License: license.md
+    - Contributing: CONTRIBUTING.md
 
 extra:
   version:

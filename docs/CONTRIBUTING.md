@@ -52,46 +52,46 @@ Ready to contribute? Here's how to set up gtfs_segments for local development.
 
 2.  Clone your fork locally:
 
-    ```shell
+```shell
     $ git clone git@github.com:UTEL-UIUC/gtfs_segments.git
-    ```
+```
 
 3.  Install your local copy into a virtualenv. Assuming you have
     virtualenvwrapper installed, this is how you set up your fork for
     local development:
 
-    ```shell
+```shell
     $ mkvirtualenv gtfs_segments
     $ cd gtfs_segments/
     $ python setup.py develop
-    ```
+```
 
 4.  Create a branch for local development:
 
-    ```shell
+```shell
     $ git checkout -b name-of-your-bugfix-or-feature
-    ```
+```
 
     Now you can make your changes locally.
 
 5.  When you're done making changes, check that your changes pass flake8
     and the tests, including testing other Python versions with tox:
 
-    ```shell
-    $ flake8 gtfs_segments tests
-    $ python setup.py test or pytest
+```shell
+    $ flake8 gtfs_segments test
+    $ python -m unittest
     $ tox
-    ```
+```
 
-    To get flake8 and tox, just pip install them into your virtualenv.
+To get flake8 and tox, just pip install them into your virtualenv.
 
 6.  Commit your changes and push your branch to GitHub:
 
-    ```shell
+```sh
     $ git add .
     $ git commit -m "Your detailed description of your changes."
     $ git push origin name-of-your-bugfix-or-feature
-    ```
+```
 
 7.  Submit a pull request through the GitHub website.
 
@@ -112,11 +112,11 @@ Unit tests are in the `test` folder. If you add new functionality to the package
 
 To run the unit tests, navigate to the root directory of the package and run the following command:
 ```bash
-python -m unittest
+    python -m unittest
 ```
 or 
 ```bash
-python -m unittest discover test
+    python -m unittest discover test
 ```
 
 ## Add new dependencies

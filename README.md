@@ -4,6 +4,7 @@
 -->
 
 ![Tests](https://github.com/UTEL-UIUC/gtfs_segments/actions/workflows/python-package.yml/badge.svg)
+[![Documentation Status](https://readthedocs.org/projects/gtfs-segments/badge/?version=latest)](https://gtfs-segments.readthedocs.io/en/latest/?badge=latest)
 [![PyPI version](https://badge.fury.io/py/gtfs-segments.svg)](https://pypi.org/project/gtfs-segments/)
 [![Downloads](https://static.pepy.tech/badge/gtfs-segments)](https://pepy.tech/project/gtfs-segments)
 [![image](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1mGmFxw8G194bmg3VQm6vg7dVxCt715eD?usp=sharing)
@@ -294,7 +295,7 @@ See the [open issues](https://github.com/UTEL-UIUC/gtfs_segments/issues) for a f
 <!-- LICENSE -->
 # License
 
-Distributed under the MIT License. See `LICENSE.txt` for more information.
+Distributed under the MIT License. See [`LICENSE.txt`](https://github.com/UTEL-UIUC/gtfs_segments/blob/main/LICENSE) for more information.
 
 <!-- <p align="right">(<a href="#top">back to top</a>)</p> -->
 
@@ -357,7 +358,7 @@ Don't forget to give the project a star! Thanks again!
 4. Push to the Branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
-For more information refer to [CONTRIBUTING.md](https://github.com/UTEL-UIUC/gtfs_segments/CONTRIBUTING.md)
+For more information refer to [CONTRIBUTING.md](https://github.com/UTEL-UIUC/gtfs_segments/docs/CONTRIBUTING.md)
 
 <!-- CONTACT -->
 # Contact
