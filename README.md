@@ -3,16 +3,17 @@
 *** Adapted from Best-README-Template
 -->
 
+![Tests](https://github.com/UTEL-UIUC/gtfs_segments/actions/workflows/python-package.yml/badge.svg)
+[![PyPI version](https://badge.fury.io/py/gtfs-segments.svg)](https://pypi.org/project/gtfs-segments/)
+[![Downloads](https://static.pepy.tech/badge/gtfs-segments)](https://pepy.tech/project/gtfs-segments)
+[![image](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1mGmFxw8G194bmg3VQm6vg7dVxCt715eD?usp=sharing)
+
 [![Contributors][contributors-shield]][contributors-url]
 [![Forks][forks-shield]][forks-url]
 [![Stargazers][stars-shield]][stars-url]
 [![Issues][issues-shield]][issues-url]
+[![MIT License][license-shield]][license-url]
 
-
-![Tests](https://github.com/UTEL-UIUC/gtfs_segments/actions/workflows/python-package.yml/badge.svg)
-[![PyPI version](https://badge.fury.io/py/gtfs-segments.svg)](https://pypi.org/project/gtfs-segments/)
-[![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)][license-url]
-<!-- [![LinkedIn][linkedin-shield]][linkedin-url] -->
 
 <!-- PROJECT LOGO -->
 <div align="center">
