@@ -7,7 +7,11 @@
 [![Forks][forks-shield]][forks-url]
 [![Stargazers][stars-shield]][stars-url]
 [![Issues][issues-shield]][issues-url]
-[![MIT License][license-shield]][license-url]
+
+
+![Tests](https://github.com/UTEL-UIUC/gtfs_segments/actions/workflows/python-package.yml/badge.svg)
+[![PyPI version](https://badge.fury.io/py/gtfs-segments.svg)](https://pypi.org/project/gtfs-segments/)
+[![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)][license-url]
 <!-- [![LinkedIn][linkedin-shield]][linkedin-url] -->
 
 <!-- PROJECT LOGO -->
@@ -72,7 +76,7 @@
 
 The `gtfs-segments` is a Python package that represents GTFS data for **buses** in a concise tabular manner using segments. The distribution of bus stop spacings can be viewed by generating histograms. The stop spacings can be visualized at the network, route, or segment level. The segment data can be exported to well known formats such as `.csv` or `.geojson` for further analysis. Additionally, the package provides commands to download the latest data from [@mobility data](https://mobilitydata.org/) sources.
 
-The package condenses the raw GTFS data by considering the services offered only on the `busiest day`(in the data). More discussion on the interpretation of different weightings for stop spacings,  and the process in which the package condenses information can be seen in our [arXiv paper](https://arxiv.org/abs/2208.04394). The usage of the package is detailed in [documentation](https://utel-uiuc.github.io/gtfs_segments_docs/). The stop spacings dataset containing over 600 transit providers in the US generated using this package can be found on [Harvard Dataverse](https://doi.org/10.7910/DVN/SFBIVU).
+The package condenses the raw GTFS data by considering the services offered only on the `busiest day`(in the data). More discussion on the interpretation of different weightings for stop spacings,  and the process in which the package condenses information can be seen in our [arXiv paper](https://arxiv.org/abs/2208.04394). The usage of the package is detailed in [documentation](https://utel-uiuc.github.io/gtfs_segments_docs/). The stop spacings dataset containing over 540 transit providers in the US generated using this package can be found on [Harvard Dataverse](https://doi.org/10.7910/DVN/SFBIVU).
 
  
 
@@ -92,12 +96,12 @@ The major dependencies of this library are the following packages.
   <li>numpy</li>
   <li>shapely</li>
   <li>pandas</li>
-  <li>geopandas</li>
+  <li>scipy</li>
 </ul>
 </td>
 <td>
 <ul>
-  <li>partridge</li>
+  <li>geopandas</li>
   <li>matplotlib</li>
   <li>contextily</li>
 </ul>
@@ -122,7 +126,7 @@ pip install gtfs-segments
 > 📓 <b> Google Colab :</b> You can install and use the `gtfs-segments` via google colab. Here is a [tutorial](https://colab.research.google.com/drive/1mGmFxw8G194bmg3VQm6vg7dVxCt715eD?usp=sharing
 ) to help you get started. Make a copy and get started with your work!
 
-### Option B
+### **Option** B
 
 1. Clone the repo
     ```sh
@@ -156,7 +160,7 @@ import gtfs_segments
 
 ### Fetch all sources
 ```python
-from gtfs_segments import fetch_gtfs_source
+from gtfs_segments import **fetch_gtfs_source**
 sources_df = fetch_gtfs_source()
 sources_df.head()
 ```
