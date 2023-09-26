@@ -1,4 +1,4 @@
-import partridge as ptg
+import gtfs_segments.partridge_mod as ptg
 import pandas as pd
 
 

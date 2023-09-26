@@ -1,14 +1,13 @@
 import os
 from setuptools import setup, find_packages
 
-__version__ = '0.0.8' 
+__version__ = '0.0.9' 
 DESCRIPTION = 'GTFS segments'
 with open("README.md", "r", encoding="utf8") as fh:
     LONG_DESCRIPTION = fh.read()
     
 REQUIREMENTS = ['geopandas',
                 'scipy',
-                'partridge',
                 'shapely',
                 'numpy',
                 'pandas',
@@ -16,8 +15,6 @@ REQUIREMENTS = ['geopandas',
                 'utm',
                 'contextily',
                 'requests']
-
-os.system('pip install -e git+https://github.com/praneethd7/partridge.git@fix_geopandas_projection#egg=partridge')
 
 # Setting up
 setup(
