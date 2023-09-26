@@ -92,7 +92,8 @@ def filter_stop_df(stop_df, trip_ids):
     if "drop_off_type" in stop_df.columns:
         grp_l = stop_df_grp.last()
         drop_inds.append(grp_l.loc[grp_f["drop_off_type"] == 1, "main_index"])
-    stop_df = stop_df[~stop_df["main_index"].isin(drop_inds)].reset_index(drop=True)
+    if len(drop_inds[0]) > 0:
+      stop_df = stop_df[~stop_df["main_index"].isin(drop_inds)].reset_index(drop=True)
     stop_df = stop_df[["trip_id", "stop_id", "stop_sequence"]]
     stop_df = stop_df[stop_df.trip_id.isin(trip_ids)].reset_index(drop=True)
     stop_df = stop_df.sort_values(["trip_id", "stop_sequence"]).reset_index(drop=True)

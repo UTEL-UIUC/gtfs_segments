@@ -136,11 +136,7 @@ pip install gtfs-segments
     conda config --env --set channel_priority strict
     conda install python=3 geopandas
     ```
-3. [Optional] Install modified version of `partridge` library and install it manually.
-    ```sh
-    pip install -e git+https://github.com/praneethd7/partridge.git@fix_geopandas_projection#egg=partridge
-    ```  
-4. Install the `gtfs_segments` package
+3. Install the `gtfs_segments` package
     ```sh
     cd gtfs_segments
     python setup.py install

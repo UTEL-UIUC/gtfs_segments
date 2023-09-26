@@ -3,7 +3,7 @@
 import os
 import requests
 import unittest
-import partridge as ptg
+import gtfs_segments.partridge_mod as ptg
 from gtfs_segments import *
 
 
@@ -41,7 +41,7 @@ class TestBasic(unittest.TestCase):
         """
         The function tests if partridge is installed and specifically the version is from https://github.com/praneethd7/partridge.git@fix_geopandas_projection
         """
-        self.assertTrue(ptg.__version__ == '1.1.1a0', "Please use the version of partridge from https://github.com/praneethd7/partridge.git@fix_geopandas_projection")
+        self.assertTrue(ptg.__version__ == '1.1.1b1', "Please use the version of partridge from https://github.com/praneethd7/partridge.git@fix_geopandas_projection")
         _date, feed = get_bus_feed(self.gtfs_path)
         self.assertTrue(type(feed) == ptg.gtfs.Feed, "Error with feed type. Make sure the partridge library is installed correctly")
         self.assertGreaterEqual(len(feed.agency), 1, "Some error with feed processing")
