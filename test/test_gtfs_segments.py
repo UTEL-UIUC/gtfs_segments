@@ -4,16 +4,19 @@ import os
 import requests
 import unittest
 from gtfs_segments.partridge_func import get_bus_feed
-from gtfs_segments.gtfs_segments import inspect_feed , get_gtfs_segments
+from gtfs_segments.gtfs_segments import inspect_feed, get_gtfs_segments
+
 import geopandas as gpd
 
-
+dir = os.path.dirname(__file__)
 class TestGTFSSegments(unittest.TestCase):
     """Tests for gtfs_segments.py module in the package."""
 
     def setUp(self):
         """Set up test fixtures, if any."""
-        self.gtfs_path = "data/San Francisco-San Francisco Municipal Transportation Agency (SFMTA, Muni)-CA/gtfs.zip"
+        self.gtfs_path = os.path.join(
+            dir, "data", "San Francisco-San Francisco Municipal Transportation Agency (SFMTA, Muni)-CA", "gtfs.zip"
+        )
         
 
     def tearDown(self):

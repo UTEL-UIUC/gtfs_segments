@@ -6,6 +6,7 @@ import unittest
 from gtfs_segments import *
 import pandas as pd
 
+dir = os.path.dirname(__file__)
 class TestMobiliy(unittest.TestCase):
     """Tests for the mobility.py module."""
 
@@ -31,9 +32,10 @@ class TestMobiliy(unittest.TestCase):
     
     def test_download_gtfs(self):
         sources_df = fetch_gtfs_source('SFMTA', active = True)
-        download_latest_data(sources_df, 'data')
-        self.assertTrue(os.path.exists('data'), 'Check if the data_test folder exists')
-        folders = glob.glob('data/*')
+        download_latest_data(sources_df, os.path.join(dir,'data'))
+        self.assertTrue(os.path.exists(os.path.join(dir,'data')), 'Check if the data_test folder exists')
+        folders = glob.glob(os.path.join(dir,'data/*'))
         self.assertTrue(len(folders) > 0, 'Check if the data_test folder is not empty')
-        files = glob.glob('data/*')
-        self.assertTrue(files[0].endswith('.zip'), 'Check if the data_test folder contains a zip file')
+        sub_folder = glob.glob(os.path.join(dir,'data/*'))
+        file = os.listdir(sub_folder[0])[0]
+        self.assertTrue(file.endswith('.zip'), 'Check if the data folder contains a zip file')
