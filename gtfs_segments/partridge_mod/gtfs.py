@@ -133,7 +133,7 @@ class Feed(object):
         converters = self._transforms_dict[filename].get("converters", {})
         for col, converter in converters.items():
             if col in df.columns:
-                df.loc[:,col] = converter(df[col])
+                df[col] = converter(df[col])
                 
     def _transform(self, filename: str, df: pd.DataFrame) -> pd.DataFrame:
         transformations = self._transforms_dict[filename].get("transformations", [])

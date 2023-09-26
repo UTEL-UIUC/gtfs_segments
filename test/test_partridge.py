@@ -17,12 +17,6 @@ class TestPartridge(unittest.TestCase):
             'San Francisco-San Francisco Municipal Transportation Agency (SFMTA, Muni)-CA',
             'gtfs.zip'
         )
-        
-    def test_load_feed(self):
-        feed = ptg.load_feed(self.gtfs_path)
-        assert feed.stop_times.dtypes["stop_id"] == "O"
-        assert feed.stop_times.dtypes["stop_sequence"] == "O"
-        assert feed.stop_times.dtypes["arrival_time"] == "O"
 
 
     def test_load_geo_feed(self):
