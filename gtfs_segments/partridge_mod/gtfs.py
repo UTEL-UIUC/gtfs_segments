@@ -1,17 +1,19 @@
 import os
 from threading import RLock
-from typing import Any,Dict, Optional, Union
+from typing import Any, Dict, Optional, Union
 import pandas as pd
-
-# from .config import default_config
-View = Dict[str, Dict[str, Any]]
 from .utilities import detect_encoding, setwrap
 from .parsers import transforms_dict
+# from .config import default_config
+View = Dict[str, Dict[str, Any]]
+
 
 def _read_file(filename: str) -> property:
     def getter(self) -> pd.DataFrame:
         return self.get(filename)
+
     return property(getter)
+
 
 class Feed(object):
     def __init__(
@@ -47,31 +49,30 @@ class Feed(object):
                 df = df.reset_index(drop=True)
                 df = self._transform(filename, df)
                 self.set(filename, df)
-                
+
             return self._cache[filename]
 
     def set(self, filename: str, df: pd.DataFrame) -> None:
         lock = self._locks.get(filename, self._shared_lock)
         with lock:
             self._cache[filename] = df
-    
-    ## Required files      
+
+    # Required files
     agency = _read_file("agency.txt")
     calendar = _read_file("calendar.txt")
     calendar_dates = _read_file("calendar_dates.txt")
     routes = _read_file("routes.txt")
-    trips = _read_file("trips.txt")    
+    trips = _read_file("trips.txt")
     shapes = _read_file("shapes.txt")
     stop_times = _read_file("stop_times.txt")
     stops = _read_file("stops.txt")
-    
-    ## Optional files
+
+    # Optional files
     fare_attributes = _read_file("fare_attributes.txt")
     fare_rules = _read_file("fare_rules.txt")
     feed_info = _read_file("feed_info.txt")
     frequencies = _read_file("frequencies.txt")
     transfers = _read_file("transfers.txt")
-    
 
     def _bootstrap(self, path: str) -> None:
         # Walk recursively through the directory
@@ -106,7 +107,7 @@ class Feed(object):
         if not df.empty:
             # Strip leading/trailing whitespace from column values
             for col in df.columns:
-                df.loc[:,col] = df[col].str.strip()
+                df.loc[:, col] = df[col].str.strip()
 
         return df
 
@@ -122,7 +123,7 @@ class Feed(object):
                 df = df[df[col].isin(setwrap(values))]
 
         return df
-    
+
     def _convert_types(self, filename: str, df: pd.DataFrame) -> None:
         """
         Apply type conversions
@@ -134,7 +135,7 @@ class Feed(object):
         for col, converter in converters.items():
             if col in df.columns:
                 df[col] = converter(df[col])
-                
+
     def _transform(self, filename: str, df: pd.DataFrame) -> pd.DataFrame:
         transformations = self._transforms_dict[filename].get("transformations", [])
         if "geometry" not in df.columns:

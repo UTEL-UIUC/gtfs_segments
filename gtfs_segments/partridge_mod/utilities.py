@@ -14,7 +14,7 @@ def setwrap(value: Any) -> Set[str]:
     return set(map(str, set(flatten([value]))))
 
 
-def detect_encoding(f: BinaryIO, limit: int = 2500) -> str:
+def detect_encoding(file: BinaryIO, limit: int = 2500) -> str:
     """
     Return encoding of provided input stream.
 
@@ -23,7 +23,7 @@ def detect_encoding(f: BinaryIO, limit: int = 2500) -> str:
     """
     unicode_decodable = True
 
-    for line_no, line in enumerate(f):
+    for line_no, line in enumerate(file):
         try:
             line.decode("utf-8")
         except UnicodeDecodeError:
@@ -36,5 +36,5 @@ def detect_encoding(f: BinaryIO, limit: int = 2500) -> str:
     if unicode_decodable:
         return "utf-8"
 
-    f.seek(0)
-    return detect(f.read())["encoding"]
+    file.seek(0)
+    return detect(file.read())["encoding"]

@@ -1,4 +1,4 @@
-# This sub_module is an adaption of partridge[https://github.com/remix/partridge] library. 
+# This sub_module is an adaption of partridge[https://github.com/remix/partridge] library.
 from .__version__ import __version__
 from .readers import (
     load_feed,

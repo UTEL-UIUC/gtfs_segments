@@ -4,16 +4,8 @@ import pandas as pd
 import geopandas as gpd
 from shapely.geometry import LineString
 from .partridge_func import get_bus_feed
-from .geom_utils import (
-  nearest_points,
-  get_zone_epsg,
-  ret_high_res_shape,
-  make_gdf)
-from .utils import (
-  failed_pipeline,
-  download_write_file,
-  export_segments,
-  plot_hist)
+from .geom_utils import nearest_points, get_zone_epsg, ret_high_res_shape, make_gdf
+from .utils import failed_pipeline, download_write_file, export_segments, plot_hist
 from .mobility import summary_stats_mobility
 
 
@@ -50,7 +42,7 @@ def merge_trip_geom(trip_df, shape_df):
     return make_gdf(trip_df)
 
 
-def make_segments_unique(df,traversal_threshold = 1):
+def make_segments_unique(df, traversal_threshold=1):
     """
     For each route_id and segment_id combination, if there are more than one unique distance values,
     then split the segment_id into three parts, and add a number to the end of the segment_id
@@ -97,7 +89,7 @@ def filter_stop_df(stop_df, trip_ids):
     stop_df["main_index"] = stop_df.index
     stop_df_grp = stop_df.groupby("trip_id")
     drop_inds = []
-    ## To eliminate deadheads
+    # To eliminate deadheads
     if "pickup_type" in stop_df.columns:
         grp_f = stop_df_grp.first()
         drop_inds.append(grp_f.loc[grp_f["pickup_type"] == 1, "main_index"])
@@ -162,7 +154,7 @@ def create_segments(stop_df):
     )
     stop_df["geometry"] = stop_df.apply(
         lambda row: LineString(
-            row["geometry"].coords[row["snap_start_id"] : row["snap_end_id"] + 1]
+            row["geometry"].coords[row["snap_start_id"]: row["snap_end_id"] + 1]
         ),
         axis=1,
     )
@@ -207,7 +199,7 @@ def process_feed(feed, max_spacing=None):
     The function `process_feed` takes a feed and optional maximum spacing as input, performs various
     data processing and filtering operations on the feed, and returns a GeoDataFrame containing the
     processed data.
-    
+
     Args:
       feed: The `feed` parameter is a data structure that contains information about a transit network.
     It likely includes data such as shapes (geometric representations of routes), trips (sequences of
@@ -215,7 +207,7 @@ def process_feed(feed, max_spacing=None):
       [Optional] max_spacing: The `max_spacing` parameter is an optional parameter that specifies the maximum
     distance between stops. If provided, the function will filter out stops that are farther apart than
     the specified maximum spacing.
-    
+
     Returns:
       A GeoDataFrame containing information about the stops and segments in the feed with segments smaller than the max_spacing values.
     """
@@ -234,7 +226,7 @@ def process_feed(feed, max_spacing=None):
         stop_df.set_geometry("geometry").to_crs(epsg_zone).geometry.length
     )
     stop_df["distance"] = stop_df["distance"].round(2)  # round to 2 decimal places
-    stop_df = make_segments_unique(stop_df,traversal_threshold=1)
+    stop_df = make_segments_unique(stop_df, traversal_threshold=1)
     subset_list = np.array(
         [
             "segment_id",
@@ -274,7 +266,6 @@ def inspect_feed(feed):
     return message
 
 
-
 def get_gtfs_segments(path, agency_id=None, threshold=1, max_spacing=None):
     """
     The function `get_gtfs_segments` takes a path to a GTFS feed file, an optional agency name, a
@@ -303,7 +294,8 @@ def get_gtfs_segments(path, agency_id=None, threshold=1, max_spacing=None):
       direction_id: The route's direction identifier.
       traversals: The number of times the indicated route traverses the segment during the "measurement interval." The "measurement interval" chosen is the busiest day in the GTFS schedule: the day which has the most bus services running.
       distance: The length of the segment in meters.
-      geometry: The segment's LINESTRING (a format for encoding geographic paths). All geometries are re-projected onto Mercator (EPSG:4326/WGS84) to maintain consistency."""
+      geometry: The segment's LINESTRING (a format for encoding geographic paths). All geometries are re-projected onto Mercator (EPSG:4326/WGS84) to maintain consistency.
+    """
     _, feed = get_bus_feed(path, agency_id=agency_id, threshold=threshold)
     return process_feed(feed, max_spacing)
 

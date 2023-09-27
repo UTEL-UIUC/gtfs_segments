@@ -9,7 +9,6 @@ from gtfs_segments import get_bus_feed
 test_dir = os.path.dirname(__file__)
 
 
-
 class TestBasic(unittest.TestCase):
     """Tests for some basic prerequisites for the package to work."""
 
@@ -17,9 +16,9 @@ class TestBasic(unittest.TestCase):
         """Set up test fixtures, if any."""
         self.gtfs_path = os.path.join(
             test_dir,
-            'data',
-            'San Francisco-San Francisco Municipal Transportation Agency (SFMTA, Muni)-CA',
-            'gtfs.zip'
+            "data",
+            "San Francisco-San Francisco Municipal Transportation Agency (SFMTA, Muni)-CA",
+            "gtfs.zip",
         )
 
     def tearDown(self):
