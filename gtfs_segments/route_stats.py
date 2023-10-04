@@ -4,9 +4,9 @@ import pandas as pd
 from .geom_utils import code
 from datetime import timedelta
 import matplotlib.cm as cm
+from typing import List, Dict
 
-
-def get_zone_epsg_from_ls(geom):
+def get_zone_epsg_from_ls(geom) -> int:
     """
     > The function takes a dataframe with a geometry column and returns the EPSG code for the UTM zone
     that contains the geometry
@@ -23,7 +23,7 @@ def get_zone_epsg_from_ls(geom):
     return code(zone, lat)
 
 
-def get_sec(time_str):
+def get_sec(time_str) -> int:
     """
     It takes a string in the format of hh:mm:ss and returns the number of seconds
 
@@ -37,7 +37,7 @@ def get_sec(time_str):
     return int(h) * 3600 + int(m) * 60 + int(s)
 
 
-def get_trips_len(df, time):
+def get_trips_len(df, time) -> int:
     """
     > It returns the number of trips that are currently active at a given time
 
@@ -51,7 +51,7 @@ def get_trips_len(df, time):
     return len(df[(df.start_time <= time) & (df.end_time >= time)].trip_id.unique())
 
 
-def get_trips(df, time):
+def get_trips(df, time) -> pd.DataFrame:
     """
     > Return all trips that are currently active at a given time
 
@@ -65,7 +65,7 @@ def get_trips(df, time):
     return df[(df.start_time <= time) & (df.end_time >= time)]
 
 
-def get_peak_time(df):
+def get_peak_time(df) -> List:
     """
     The function `get_peak_time` takes a dataframe of bus trips and returns the number of buses and the
     time at which the most buses are running.
@@ -89,7 +89,7 @@ def get_peak_time(df):
     return [best, peak_time]
 
 
-def get_service_length(df):
+def get_service_length(df) -> int:
     """
     The function takes a GTFS feed and a route_id, sorts the dataframe by stop_sequence, adjusts the
     shape_dist_traveled values if necessary, and returns the maximum shape_dist_traveled value.
@@ -108,7 +108,7 @@ def get_service_length(df):
     return df.shape_dist_traveled.max()
 
 
-def get_route_grp(route_df):
+def get_route_grp(route_df) -> pd.DataFrame:
     """
     It takes a dataframe of route information and returns a dataframe of route information with the
     first and last stop times for each trip
@@ -140,7 +140,7 @@ def get_route_grp(route_df):
     return route_df_grp[col_subset]
 
 
-def get_all_peak_times(df_dir):
+def get_all_peak_times(df_dir) -> Dict[str, List]:
     """
     It takes a dataframe of bus trips and returns the peak number of buses and the time of the peak
 
@@ -186,7 +186,7 @@ def get_all_peak_times(df_dir):
     return {"peak_buses": peak_time_condensed}
 
 
-def get_cmap_string(palette, domain):
+def get_cmap_string(palette, domain) -> str:
     """
     It takes a list of colors and a list of values, and returns a function that maps each value to its
     corresponding color
@@ -208,7 +208,7 @@ def get_cmap_string(palette, domain):
     return cmap_out
 
 
-def get_average_headway(df_dir):
+def get_average_headway(df_dir) -> Dict[str, float]:
     """
     For each route, find the shape with the most trips, then find the stop with the most trips on that
     shape, then find the average headway for that stop
@@ -233,7 +233,7 @@ def get_average_headway(df_dir):
     return {"headway": np.round(hdw_0[hdw_0 <= 3 * 60 * 60].mean() / 3600, 2)}
 
 
-def get_average_speed(df_dir, route_dict):
+def get_average_speed(df_dir, route_dict) -> Dict[str, float]:
     """
     It takes a dataframe of a route and a dictionary of route information and returns a dictionary of
     average speeds for each direction
@@ -253,7 +253,7 @@ def get_average_speed(df_dir, route_dict):
     return ret_dict
 
 
-def get_route_time(df_dir):
+def get_route_time(df_dir) -> Dict[str, float]:
     """
     For each route, find the shape_id that has the most trips, then find the trip_id that has that
     shape_id, then find the arrival_time of the first and last stop of that trip_id, then subtract the
@@ -274,7 +274,7 @@ def get_route_time(df_dir):
     return {"total time": np.round(time_0 / 3600, 2) if time_0 != 0 else 0}
 
 
-def get_bus_spacing(route_dict):
+def get_bus_spacing(route_dict) -> Dict[str, float]:
     """
     It takes a dataframe of a route and a dictionary of route information and returns a dictionary of
     the minimum spacing between buses on the route
@@ -291,7 +291,7 @@ def get_bus_spacing(route_dict):
     }
 
 
-def average_active_buses(df_dir):
+def average_active_buses(df_dir) -> Dict[str, float]:
     n_buses = []
     df = get_route_grp(df_dir)
     start_time = int(min(df.start_time))
@@ -303,7 +303,7 @@ def average_active_buses(df_dir):
     return {"n bus avg": np.round(np.mean(n_buses[n_buses > 0]), 3)}
 
 
-def get_stop_spacing(df_dir, route_dict):
+def get_stop_spacing(df_dir, route_dict) -> Dict[str, float]:
     """
     For each route, find the shape with the most trips, and then find the number of stops on that trip.
     Then divide the route length by the number of stops to get the stop spacing
@@ -328,7 +328,7 @@ def get_stop_spacing(df_dir, route_dict):
     return {"stop spacing": np.round(spc_0, 2) if spc_0 != 0 else 0}
 
 
-def get_route_lens(df_dir, df_shapes):
+def get_route_lens(df_dir, df_shapes) -> Dict[str, float]:
     """
     It takes a dataframe of trips for a given route and a dataframe of shapes for a given route, and
     returns a dictionary with the length of the route in each direction
@@ -352,7 +352,7 @@ def get_route_lens(df_dir, df_shapes):
     return {"route length": np.round(len_0 / 1000, 2)}
 
 
-def get_route_stats(feed, peak_time=False):
+def get_route_stats(feed, peak_time=False) -> pd.DataFrame:
     """
     It takes a GTFS feed and a route_id and returns a dataframe with the following columns:
 

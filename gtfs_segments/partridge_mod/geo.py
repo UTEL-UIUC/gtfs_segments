@@ -31,7 +31,7 @@ def build_stops(df: pd.DataFrame) -> gpd.GeoDataFrame:
     if df.empty:
         return gpd.GeoDataFrame(df, geometry=[], crs=DEFAULT_CRS)
 
-    df = gpd.GeoDataFrame(df, crs=DEFAULT_CRS, geometry=gpd.points_from_xy(df.stop_lon,df.stop_lat))
+    df = gpd.GeoDataFrame(df, crs=DEFAULT_CRS, geometry=gpd.points_from_xy(df.stop_lon, df.stop_lat))
 
     df.drop(["stop_lon", "stop_lat"], axis=1, inplace=True)
 

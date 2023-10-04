@@ -9,7 +9,7 @@ from .utils import failed_pipeline, download_write_file, export_segments, plot_h
 from .mobility import summary_stats_mobility
 
 
-def merge_trip_geom(trip_df, shape_df):
+def merge_trip_geom(trip_df, shape_df) -> gpd.GeoDataFrame:
     """
     It takes a dataframe of trips and a dataframe of shapes, and returns a geodataframe of trips with
     the geometry of the shapes
@@ -42,7 +42,7 @@ def merge_trip_geom(trip_df, shape_df):
     return make_gdf(trip_df)
 
 
-def make_segments_unique(df, traversal_threshold=1):
+def make_segments_unique(df, traversal_threshold=1) -> gpd.GeoDataFrame:
     """
     For each route_id and segment_id combination, if there are more than one unique distance values,
     then split the segment_id into three parts, and add a number to the end of the segment_id
@@ -73,7 +73,7 @@ def make_segments_unique(df, traversal_threshold=1):
     return df
 
 
-def filter_stop_df(stop_df, trip_ids):
+def filter_stop_df(stop_df, trip_ids) -> gpd.GeoDataFrame:
     """
     It takes a dataframe of stops and a list of trip IDs and returns a dataframe of stops that are in
     the list of trip IDs
@@ -104,7 +104,7 @@ def filter_stop_df(stop_df, trip_ids):
     return stop_df
 
 
-def merge_stop_geom(stop_df, stop_loc_df):
+def merge_stop_geom(stop_df, stop_loc_df) -> gpd.GeoDataFrame:
     """
     > Merge the stop_loc_df with the stop_df, and then convert the result to a GeoDataFrame
 
@@ -122,7 +122,7 @@ def merge_stop_geom(stop_df, stop_loc_df):
     return make_gdf(stop_df)
 
 
-def create_segments(stop_df):
+def create_segments(stop_df) -> gpd.GeoDataFrame:
     """
     This function creates segments between stops based on their proximity and returns a GeoDataFrame.
 
@@ -161,7 +161,7 @@ def create_segments(stop_df):
     return make_gdf(stop_df)
 
 
-def process_feed_stops(feed, max_spacing=None):
+def process_feed_stops(feed, max_spacing=None) -> gpd.GeoDataFrame:
     """
     It takes a GTFS feed, merges the trip and shape data, filters the stop_times data to only include
     the trips that are in the feed, merges the stop_times data with the stop data, creates a segment for
@@ -194,7 +194,7 @@ def process_feed_stops(feed, max_spacing=None):
     return make_gdf(stop_df)
 
 
-def process_feed(feed, max_spacing=None):
+def process_feed(feed, max_spacing=None) -> gpd.GeoDataFrame:
     """
     The function `process_feed` takes a feed and optional maximum spacing as input, performs various
     data processing and filtering operations on the feed, and returns a GeoDataFrame containing the
@@ -247,7 +247,7 @@ def process_feed(feed, max_spacing=None):
     return make_gdf(stop_df)
 
 
-def inspect_feed(feed):
+def inspect_feed(feed) -> str:
     """
     It checks to see if the feed has any bus routes and if it has a `shape_id` column in the `trips`
     table
@@ -266,7 +266,7 @@ def inspect_feed(feed):
     return message
 
 
-def get_gtfs_segments(path, agency_id=None, threshold=1, max_spacing=None):
+def get_gtfs_segments(path, agency_id=None, threshold=1, max_spacing=None) -> gpd.GeoDataFrame:
     """
     The function `get_gtfs_segments` takes a path to a GTFS feed file, an optional agency name, a
     threshold value, and an optional maximum spacing value, and returns processed GTFS segments.
@@ -300,7 +300,7 @@ def get_gtfs_segments(path, agency_id=None, threshold=1, max_spacing=None):
     return process_feed(feed, max_spacing)
 
 
-def pipeline_gtfs(filename, url, bounds, max_spacing):
+def pipeline_gtfs(filename, url, bounds, max_spacing) -> str:
     """
     It takes a GTFS file, downloads it, reads it, processes it, and then outputs a bunch of files.
 

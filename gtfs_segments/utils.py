@@ -7,12 +7,13 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from scipy.stats import gaussian_kde
 from shapely.geometry import Point
+from typing import Any
 
 # Plot style
 plt.style.use("ggplot")
 
 
-def plot_hist(df, save_fig=False, show_mean=False, **kwargs):
+def plot_hist(df, save_fig=False, show_mean=False, **kwargs) -> plt.Figure:
     """
     It takes a dataframe with two columns, one with the distance between stops and the other with the
     number of traversals between those stops, and plots a weighted histogram of the distances
@@ -70,7 +71,7 @@ def plot_hist(df, save_fig=False, show_mean=False, **kwargs):
     return fig
 
 
-def summary_stats(df, max_spacing=3000, export=False, **kwargs):
+def summary_stats(df, max_spacing=3000, export=False, **kwargs) -> pd.DataFrame:
     """
     It takes in a dataframe, and returns a dataframe with summary statistics
 
@@ -148,7 +149,7 @@ def summary_stats(df, max_spacing=3000, export=False, **kwargs):
     return summary_df
 
 
-def export_segments(df, file_path, output_format, geometry=True):
+def export_segments(df, file_path, output_format, geometry=True) -> None:
     """
     This function takes a GeoDataFrame of segments, a file path, an output format, and a boolean value
     for whether or not to include the geometry in the output.
@@ -196,7 +197,7 @@ def export_segments(df, file_path, output_format, geometry=True):
             d_df.to_csv(file_path, index=False)
 
 
-def process(pipeline_gtfs, row, max_spacing):
+def process(pipeline_gtfs, row, max_spacing) -> Any:
     """
     It takes a pipeline, a row from the sources_df, and a max_spacing, and returns the output of the
     pipeline
@@ -225,7 +226,7 @@ def process(pipeline_gtfs, row, max_spacing):
         return failed_pipeline("Failed for ", filename, folder_path)
 
 
-def failed_pipeline(message, filename, folder_path):
+def failed_pipeline(message, filename, folder_path) -> str:
     """
     "If the folder path exists, delete it and return the failure message."
 
@@ -243,7 +244,7 @@ def failed_pipeline(message, filename, folder_path):
     return message + " : " + filename
 
 
-def download_write_file(url, folder_path):
+def download_write_file(url, folder_path) -> str:
     """
     It takes a URL and a folder path as input, creates a new folder if it does not exist, downloads the
     file from the URL, and writes the file to the folder path

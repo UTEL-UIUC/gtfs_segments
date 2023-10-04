@@ -12,7 +12,7 @@ from pyproj import Geod
 geod = Geod(ellps="WGS84")
 
 
-def split_route(row):
+def split_route(row) -> str:
     """
     It takes a row from a dataframe, and if the row has a start and end point,
     it splits the route into two segments
@@ -34,7 +34,7 @@ def split_route(row):
     return route.wkt
 
 
-def nearest_snap(route, point):
+def nearest_snap(route, point) -> str:
     """
     It takes a dataframe of bus stops and a dataframe of bus routes and
     returns a dataframe of the nearest bus stop to each bus stop
@@ -53,7 +53,7 @@ def nearest_snap(route, point):
     return Point(route[ckd_tree.query(point, k=1)[1]][0]).wkt
 
 
-def make_gdf(df):
+def make_gdf(df) -> gpd.GeoDataFrame:
     """
     It takes a dataframe and returns a geodataframe
 
@@ -63,12 +63,12 @@ def make_gdf(df):
     Returns:
       A GeoDataFrame
     """
-    df = gpd.GeoDataFrame(df)
-    df = df.set_crs(epsg=4326, allow_override=True)
-    return df
+    gdf = gpd.GeoDataFrame(df)
+    gdf = gdf.set_crs(epsg=4326, allow_override=True)
+    return gdf
 
 
-def code(zone, lat):
+def code(zone, lat) -> int:
     """
     If the latitude is negative, the EPSG code is 32700 + the zone number. If
     the latitude is positive, the EPSG code is 32600 + the zone number
@@ -87,7 +87,7 @@ def code(zone, lat):
     return epsg_code
 
 
-def get_zone_epsg(stop_df):
+def get_zone_epsg(stop_df) -> int:
     """
     > The function takes a dataframe with a geometry column and returns the
     EPSG code for the UTM zone that contains the geometry
@@ -106,7 +106,7 @@ def get_zone_epsg(stop_df):
 
 def view_spacings(
     df, basemap=False, show_stops=False, level="whole", axis="on", **kwargs
-):
+) -> plt.Figure:
     """
     > This function plots the spacings of the bus network, or a specific route,
     or a specific segment
@@ -198,7 +198,7 @@ def view_spacings(
     return fig
 
 
-def increase_resolution(geom, spat_res=5):
+def increase_resolution(geom, spat_res=5) -> LineString:
     """
     This function increases the resolution of a LineString geometry by adding 
     points along the line at a specified spatial resolution.
@@ -241,7 +241,7 @@ def increase_resolution(geom, spat_res=5):
     return LineString(new_ls)
 
 
-def ret_high_res_shape(shapes, spat_res=5):
+def ret_high_res_shape(shapes, spat_res=5) -> gpd.GeoDataFrame:
     """
     This function increases the resolution of the geometries in a given dataframe of shapes by a
     specified spatial resolution.
@@ -264,7 +264,7 @@ def ret_high_res_shape(shapes, spat_res=5):
     return shapes
 
 
-def nearest_points(stop_df, k_neighbors=3):
+def nearest_points(stop_df, k_neighbors=3) -> pd.DataFrame:
     """
     The function takes a dataframe of stops and snaps them to the nearest points on a line geometry,
     with an option to specify the number of nearest neighbors to consider.

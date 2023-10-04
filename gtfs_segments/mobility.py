@@ -7,7 +7,7 @@ MOBILITY_SOURCES_link = "https://bit.ly/catalogs-csv"
 ABBREV_link = "https://raw.githubusercontent.com/UTEL-UIUC/gtfs_segments/main/state_abbreviations.json"
 
 
-def fetch_gtfs_source(place="ALL", active=True):
+def fetch_gtfs_source(place="ALL", active=True) -> pd.DataFrame:
     """
     It reads the mobility data sources csv file and generates a dataframe with the sources that are of
     type gtfs and are from the US
@@ -168,7 +168,7 @@ def fetch_gtfs_source(place="ALL", active=True):
 
 def summary_stats_mobility(
     df, folder_path, filename, b_day, link, bounds, max_spacing=3000, export=False
-):
+)-> pd.DataFrame:
     """
     It takes in a dataframe, a folder path, a filename, a busiest day, a link, a bounding box, a max
     spacing, and a boolean for exporting the summary to a csv.
@@ -268,7 +268,7 @@ def summary_stats_mobility(
         return summary_df
 
 
-def download_latest_data(sources_df, out_folder_path):
+def download_latest_data(sources_df, out_folder_path) -> None:
     """
     It iterates over the rows of the dataframe, and for each row, it tries to download the file from the
     URL in the `urls.latest` column, and write it to the folder specified in the `provider` column
