@@ -178,8 +178,8 @@ def _service_ids_by_date(feed: Feed) -> Dict[datetime.date, FrozenSet[str]]:
         caldates.date = vparse_date(caldates.date)
 
         # Split out additions and removals
-        cdadd = caldates[caldates.exception_type == "1"]
-        cdrem = caldates[caldates.exception_type == "2"]
+        cdadd = caldates[caldates.exception_type == 1]
+        cdrem = caldates[caldates.exception_type == 2]
 
         # Add to results by date
         for _, cd in cdadd.iterrows():

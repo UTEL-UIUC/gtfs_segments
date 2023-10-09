@@ -63,9 +63,7 @@ def make_segments_unique(df, traversal_threshold=1) -> gpd.GeoDataFrame:
         for i, index in enumerate(inds):
             if i != 0:
                 seg_split = key[1].split("-")
-                df.loc[index, "segment_id"] = (
-                    seg_split[0] + "-" + seg_split[1] + "-" + str(i + 1)
-                )
+                df.loc[index, "segment_id"] = seg_split[0] + "-" + seg_split[1] + "-" + str(i + 1)
     grp_again = df.groupby(["route_id", "segment_id"])
     df = grp_again.first().reset_index()
     df["traversals"] = grp_again["traversals"].sum().values
@@ -73,7 +71,7 @@ def make_segments_unique(df, traversal_threshold=1) -> gpd.GeoDataFrame:
     return df
 
 
-def filter_stop_df(stop_df, trip_ids) -> gpd.GeoDataFrame:
+def filter_stop_df(stop_df, trip_ids, stop_loc_df) -> gpd.GeoDataFrame:
     """
     It takes a dataframe of stops and a list of trip IDs and returns a dataframe of stops that are in
     the list of trip IDs
@@ -85,6 +83,19 @@ def filter_stop_df(stop_df, trip_ids) -> gpd.GeoDataFrame:
     Returns:
       A dataframe with the trip_id, s top_id, and stop_sequence for the trips in the trip_ids list.
     """
+    missing_stop_locs = set(stop_df.stop_id) - set(stop_loc_df.stop_id)
+    if len(missing_stop_locs) > 0:
+        print("Missing stop locations for:", missing_stop_locs)
+        missing_trips = stop_df[stop_df.stop_id.isin(missing_stop_locs)].trip_id.unique()
+        for trip in missing_trips:
+            trip_ids.discard(trip)
+            print(
+                "Removed the trip_id:",
+                trip,
+                "as stop locations are missing for stops in the trip"
+            )
+    # Filter the stop_df to only include the trip_ids in the trip_ids list
+    stop_df = stop_df[stop_df.trip_id.isin(trip_ids)].reset_index(drop=True)
     stop_df = stop_df.sort_values(["trip_id", "stop_sequence"]).reset_index(drop=True)
     stop_df["main_index"] = stop_df.index
     stop_df_grp = stop_df.groupby("trip_id")
@@ -99,7 +110,7 @@ def filter_stop_df(stop_df, trip_ids) -> gpd.GeoDataFrame:
     if len(drop_inds) > 0 and len(drop_inds[0]) > 0:
         stop_df = stop_df[~stop_df["main_index"].isin(drop_inds)].reset_index(drop=True)
     stop_df = stop_df[["trip_id", "stop_id", "stop_sequence"]]
-    stop_df = stop_df[stop_df.trip_id.isin(trip_ids)].reset_index(drop=True)
+
     stop_df = stop_df.sort_values(["trip_id", "stop_sequence"]).reset_index(drop=True)
     return stop_df
 
@@ -115,9 +126,7 @@ def merge_stop_geom(stop_df, stop_loc_df) -> gpd.GeoDataFrame:
     Returns:
       A GeoDataFrame
     """
-    stop_df["start"] = stop_df.copy().merge(stop_loc_df, how="left", on="stop_id")[
-        "geometry"
-    ]
+    stop_df["start"] = stop_df.copy().merge(stop_loc_df, how="left", on="stop_id")["geometry"]
     stop_df = gpd.GeoDataFrame(stop_df, geometry="start")
     return make_gdf(stop_df)
 
@@ -136,22 +145,15 @@ def create_segments(stop_df) -> gpd.GeoDataFrame:
     stop_df = nearest_points(stop_df)
     stop_df = stop_df.rename({"stop_id": "stop_id1"}, axis=1)
     grp = (
-        pd.DataFrame(stop_df)
-        .groupby("trip_id", group_keys=False)
-        .shift(-1)
-        .reset_index(drop=True)
+        pd.DataFrame(stop_df).groupby("trip_id", group_keys=False).shift(-1).reset_index(drop=True)
     )
-    stop_df[["stop_id2", "end", "snap_end_id"]] = grp[
-        ["stop_id1", "start", "snap_start_id"]
-    ]
+    stop_df[["stop_id2", "end", "snap_end_id"]] = grp[["stop_id1", "start", "snap_start_id"]]
     stop_df["segment_id"] = stop_df.apply(
         lambda row: str(row["stop_id1"]) + "-" + str(row["stop_id2"]) + "-1", axis=1
     )
     stop_df = stop_df.dropna().reset_index(drop=True)
     stop_df.snap_end_id = stop_df.snap_end_id.astype(int)
-    stop_df = stop_df[stop_df["snap_end_id"] > stop_df["snap_start_id"]].reset_index(
-        drop=True
-    )
+    stop_df = stop_df[stop_df["snap_end_id"] > stop_df["snap_start_id"]].reset_index(drop=True)
     stop_df["geometry"] = stop_df.apply(
         lambda row: LineString(
             row["geometry"].coords[row["snap_start_id"]: row["snap_end_id"] + 1]
@@ -177,9 +179,9 @@ def process_feed_stops(feed, max_spacing=None) -> gpd.GeoDataFrame:
       A GeoDataFrame with the following columns:
     """
     trip_df = merge_trip_geom(feed.trips, feed.shapes)
-    trip_ids = trip_df.trip_id.unique()
-    stop_df = filter_stop_df(feed.stop_times, trip_ids)
+    trip_ids = set(trip_df.trip_id.unique())
     stop_loc_df = feed.stops[["stop_id", "geometry"]]
+    stop_df = filter_stop_df(feed.stop_times, trip_ids, stop_loc_df)
     stop_df = merge_stop_geom(stop_df, stop_loc_df)
     stop_df = stop_df.merge(trip_df, on="trip_id", how="left")
     stops = stop_df.groupby("shape_id").count().reset_index()["geometry"]
@@ -187,9 +189,7 @@ def process_feed_stops(feed, max_spacing=None) -> gpd.GeoDataFrame:
     stop_df["n_stops"] = stops
     epsg_zone = get_zone_epsg(stop_df)
     stop_df = make_gdf(stop_df)
-    stop_df["distance"] = (
-        stop_df.set_geometry("geometry").to_crs(epsg_zone).geometry.length
-    )
+    stop_df["distance"] = stop_df.set_geometry("geometry").to_crs(epsg_zone).geometry.length
     stop_df["mean_distance"] = stop_df["distance"] / stop_df["n_stops"]
     return make_gdf(stop_df)
 
@@ -214,17 +214,15 @@ def process_feed(feed, max_spacing=None) -> gpd.GeoDataFrame:
     # Set a Spatial Resolution and increase the resolution of the shapes
     shapes = ret_high_res_shape(feed.shapes, spat_res=5)
     trip_df = merge_trip_geom(feed.trips, shapes)
-    trip_ids = trip_df.trip_id.unique()
-    stop_df = filter_stop_df(feed.stop_times, trip_ids)
+    trip_ids = set(trip_df.trip_id.unique())
     stop_loc_df = feed.stops[["stop_id", "geometry"]]
+    stop_df = filter_stop_df(feed.stop_times, trip_ids, stop_loc_df)
     stop_df = merge_stop_geom(stop_df, stop_loc_df)
     stop_df = stop_df.merge(trip_df, on="trip_id", how="left")
     stop_df = create_segments(stop_df)
     epsg_zone = get_zone_epsg(stop_df)
     stop_df = make_gdf(stop_df)
-    stop_df["distance"] = (
-        stop_df.set_geometry("geometry").to_crs(epsg_zone).geometry.length
-    )
+    stop_df["distance"] = stop_df.set_geometry("geometry").to_crs(epsg_zone).geometry.length
     stop_df["distance"] = stop_df["distance"].round(2)  # round to 2 decimal places
     stop_df = make_segments_unique(stop_df, traversal_threshold=1)
     subset_list = np.array(
@@ -364,7 +362,5 @@ def pipeline_gtfs(filename, url, bounds, max_spacing) -> str:
         output_format="csv",
         geometry=True,
     )
-    export_segments(
-        df, os.path.join(folder_path, "spacings"), output_format="csv", geometry=False
-    )
+    export_segments(df, os.path.join(folder_path, "spacings"), output_format="csv", geometry=False)
     return "Success for " + filename
