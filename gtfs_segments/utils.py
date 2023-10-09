@@ -13,7 +13,9 @@ from typing import Any
 plt.style.use("ggplot")
 
 
-def plot_hist(df, save_fig=False, show_mean=False, **kwargs) -> plt.Figure:
+def plot_hist(
+    df: pd.DataFrame, save_fig: bool = False, show_mean: bool = False, **kwargs
+) -> plt.Figure:
     """
     It takes a dataframe with two columns, one with the distance between stops and the other with the
     number of traversals between those stops, and plots a weighted histogram of the distances
@@ -71,7 +73,9 @@ def plot_hist(df, save_fig=False, show_mean=False, **kwargs) -> plt.Figure:
     return fig
 
 
-def summary_stats(df, max_spacing=3000, export=False, **kwargs) -> pd.DataFrame:
+def summary_stats(
+    df: pd.DataFrame, max_spacing: float = 3000, export: bool = False, **kwargs
+) -> pd.DataFrame:
     """
     It takes in a dataframe, and returns a dataframe with summary statistics
 
@@ -84,25 +88,15 @@ def summary_stats(df, max_spacing=3000, export=False, **kwargs) -> pd.DataFrame:
     """
     print("Using max_spacing = ", max_spacing)
     percent_spacing = round(
-        df[df["distance"] > max_spacing]["traversals"].sum()
-        / df["traversals"].sum()
-        * 100,
+        df[df["distance"] > max_spacing]["traversals"].sum() / df["traversals"].sum() * 100,
         3,
     )
     df = df[df["distance"] <= max_spacing]
     seg_weighted_mean = (
-        df.groupby(["segment_id", "distance"])
-        .first()
-        .reset_index()["distance"]
-        .mean()
-        .round(2)
+        df.groupby(["segment_id", "distance"]).first().reset_index()["distance"].mean().round(2)
     )
     seg_weighted_median = (
-        df.groupby(["segment_id", "distance"])
-        .first()
-        .reset_index()["distance"]
-        .median()
-        .round(2)
+        df.groupby(["segment_id", "distance"]).first().reset_index()["distance"].median().round(2)
     )
     route_weighted_mean = (
         df.groupby(["route_id", "segment_id", "distance"])
@@ -118,9 +112,7 @@ def summary_stats(df, max_spacing=3000, export=False, **kwargs) -> pd.DataFrame:
         .median()
         .round(2)
     )
-    weighted_data = np.hstack(
-        [np.repeat(x, y) for x, y in zip(df["distance"], df.traversals)]
-    )
+    weighted_data = np.hstack([np.repeat(x, y) for x, y in zip(df["distance"], df.traversals)])
 
     df_dict = {
         "Segment Weighted Mean": seg_weighted_mean,
@@ -149,7 +141,9 @@ def summary_stats(df, max_spacing=3000, export=False, **kwargs) -> pd.DataFrame:
     return summary_df
 
 
-def export_segments(df, file_path, output_format, geometry=True) -> None:
+def export_segments(
+    df: pd.DataFrame, file_path: str, output_format: str, geometry: bool = True
+) -> None:
     """
     This function takes a GeoDataFrame of segments, a file path, an output format, and a boolean value
     for whether or not to include the geometry in the output.
@@ -188,7 +182,7 @@ def export_segments(df, file_path, output_format, geometry=True) -> None:
         s_df["start_lat"] = [g[0][1] for g in geom_list]
         s_df["end_lon"] = [g[-1][0] for g in geom_list]
         s_df["end_lat"] = [g[-1][1] for g in geom_list]
-        if geometry == True:
+        if geometry:
             # Output With LS
             sg_df.to_csv(file_path, index=False)
         else:
@@ -197,19 +191,19 @@ def export_segments(df, file_path, output_format, geometry=True) -> None:
             d_df.to_csv(file_path, index=False)
 
 
-def process(pipeline_gtfs, row, max_spacing) -> Any:
+def process(pipeline_gtfs: Any, row: pd.core.series.Series, max_spacing: float) -> Any:
     """
     It takes a pipeline, a row from the sources_df, and a max_spacing, and returns the output of the
     pipeline
 
     Args:
-      pipeline_gtfs: This is the function that will be used to process the GTFS data.
-      row: This is a row in the sources_df dataframe. It contains the name of the provider, the url to
-    the gtfs file, and the bounding box of the area that the gtfs file covers.
-      max_spacing: Maximum Allowed Spacing between two consecutive stops.
+        pipeline_gtfs: This is the function that will be used to process the GTFS data.
+        row: This is a row in the sources_df dataframe. It contains the name of the provider, the url to
+            the gtfs file, and the bounding box of the area that the gtfs file covers.
+        max_spacing: Maximum Allowed Spacing between two consecutive stops.
 
     Returns:
-      The return value is a tuple of the form (filename,folder_path,df)
+        The return value is a tuple of the form (filename,folder_path,df)
     """
     filename = row["provider"]
     url = row["urls.latest"]
@@ -220,13 +214,13 @@ def process(pipeline_gtfs, row, max_spacing) -> Any:
     print(filename)
     try:
         return pipeline_gtfs(filename, url, bounds, max_spacing)
-    except:
+    except Exception as e:
         traceback.print_exc()
         folder_path = os.path.join("output_files", filename)
-        return failed_pipeline("Failed for ", filename, folder_path)
+        raise ValueError(f"Failed for {filename}") from e
 
 
-def failed_pipeline(message, filename, folder_path) -> str:
+def failed_pipeline(message: str, filename: str, folder_path: str) -> str:
     """
     "If the folder path exists, delete it and return the failure message."
 
@@ -244,7 +238,7 @@ def failed_pipeline(message, filename, folder_path) -> str:
     return message + " : " + filename
 
 
-def download_write_file(url, folder_path) -> str:
+def download_write_file(url: str, folder_path: str) -> str:
     """
     It takes a URL and a folder path as input, creates a new folder if it does not exist, downloads the
     file from the URL, and writes the file to the folder path
