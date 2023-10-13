@@ -283,9 +283,9 @@ export_segments(segments_df,'filename', output_format ='csv',geometry = False)
 - [x] Add `.ipynb` examples
 - [x] Integrate partridge library dependency 
 - [x] Remove unusual trips 
-- [x] Add unit tests for package
+- [x] Add unit tests for the package
 - [ ] Visualize catchment areas for stops
-
+- [ ] Migrate to folium for basemap and plotting
 
 See the [open issues](https://github.com/UTEL-UIUC/gtfs_segments/issues) for a full list of proposed features (and known issues).
 
