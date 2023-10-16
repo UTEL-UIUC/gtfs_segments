@@ -105,42 +105,63 @@ def get_zone_epsg(stop_df) -> int:
 
 
 def view_spacings(
-    df, basemap=False, show_stops=False, level="whole", axis="on", **kwargs
+    df,
+    basemap=False,
+    map_provider=cx.providers.CartoDB.Positron,
+    show_stops=False,
+    level="whole",
+    axis="on",
+    dpi=300,
+    **kwargs
 ) -> plt.Figure:
     """
-    > This function plots the spacings of the bus network, or a specific route,
-    or a specific segment
+    The `view_spacings` function plots the spacings of a bus network, route, or segment, with options to
+    add a basemap and show stops.
 
     Args:
-      df: the dataframe containing the bus network
-      basemap: if True, will add a basemap to the plot. Defaults to False
-      level: "whole" or "route" or "segment". Defaults to whole
-      axis: 'on' or 'off'. Defaults to on
+      df: The GTFS segments dataframe containing the bus network data.
+      basemap: The `basemap` parameter is a boolean value that determines whether to add a basemap to
+    the plot. If set to `True`, a basemap will be added. If set to `False`, no basemap will be added.
+    The default value is `False`. Defaults to False
+      map_provider: The `map_provider` parameter is used to specify the source of the basemap that
+    will be added to the plot. It is set to `cx.providers.CartoDB.Positron` by default, which means
+    that the basemap will be sourced from CartoDB's Positron. Use `contextily.providers` to see full
+    list of providers
+      show_stops: The `show_stops` parameter is a boolean flag that determines whether or not to display
+    the bus stops on the plot. If set to `True`, the bus stops will be shown as white markers on the
+    plot. If set to `False`, the bus stops will not be shown. Defaults to False
+      level: The "level" parameter determines the level of detail to plot the spacings. It can take one
+    of three values:. Defaults to whole
+      axis: The `axis` parameter determines whether the axis of the plot should be displayed or not. If
+    `axis` is set to "on", the axis will be displayed. If `axis` is set to "off", the axis will not be
+    displayed. Defaults to on
+      dpi: The `dpi` parameter determines the resolution of the plot. Defaults to 300
+
+    Returns:
+      a matplotlib Figure object.
     """
-    fig, ax = plt.subplots(figsize=(10, 10), dpi=100)
+    fig, ax = plt.subplots(figsize=(10, 10), dpi=dpi)
     crs = df.crs
     # Filter based on direction and level
     if "direction" in kwargs.keys():
         df = df[df.direction_id == kwargs["direction"]].copy()
     if level == "whole":
-        markersize = 15
+        markersize = 20
         ax = df.plot(
             ax=ax,
-            color="y",
-            linewidth=0.50,
+            color="#34495e",
+            linewidth=0.5,
             edgecolor="black",
             label="Bus network",
             zorder=1,
         )
     elif level == "route":
-        markersize = 30
+        markersize = 40
         assert "route" in kwargs.keys(), "Please provide a route_id in route attibute"
         df = df[df.route_id == kwargs["route"]].copy()
     elif level == "segment":
-        markersize = 50
-        assert (
-            "segment" in kwargs.keys()
-        ), "Please provide a segment_id in segment attibute"
+        markersize = 60
+        assert "segment" in kwargs.keys(), "Please provide a segment_id in segment attibute"
         df = df[df.segment_id == kwargs["segment"]].copy()
     else:
         raise ValueError("level must be either whole, route, or segment")
@@ -151,7 +172,7 @@ def view_spacings(
         ax = df.plot(
             ax=ax,
             linewidth=1.5,
-            color="dodgerblue",
+            color="#2ecc71",
             label="Route ID:" + kwargs["route"],
             zorder=2,
         )
@@ -165,19 +186,17 @@ def view_spacings(
         ax = df.plot(
             ax=ax,
             linewidth=2,
-            color="red",
+            color="#000000",
             label="Segment ID: " + str(kwargs["segment"]),
             zorder=3,
         )
     if show_stops:
         geo_series = df.geometry.apply(lambda line: Point(line.coords[0]))
-        geo_series = pd.concat(
-            [geo_series, gpd.GeoSeries(Point(df.iloc[-1].geometry.coords[-1]))]
-        )
+        geo_series = pd.concat([geo_series, gpd.GeoSeries(Point(df.iloc[-1].geometry.coords[-1]))])
         geo_series.set_crs(crs=df.crs).plot(
             ax=ax,
-            color="white",
-            edgecolor="#3700b3",
+            color="#FFD700",
+            edgecolor="#000000",
             linewidth=1,
             markersize=markersize,
             alpha=0.95,
@@ -186,12 +205,7 @@ def view_spacings(
 
     if basemap:
         df = gpd.GeoDataFrame(df, crs=crs)
-        cx.add_basemap(
-            ax,
-            crs=df.crs,
-            source=cx.providers.Stamen.TonerLite,
-            attribution_size=5
-        )
+        cx.add_basemap(ax, crs=df.crs, source=map_provider, attribution_size=5)
     plt.axis(axis)
     plt.legend(loc="lower right")
     plt.close(fig)
@@ -200,7 +214,7 @@ def view_spacings(
 
 def increase_resolution(geom, spat_res=5) -> LineString:
     """
-    This function increases the resolution of a LineString geometry by adding 
+    This function increases the resolution of a LineString geometry by adding
     points along the line at a specified spatial resolution.
 
     Args:
@@ -214,12 +228,9 @@ def increase_resolution(geom, spat_res=5) -> LineString:
       a LineString object with increased resolution based on the input spatial resolution.
     """
     coords = geom.coords
-    coord_pairs = np.array([coords[i: i + 2] for i in range(len(coords) - 1)])
+    coord_pairs = np.array([coords[i : i + 2] for i in range(len(coords) - 1)])
     coord_dists = np.array(
-        [
-            geod.geometry_length(LineString(coords[i: i + 2]))
-            for i in range(len(coords) - 1)
-        ]
+        [geod.geometry_length(LineString(coords[i : i + 2])) for i in range(len(coords) - 1)]
     )
     new_ls = []
     for i, dists in enumerate(coord_dists):
@@ -302,7 +313,7 @@ def nearest_points(stop_df, k_neighbors=3) -> pd.DataFrame:
         while not solution_found:
             np_dist, np_inds = tree.query(stops, workers=-1, k=neighbors)
             # Approx distance in meters
-            np_dist = np_dist * geo_const  
+            np_dist = np_dist * geo_const
             prev_point = min(np_inds[0])
             points = [prev_point]
             for i, nps in enumerate(np_inds[1:]):
@@ -323,7 +334,7 @@ def nearest_points(stop_df, k_neighbors=3) -> pd.DataFrame:
                         failed_trips.append(name)
                         failed_trip = True
                         # Make this to exit the while loop
-                        solution_found = True 
+                        solution_found = True
 
                         print("Excluding Trip: " + name + " because of failed snap!")
                         break

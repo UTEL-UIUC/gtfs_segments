@@ -216,7 +216,6 @@ def process(pipeline_gtfs: Any, row: pd.core.series.Series, max_spacing: float) 
         return pipeline_gtfs(filename, url, bounds, max_spacing)
     except Exception as e:
         traceback.print_exc()
-        folder_path = os.path.join("output_files", filename)
         raise ValueError(f"Failed for {filename}") from e
 
 
