@@ -224,7 +224,7 @@ from gtfs_segments import view_spacings
 view_spacings(segments_df,route = '18131',segment = '6294-6290-1',basemap=True)
 ```
 <div align='center'><a>
-    <img src="https://raw.githubusercontent.com/UTEL-UIUC/gtfs_segments/main/images/visualize.jpg" alt="data" width=400>
+    <img src="https://raw.githubusercontent.com/UTEL-UIUC/gtfs_segments/main/images/visualize.jpg" alt="data" width=600>
 </a></div>  
 
 ## Plot Distributions
