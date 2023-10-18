@@ -1,0 +1,14 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+- family-names: "Devunuri"
+  given-names: "Saipraneeth"
+  orcid: "https://orcid.org/0000-0002-5911-4681"
+- family-names: "Lehe"
+  given-names: "Lewis"
+  orcid: "https://orcid.org/0000-0001-8029-1706"
+title: "GTFS Segments: A fast and efficient library to generate bus stop spacings"
+version: 2.0.3
+doi: 10.5281/zenodo.10019419
+date-released: 2023-10-18
+url: "https://github.com/UTEL-UIUC/gtfs_segments"
