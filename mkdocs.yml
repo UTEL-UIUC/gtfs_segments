@@ -31,12 +31,20 @@ theme:
 plugins:
     - search
     - mkdocstrings
-
+    - mkdocs-jupyter:
+        theme: material
+        include_source: true
+        ignore_h1_titles: true
+        execute: false
 nav:
     - Home: index.md
     - Getting Started:
         - Installation: installation.md
         - Usage: usage.md
+    - Tutorials:
+        - SFMTA Example: tutorials/SFMTA.ipynb
+        - Visualization: tutorials/Visualization.ipynb
+
     - API Reference:
         - gtfs_segments: gtfs_segments.md
         - gtfs_segments.utils: utils.md

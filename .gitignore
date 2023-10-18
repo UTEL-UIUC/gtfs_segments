@@ -30,3 +30,5 @@ src/
 # VsCode
 .vscode/
 gtfs_tool/
+!docs/tutorials/*
+docs/tutorials/data/

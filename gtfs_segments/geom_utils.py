@@ -208,8 +208,7 @@ def view_spacings(
         cx.add_basemap(ax, crs=df.crs, source=map_provider, attribution_size=5)
     plt.axis(axis)
     plt.legend(loc="lower right")
-    plt.close(fig)
-    return fig
+    return ax
 
 
 def increase_resolution(geom, spat_res=5) -> LineString:

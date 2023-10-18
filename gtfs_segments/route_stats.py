@@ -247,8 +247,8 @@ def get_average_speed(df_dir, route_dict) -> Dict[str, float]:
     """
     ret_dict = {}
     if len(df_dir) > 1:
-        ret_dict["average speed"] = np.round(
-            route_dict["route length"] / route_dict["total time"], 2
+        ret_dict["average_speed"] = np.round(
+            route_dict["route_length"] / route_dict["total_time"], 2
         )
     return ret_dict
 
@@ -271,7 +271,7 @@ def get_route_time(df_dir) -> Dict[str, float]:
             df_dir.trip_id == df_dir[df_dir.shape_id == shape_0].trip_id.unique()[0]
         ]
         time_0 = trip_0.arrival_time.max() - trip_0.arrival_time.min()
-    return {"total time": np.round(time_0 / 3600, 2) if time_0 != 0 else 0}
+    return {"total_time": np.round(time_0 / 3600, 2) if time_0 != 0 else 0}
 
 
 def get_bus_spacing(route_dict) -> Dict[str, float]:
@@ -287,7 +287,7 @@ def get_bus_spacing(route_dict) -> Dict[str, float]:
       A dictionary with the keys 'spacing dir 0' and 'spacing dir 1'
     """
     return {
-        "spacing": np.round(route_dict["route length"] / route_dict["n bus avg"], 3)
+        "bus_spacing": np.round(route_dict["route_length"] / route_dict["n_bus_avg"], 3)
     }
 
 
@@ -300,7 +300,7 @@ def average_active_buses(df_dir) -> Dict[str, float]:
         no_buses = get_trips_len(df, time)
         n_buses.append(no_buses)
     n_buses = np.array(n_buses)
-    return {"n bus avg": np.round(np.mean(n_buses[n_buses > 0]), 3)}
+    return {"n_bus_avg": np.round(np.mean(n_buses[n_buses > 0]), 3)}
 
 
 def get_stop_spacing(df_dir, route_dict) -> Dict[str, float]:
@@ -324,8 +324,8 @@ def get_stop_spacing(df_dir, route_dict) -> Dict[str, float]:
                 df_dir.trip_id == df_dir[df_dir.shape_id == shape_0].trip_id.unique()[0]
             ]
         )
-        spc_0 = route_dict["route length"] / n_stops
-    return {"stop spacing": np.round(spc_0, 2) if spc_0 != 0 else 0}
+        spc_0 = route_dict["route_length"] / n_stops
+    return {"stop_spacing": np.round(spc_0, 2) if spc_0 != 0 else 0}
 
 
 def get_route_lens(df_dir, df_shapes) -> Dict[str, float]:
@@ -349,7 +349,7 @@ def get_route_lens(df_dir, df_shapes) -> Dict[str, float]:
             .to_crs(epsg_zone)
             .geometry.length.iloc[0]
         )
-    return {"route length": np.round(len_0 / 1000, 2)}
+    return {"route_length": np.round(len_0 / 1000, 2)}
 
 
 def get_route_stats(feed, peak_time=False) -> pd.DataFrame:

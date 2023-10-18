@@ -240,7 +240,7 @@ Optionally save figure using
 ```python
 plot_hist(segments_df,file_path = "spacings_hist.png",save_fig = True)
 ```
-
+> ℹ️ For more information on visualization refer to the [Visualization Tutorial](https://gtfs-segments.readthedocs.io/en/latest/tutorials/Visualization)
 ## Get Summary Stats
 ```python
 from gtfs_segments import summary_stats
@@ -263,6 +263,18 @@ get_route_stats(feed)
     <img src="https://raw.githubusercontent.com/UTEL-UIUC/gtfs_segments/main/images/route_stats.JPG" alt="histogram" width=800>
 </a></div>
 
+Here each row contains the following columns:
+
+1. `route`: The `route_id` for the route of interest
+2. `direction`: The `direction_id` of the route
+3. `route_length`: The total length of the route. `Units :` Kilometers(Km)
+4. `total time`: The total scheduled time to travel the whole route. `Units` : Hours (Hr)
+5. `headway`: The average headway between consecutive buses for the route. A `NaN` indicates only 1 trip. Units` : Hours (Hr)
+6. `peak_buses`: The 15-minute interval where the route has the maximum number of buses concurrently running.
+7. `average_speed`: The average speed of the bus along the route. `Units` : Kmph
+8. `n_bus_avg`: The average number of buses concurrently running
+9. `bus_spacing`: The average spacing (in distance) between consecutive buses. `Units :` Kilometers(Km)
+10. `stop_spacing`: The average distance between two consecutive stops. `Units :` Kilometers(Km)
 
 ## Download Segments Data
 Download the data as either `.csv` or `.geojson`

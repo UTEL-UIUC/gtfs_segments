@@ -2,9 +2,8 @@ import os
 from threading import RLock
 from typing import Any, Dict, Optional, Union
 import pandas as pd
-from .utilities import detect_encoding, setwrap
+from .utilities import detect_encoding
 from .parsers import transforms_dict
-# from .config import default_config
 View = Dict[str, Dict[str, Any]]
 
 
@@ -20,9 +19,7 @@ class Feed(object):
         self,
         source: Union[str, "Feed"],
         view: Optional[View] = None,
-        # config: Optional[nx.DiGraph] = None,
     ):
-        # self._config: nx.DiGraph = default_config() if config is None else config
         self._view: View = {} if view is None else view
         self._cache: Dict[str, pd.DataFrame] = {}
         self._pathmap: Dict[str, str] = {}
@@ -49,7 +46,6 @@ class Feed(object):
                 df = df.reset_index(drop=True)
                 df = self._transform(filename, df)
                 self.set(filename, df)
-
             return self._cache[filename]
 
     def set(self, filename: str, df: pd.DataFrame) -> None:
@@ -120,8 +116,7 @@ class Feed(object):
         for col, values in view.items():
             # If applicable, filter this dataframe by the given set of values
             if col in df.columns:
-                df = df[df[col].isin(setwrap(values))]
-
+                df = df[df[col].isin(set(values))]
         return df
 
     def _convert_types(self, filename: str, df: pd.DataFrame) -> None:
@@ -134,7 +129,7 @@ class Feed(object):
         converters = self._transforms_dict[filename].get("converters", {})
         for col, converter in converters.items():
             if col in df.columns:
-                df[col] = converter(df[col])
+                df.loc[:,col] = converter(df.loc[:,col])
 
     def _transform(self, filename: str, df: pd.DataFrame) -> pd.DataFrame:
         transformations = self._transforms_dict[filename].get("transformations", [])

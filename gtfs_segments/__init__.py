@@ -1,7 +1,7 @@
 """
 The gtfs_segments package main init file.
 """
-__version__ = "0.0.9"
+__version__ = "0.1.0"
 from .gtfs_segments import (
     get_gtfs_segments,
     pipeline_gtfs,
