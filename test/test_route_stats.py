@@ -13,7 +13,7 @@ class TestRouteStats(unittest.TestCase):
         self.gtfs_path = os.path.join(
             test_dir,
             "data",
-            "San Francisco-San Francisco Municipal Transportation Agency (SFMTA, Muni)-CA",
+            "Ann Arbor-University of Michigan Transit Services-MI",
             "gtfs.zip",
         )
         

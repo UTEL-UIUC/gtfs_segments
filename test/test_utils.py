@@ -18,10 +18,11 @@ class TestUtils(unittest.TestCase):
 
     def setUp(self):
         """Set up test fixtures, if any."""
+        # Using UMich Ann Arbor as a test feed to save time
         self.gtfs_path = os.path.join(
             test_dir,
             "data",
-            "San Francisco-San Francisco Municipal Transportation Agency (SFMTA, Muni)-CA",
+            "Ann Arbor-University of Michigan Transit Services-MI",
             "gtfs.zip",
         )
         self.df = get_gtfs_segments(self.gtfs_path)
@@ -47,7 +48,10 @@ class TestUtils(unittest.TestCase):
             type(fig) == matplotlib.figure.Figure,
             "Error with plot_hist. Should work for the SFMTA example feed",
         )
-        self.assertTrue(os.path.exists(test_dir, "output", "test_hist.png"), "Check if the test_hist.png file exists")
+        self.assertTrue(
+            os.path.exists(os.path.join(test_dir, "output", "test_hist.png")),
+            "Check if the test_hist.png file exists",
+        )
 
     def test_summary_stats(self):
         summ_df = summary_stats(self.df)

@@ -14,10 +14,17 @@ class TestBasic(unittest.TestCase):
 
     def setUp(self):
         """Set up test fixtures, if any."""
-        self.gtfs_path = os.path.join(
+        self.gtfs_path1 = os.path.join(
             test_dir,
             "data",
             "San Francisco-San Francisco Municipal Transportation Agency (SFMTA, Muni)-CA",
+            "gtfs.zip",
+        )
+
+        self.gtfs_path2 = os.path.join(
+            test_dir,
+            "data",
+            "Ann Arbor-University of Michigan Transit Services-MI",
             "gtfs.zip",
         )
 
@@ -42,7 +49,11 @@ class TestBasic(unittest.TestCase):
         The function tests if a given GTFS file exists.
         """
         self.assertTrue(
-            os.path.exists(self.gtfs_path), "The SFMTA example gtfs file does not exist"
+            os.path.exists(self.gtfs_path1), "The SFMTA example gtfs file does not exist"
+        )
+
+        self.assertTrue(
+            os.path.exists(self.gtfs_path2), "The Ann Arbor example gtfs file does not exist"
         )
 
     def test_partridge(self):
@@ -53,7 +64,7 @@ class TestBasic(unittest.TestCase):
             ptg.__version__ == "1.1.1b1",
             "Please use the following version of partridge 1.1.1b1",
         )
-        _date, feed = get_bus_feed(self.gtfs_path)
+        _date, feed = get_bus_feed(self.gtfs_path1)
         self.assertTrue(
             isinstance(feed, ptg.gtfs.Feed),
             "Error with feed type. Make sure the partridge library is installed correctly",

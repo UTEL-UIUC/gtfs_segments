@@ -7,7 +7,9 @@ from gtfs_segments import fetch_gtfs_source, download_latest_data
 import pandas as pd
 
 test_dir = os.path.dirname(__file__)
-
+test_folder = os.path.join(test_dir, "output")
+if not os.path.exists(test_folder):
+    os.mkdir(test_folder)
 
 class TestMobiliy(unittest.TestCase):
     """Tests for the mobility.py module."""

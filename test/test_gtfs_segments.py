@@ -18,7 +18,7 @@ class TestGTFSSegments(unittest.TestCase):
         self.gtfs_path = os.path.join(
             test_dir,
             "data",
-            "San Francisco-San Francisco Municipal Transportation Agency (SFMTA, Muni)-CA",
+            "Ann Arbor-University of Michigan Transit Services-MI",
             "gtfs.zip",
         )
 
@@ -32,7 +32,7 @@ class TestGTFSSegments(unittest.TestCase):
         _, feed = get_bus_feed(self.gtfs_path)
         self.assertTrue(
             inspect_feed(feed),
-            "Error with feed inspection. Should work for the SFMTA example feed",
+            "Error with feed inspection. Should work for the Ann Arbor example feed",
         )
 
     def test_get_gtfs_segments(self):
@@ -43,14 +43,14 @@ class TestGTFSSegments(unittest.TestCase):
         df = get_gtfs_segments(self.gtfs_path)
         self.assertTrue(
             type(df) == gpd.GeoDataFrame,
-            "Error with get_gtfs_segments. Should work for the SFMTA example feed",
+            "Error with get_gtfs_segments. Should work for the Ann Arbor example feed",
         )
-        df_threshold = get_gtfs_segments(self.gtfs_path, threshold=20)
+        df_threshold = get_gtfs_segments(self.gtfs_path, threshold=5)
         self.assertTrue(
             len(df_threshold) <= len(df),
             "Higher threshold should result in fewer segments",
         )
-        df_agency = get_gtfs_segments(self.gtfs_path, agency_id="SFMTA")
+        df_agency = get_gtfs_segments(self.gtfs_path, agency_id="1")
         self.assertTrue(
             len(df_agency) == len(df),
             "Should lead to same number of segments as the original feed has only one agency",
