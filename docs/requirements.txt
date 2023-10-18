@@ -2,3 +2,4 @@ mkdocs
 mkdocstrings
 mkdocstrings-python
 mkdocs-material
+mkdocs-jupyter
