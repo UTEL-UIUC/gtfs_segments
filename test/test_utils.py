@@ -47,7 +47,7 @@ class TestUtils(unittest.TestCase):
             type(fig) == matplotlib.figure.Figure,
             "Error with plot_hist. Should work for the SFMTA example feed",
         )
-        self.assertTrue(os.path.exists("test_hist.png"), "Check if the test_hist.png file exists")
+        self.assertTrue(os.path.exists(test_dir, "output", "test_hist.png"), "Check if the test_hist.png file exists")
 
     def test_summary_stats(self):
         summ_df = summary_stats(self.df)
