@@ -163,7 +163,7 @@ import gtfs_segments
 
 ### Fetch all sources
 ```python
-from gtfs_segments import **fetch_gtfs_source**
+from gtfs_segments import fetch_gtfs_source
 sources_df = fetch_gtfs_source()
 sources_df.head()
 ```
