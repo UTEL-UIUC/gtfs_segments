@@ -8,6 +8,7 @@
 [![PyPI version](https://badge.fury.io/py/gtfs-segments.svg)](https://pypi.org/project/gtfs-segments/)
 [![Downloads](https://static.pepy.tech/badge/gtfs-segments)](https://pepy.tech/project/gtfs-segments)
 [![image](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1mGmFxw8G194bmg3VQm6vg7dVxCt715eD?usp=sharing)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.10019419.svg)](https://doi.org/10.5281/zenodo.10019419)
 
 [![Contributors][contributors-shield]][contributors-url]
 [![Forks][forks-shield]][forks-url]
