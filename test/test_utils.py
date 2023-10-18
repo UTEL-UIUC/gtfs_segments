@@ -8,6 +8,9 @@ import matplotlib
 from gtfs_segments import get_gtfs_segments, plot_hist, summary_stats, export_segments
 
 test_dir = os.path.dirname(__file__)
+test_folder = os.path.join(test_dir, "output")
+if not os.path.exists(test_folder):
+    os.mkdir(test_folder)
 
 
 class TestUtils(unittest.TestCase):
