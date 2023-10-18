@@ -316,7 +316,7 @@ Distributed under the MIT License. See [`LICENSE.txt`](https://github.com/UTEL-U
 If you use gtfs-segments in your research please use the following BibTeX entry:
 
 ```bibtex
-@software{Devunuri_GTFS_Segments_A_2023,
+@software{devunuri_gtfs_segments,
 author = {Devunuri, Saipraneeth and Lehe, Lewis},
 doi = {10.5281/zenodo.10019419},
 month = Oct,
