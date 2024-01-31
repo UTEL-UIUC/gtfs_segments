@@ -109,7 +109,7 @@ def filter_stop_df(stop_df, trip_ids, stop_loc_df) -> gpd.GeoDataFrame:
         drop_inds.append(grp_l.loc[grp_f["drop_off_type"] == 1, "main_index"])
     if len(drop_inds) > 0 and len(drop_inds[0]) > 0:
         stop_df = stop_df[~stop_df["main_index"].isin(drop_inds)].reset_index(drop=True)
-    stop_df = stop_df[["trip_id", "stop_id", "stop_sequence"]]
+    stop_df = stop_df[["trip_id", "stop_id", "stop_sequence", "arrival_time"]]
 
     stop_df = stop_df.sort_values(["trip_id", "stop_sequence"]).reset_index(drop=True)
     return stop_df
@@ -143,11 +143,11 @@ def create_segments(stop_df) -> gpd.GeoDataFrame:
       a GeoDataFrame with segments created from the input stop_df.
     """
     stop_df = nearest_points(stop_df)
-    stop_df = stop_df.rename({"stop_id": "stop_id1"}, axis=1)
+    stop_df = stop_df.rename({"stop_id": "stop_id1", "arrival_time": "arrival_time1"}, axis=1)
     grp = (
         pd.DataFrame(stop_df).groupby("trip_id", group_keys=False).shift(-1).reset_index(drop=True)
     )
-    stop_df[["stop_id2", "end", "snap_end_id"]] = grp[["stop_id1", "start", "snap_start_id"]]
+    stop_df[["stop_id2", "end", "snap_end_id", "arrival_time2"]] = grp[["stop_id1", "start", "snap_start_id", "arrival_time1"]]
     stop_df["segment_id"] = stop_df.apply(
         lambda row: str(row["stop_id1"]) + "-" + str(row["stop_id2"]) + "-1", axis=1
     )
@@ -224,6 +224,9 @@ def process_feed(feed, max_spacing=None) -> gpd.GeoDataFrame:
     stop_df = make_gdf(stop_df)
     stop_df["distance"] = stop_df.set_geometry("geometry").to_crs(epsg_zone).geometry.length
     stop_df["distance"] = stop_df["distance"].round(2)  # round to 2 decimal places
+    stop_df["traversal_time"] = stop_df["arrival_time2"] - stop_df["arrival_time1"]
+    stop_df = stop_df[stop_df["traversal_time"] > 0].reset_index(drop=True)
+    stop_df["speed"] = stop_df["distance"] / stop_df["traversal_time"]
     stop_df = make_segments_unique(stop_df, traversal_threshold=1)
     subset_list = np.array(
         [
@@ -235,6 +238,8 @@ def process_feed(feed, max_spacing=None) -> gpd.GeoDataFrame:
             "distance",
             "stop_id1",
             "stop_id2",
+            "traversal_time",
+            "speed",
             "geometry",
         ]
     )

@@ -22,14 +22,14 @@ def parse_time(val: str) -> np.float64:
     The function `parse_time` takes a string representing a time value in the format "hh:mm:ss" and
     returns the equivalent time in seconds as a numpy float64, or returns the input value if it is
     already a numpy float64 or float.
-    
+
     Args:
       val (str): The parameter `val` is a string representing a time value in the format "hh:mm:ss".
-    
+
     Returns:
       a value of type np.float64.
     """
-    if val is np.nan or type(val) == np.float64 or type(val) == float:
+    if val is np.nan or isinstance(val, np.float64) or isinstance(val, float):
         return val
     val = val.strip()
     h, m, s = val.split(":")
@@ -45,21 +45,37 @@ def parse_date(val: str) -> datetime.date:
     """
     The function `parse_date` takes a string or a `datetime.date` object as input and returns a
     `datetime.date` object.
-    
+
     Args:
       val (str): The `val` parameter is a string representing a date.
-    
+
     Returns:
       a `datetime.date` object.
     """
-    if type(val) == datetime.date:
+    if isinstance(val, datetime.date):
         return val
     return datetime.datetime.strptime(val, DATE_FORMAT).date()
 
 
+def stringify(val: str) -> str:
+    """
+    The function `stringify` takes a string or a `datetime.date` object as input and returns a
+    `datetime.date` object.
+
+    Args:
+      val (str): The `val` parameter is a string representing a date.
+
+    Returns:
+      a `datetime.date` object.
+    """
+    if isinstance(val, str):
+        return val
+    return str(val)
+
+
 vparse_date = np.vectorize(parse_date)
 vparse_time = np.vectorize(parse_time)
-
+vparse_string = np.vectorize(stringify)
 
 DEFAULT_CRS = "EPSG:4326"
 
@@ -68,11 +84,11 @@ def build_shapes(df: pd.DataFrame) -> gpd.GeoDataFrame:
     """
     The function takes a pandas DataFrame containing shape points and returns a GeoDataFrame with shape
     IDs and corresponding geometries.
-    
+
     Args:
       df (pd.DataFrame): The parameter `df` is a pandas DataFrame that contains information about
     shapes. It is expected to have the following columns:
-    
+
     Returns:
       a GeoDataFrame object.
     """
@@ -82,9 +98,7 @@ def build_shapes(df: pd.DataFrame) -> gpd.GeoDataFrame:
     data: Dict[str, List] = {"shape_id": [], "geometry": []}
     for shape_id, shape in df.sort_values("shape_pt_sequence").groupby("shape_id"):
         data["shape_id"].append(shape_id)
-        data["geometry"].append(
-            LineString(list(zip(shape.shape_pt_lon, shape.shape_pt_lat)))
-        )
+        data["geometry"].append(LineString(list(zip(shape.shape_pt_lon, shape.shape_pt_lat))))
 
     return gpd.GeoDataFrame(data, crs=DEFAULT_CRS)
 
@@ -93,13 +107,13 @@ def build_stops(df: pd.DataFrame) -> gpd.GeoDataFrame:
     """
     The function `build_stops` takes a pandas DataFrame `df` and returns a GeoDataFrame with the same
     data but with a new geometry column created from the `stop_lon` and `stop_lat` columns.
-    
+
     Args:
       df (pd.DataFrame): The parameter `df` is a pandas DataFrame that contains information about stops.
     It is expected to have columns named "stop_lon" and "stop_lat" which represent the longitude and
     latitude coordinates of each stop, respectively. The DataFrame may also contain other columns with
     additional information about the stops.
-    
+
     Returns:
       a GeoDataFrame with the geometry column containing points created from the stop_lon and stop_lat
     columns of the input DataFrame. The stop_lon and stop_lat columns are then dropped from the
@@ -121,17 +135,16 @@ def transforms_dict() -> Dict[str, Dict[str, Any]]:
     """
     The function `transforms_dict` returns a dictionary that specifies the required columns and
     converters for each file in a transit data feed.
-    
+
     Returns:
       a dictionary containing information about various text files and their required columns and
     converters.
     """
     return_dict = {
-        "agency.txt": {
-            "required_columns": ("agency_name", "agency_url", "agency_timezone")
-        },
+        "agency.txt": {"required_columns": ("agency_name", "agency_url", "agency_timezone")},
         "calendar.txt": {
             "converters": {
+                "service_id": vparse_string,
                 "start_date": vparse_date,
                 "end_date": vparse_date,
                 "monday": pd.to_numeric,
@@ -157,6 +170,7 @@ def transforms_dict() -> Dict[str, Dict[str, Any]]:
         },
         "calendar_dates.txt": {
             "converters": {
+                "service_id": vparse_string,
                 "date": vparse_date,
                 "exception_type": pd.to_numeric,
             },
@@ -164,6 +178,7 @@ def transforms_dict() -> Dict[str, Dict[str, Any]]:
         },
         "fare_attributes.txt": {
             "converters": {
+                "fare_id": vparse_string,
                 "price": pd.to_numeric,
                 "payment_method": pd.to_numeric,
                 "transfer_duration": pd.to_numeric,
@@ -203,7 +218,10 @@ def transforms_dict() -> Dict[str, Dict[str, Any]]:
             ),
         },
         "routes.txt": {
-            "converters": {"route_type": pd.to_numeric},
+            "converters": {
+                "route_id": vparse_string,
+                "route_type": pd.to_numeric,
+            },
             "required_columns": (
                 "route_id",
                 "route_short_name",
@@ -213,6 +231,7 @@ def transforms_dict() -> Dict[str, Dict[str, Any]]:
         },
         "shapes.txt": {
             "converters": {
+                "shape_id": vparse_string,
                 "shape_pt_lat": pd.to_numeric,
                 "shape_pt_lon": pd.to_numeric,
                 "shape_pt_sequence": pd.to_numeric,
@@ -228,6 +247,7 @@ def transforms_dict() -> Dict[str, Dict[str, Any]]:
         },
         "stops.txt": {
             "converters": {
+                "stop_id": vparse_string,
                 "stop_lat": pd.to_numeric,
                 "stop_lon": pd.to_numeric,
                 "location_type": pd.to_numeric,
@@ -247,6 +267,8 @@ def transforms_dict() -> Dict[str, Dict[str, Any]]:
         },
         "stop_times.txt": {
             "converters": {
+                "stop_id": vparse_string,
+                "trip_id": vparse_string,
                 "arrival_time": vparse_time,
                 "departure_time": vparse_time,
                 "pickup_type": pd.to_numeric,
@@ -264,6 +286,8 @@ def transforms_dict() -> Dict[str, Dict[str, Any]]:
         },
         "transfers.txt": {
             "converters": {
+                "from_stop_id": vparse_string,
+                "to_stop_id": vparse_string,
                 "transfer_type": pd.to_numeric,
                 "min_transfer_time": pd.to_numeric,
             },
@@ -271,6 +295,9 @@ def transforms_dict() -> Dict[str, Dict[str, Any]]:
         },
         "trips.txt": {
             "converters": {
+                "route_id": vparse_string,
+                "service_id": vparse_string,
+                "trip_id": vparse_string,
                 "direction_id": pd.to_numeric,
                 "wheelchair_accessible": pd.to_numeric,
                 "bikes_allowed": pd.to_numeric,

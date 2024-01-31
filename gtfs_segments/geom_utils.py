@@ -295,9 +295,12 @@ def nearest_points(stop_df, k_neighbors=3) -> pd.DataFrame:
     geo_const = 6371000 * np.pi / 180
     failed_trips = []
     count = 0
+    total_trip_count = 0
+    defective_trip_count = 0
     for name, group in stop_df.groupby("trip_id"):
         # print(name)
         count += 1
+        total_trip_count += len(group)
         neighbors = k_neighbors
         geom_line = group["geometry"].iloc[0]
         # print(len(geom_line.coords))
@@ -306,6 +309,7 @@ def nearest_points(stop_df, k_neighbors=3) -> pd.DataFrame:
         if len(stops) <= 1:
             failed_trips.append(name)
             print("Excluding Trip: " + name + " because of too few stops")
+            defective_trip_count += len(group)
             continue
         failed_trip = False
         solution_found = False
@@ -334,8 +338,8 @@ def nearest_points(stop_df, k_neighbors=3) -> pd.DataFrame:
                         failed_trip = True
                         # Make this to exit the while loop
                         solution_found = True
-
                         print("Excluding Trip: " + name + " because of failed snap!")
+                        defective_trip_count += len(group)
                         break
             if len(points) == len(stops):
                 solution_found = True
@@ -345,5 +349,10 @@ def nearest_points(stop_df, k_neighbors=3) -> pd.DataFrame:
 
         if not failed_trip:
             stop_df.loc[stop_df.trip_id == name, "snap_start_id"] = points
+            
+    print("Total trips processed: ", total_trip_count)
+    if defective_trip_count > 0:
+        print("Total defective trips: ", defective_trip_count)
+        print("Percentage defective trips: ", defective_trip_count/total_trip_count*100)
     stop_df = stop_df[~stop_df.trip_id.isin(failed_trips)].reset_index(drop=True)
     return stop_df
