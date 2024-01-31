@@ -1,7 +1,7 @@
 [project]
 name = 'gtfs_segments'
-# Support Python 3.9+.
-requires-python = ">=3.9"
+# Support Python 3.8+.
+requires-python = ">=3.8"
 version = "2.0.3"
 dependencies = [
     "geopandas",
