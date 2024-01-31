@@ -1,9 +1,12 @@
 import os
 from threading import RLock
 from typing import Any, Dict, Optional, Union
+
 import pandas as pd
-from .utilities import detect_encoding
+
 from .parsers import transforms_dict
+from .utilities import detect_encoding
+
 View = Dict[str, Dict[str, Any]]
 
 
@@ -129,7 +132,7 @@ class Feed(object):
         converters = self._transforms_dict[filename].get("converters", {})
         for col, converter in converters.items():
             if col in df.columns:
-                df.loc[:,col] = converter(df.loc[:,col])
+                df.loc[:, col] = converter(df.loc[:, col])
 
     def _transform(self, filename: str, df: pd.DataFrame) -> pd.DataFrame:
         transformations = self._transforms_dict[filename].get("transformations", [])

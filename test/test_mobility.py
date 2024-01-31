@@ -1,15 +1,18 @@
 """Tests for `gtfs_segments` package."""
 
-import os
 import glob
+import os
 import unittest
-from gtfs_segments import fetch_gtfs_source, download_latest_data
+
 import pandas as pd
+
+from gtfs_segments import download_latest_data, fetch_gtfs_source
 
 test_dir = os.path.dirname(__file__)
 test_folder = os.path.join(test_dir, "output")
 if not os.path.exists(test_folder):
     os.mkdir(test_folder)
+
 
 class TestMobiliy(unittest.TestCase):
     """Tests for the mobility.py module."""
@@ -61,9 +64,7 @@ class TestMobiliy(unittest.TestCase):
         self.assertTrue(len(folders) > 0, "Check if the data_test folder is not empty")
         sub_folder = glob.glob(os.path.join(test_dir, "data/*"))
         file = os.listdir(sub_folder[0])[0]
-        self.assertTrue(
-            file.endswith(".zip"), "Check if the data folder contains a zip file"
-        )
+        self.assertTrue(file.endswith(".zip"), "Check if the data folder contains a zip file")
         if os.path.exists(self.gtfs_path):
             os.remove(self.gtfs_path)
             # You can remove and empty folders with os.rmdir()

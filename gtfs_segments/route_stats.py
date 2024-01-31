@@ -1,10 +1,13 @@
-import utm
+from datetime import timedelta
+from typing import Dict, List
+
+import matplotlib.cm as cm
 import numpy as np
 import pandas as pd
+import utm
+
 from .geom_utils import code
-from datetime import timedelta
-import matplotlib.cm as cm
-from typing import List, Dict
+
 
 def get_zone_epsg_from_ls(geom) -> int:
     """
@@ -161,9 +164,7 @@ def get_all_peak_times(df_dir) -> Dict[str, List]:
             peak_times.append(time)
         if no_buses > best:
             peak_times = [time]
-    peak_time_condensed = np.array(
-        [str(timedelta(seconds=peak_times[0]))], dtype="object"
-    )
+    peak_time_condensed = np.array([str(timedelta(seconds=peak_times[0]))], dtype="object")
     for i, time in enumerate(peak_times):
         if i > 0:
             if (time - peak_times[i - 1]) != 60:
@@ -171,17 +172,13 @@ def get_all_peak_times(df_dir) -> Dict[str, List]:
                 #                 peak_time_condensed[-1] =  peak_time_condensed[-1].split('-')[0] + '-' + str(time)
                 #             else:
                 peak_time_condensed[-1] = (
-                    str(peak_time_condensed[-1])
-                    + "-"
-                    + str(timedelta(seconds=peak_times[i - 1]))
+                    str(peak_time_condensed[-1]) + "-" + str(timedelta(seconds=peak_times[i - 1]))
                 )
                 peak_time_condensed = np.append(peak_time_condensed, str(time))
             else:
                 if i == len(peak_times) - 1:
                     peak_time_condensed[-1] = str(
-                        peak_time_condensed[-1]
-                        + "-"
-                        + str(timedelta(seconds=peak_times[i]))
+                        peak_time_condensed[-1] + "-" + str(timedelta(seconds=peak_times[i]))
                     )
     return {"peak_buses": peak_time_condensed}
 
@@ -267,9 +264,7 @@ def get_route_time(df_dir) -> Dict[str, float]:
     """
     if len(df_dir) > 1:
         shape_0 = df_dir.groupby("shape_id").count().trip_id.idxmax()
-        trip_0 = df_dir[
-            df_dir.trip_id == df_dir[df_dir.shape_id == shape_0].trip_id.unique()[0]
-        ]
+        trip_0 = df_dir[df_dir.trip_id == df_dir[df_dir.shape_id == shape_0].trip_id.unique()[0]]
         time_0 = trip_0.arrival_time.max() - trip_0.arrival_time.min()
     return {"total_time": np.round(time_0 / 3600, 2) if time_0 != 0 else 0}
 
@@ -286,9 +281,7 @@ def get_bus_spacing(route_dict) -> Dict[str, float]:
     Returns:
       A dictionary with the keys 'spacing dir 0' and 'spacing dir 1'
     """
-    return {
-        "bus_spacing": np.round(route_dict["route_length"] / route_dict["n_bus_avg"], 3)
-    }
+    return {"bus_spacing": np.round(route_dict["route_length"] / route_dict["n_bus_avg"], 3)}
 
 
 def average_active_buses(df_dir) -> Dict[str, float]:
@@ -320,9 +313,7 @@ def get_stop_spacing(df_dir, route_dict) -> Dict[str, float]:
     if len(df_dir) > 1:
         shape_0 = df_dir.groupby("shape_id").count().trip_id.idxmax()
         n_stops = len(
-            df_dir[
-                df_dir.trip_id == df_dir[df_dir.shape_id == shape_0].trip_id.unique()[0]
-            ]
+            df_dir[df_dir.trip_id == df_dir[df_dir.shape_id == shape_0].trip_id.unique()[0]]
         )
         spc_0 = route_dict["route_length"] / n_stops
     return {"stop_spacing": np.round(spc_0, 2) if spc_0 != 0 else 0}
@@ -345,9 +336,7 @@ def get_route_lens(df_dir, df_shapes) -> Dict[str, float]:
     if len(df_dir) > 1:
         shape_0 = df_dir.groupby("shape_id").count().trip_id.idxmax()
         len_0 = (
-            df_shapes.loc[df_shapes.shape_id == shape_0]
-            .to_crs(epsg_zone)
-            .geometry.length.iloc[0]
+            df_shapes.loc[df_shapes.shape_id == shape_0].to_crs(epsg_zone).geometry.length.iloc[0]
         )
     return {"route_length": np.round(len_0 / 1000, 2)}
 

@@ -1,14 +1,17 @@
+from typing import Any, Tuple
+
 import pandas as pd
+
 import gtfs_segments.partridge_mod as ptg
+
 from .partridge_mod.gtfs import Feed
-from typing import Tuple, Any
 
 
 def get_bus_feed(path: str, agency_id: Any = None, threshold: int = 1) -> Tuple[str, Feed]:
     """
     The `get_bus_feed` function retrieves bus feed data from a specified path, with the option to filter
     by agency name, and returns the busiest date and a GTFS feed object.
-    
+
     Args:
       path (str): The `path` parameter is a string that represents the path to the GTFS file. This file
     contains the bus feed data.
@@ -20,7 +23,7 @@ def get_bus_feed(path: str, agency_id: Any = None, threshold: int = 1) -> Tuple[
     frequency. It is set to a default value of 1, but you can adjust it to a different value if needed.
     Service IDs with a sum of stop times greater than the threshold will be included in the returned
     bus. Defaults to 1
-    
+
     Returns:
       A tuple containing the busiest date and a GTFS feed object. The GTFS feed object contains
     information about routes, stops, stop times, trips, and shapes for a transit agency's schedule.
@@ -38,9 +41,7 @@ def get_bus_feed(path: str, agency_id: Any = None, threshold: int = 1) -> Tuple[
         view = {
             "routes.txt": {"route_type": route_types},  # Only bus routes
             "trips.txt": {"service_id": service_ids},  # Busiest day only
-            "agency.txt": {
-                "agency_id": agency_id
-            },  # Eg: 'Société de transport de Montréal
+            "agency.txt": {"agency_id": agency_id},  # Eg: 'Société de transport de Montréal
         }
     else:
         view = {
@@ -65,9 +66,7 @@ def get_all_days_s_ids(path: str) -> pd.DataFrame:
     dates_by_service_ids = ptg.read_dates_by_service_ids(path)
     data = dates_by_service_ids
     # Create a DataFrame
-    data_frame = pd.DataFrame(
-        columns=sorted(list({col for row in data.keys() for col in row}))
-    )
+    data_frame = pd.DataFrame(columns=sorted(list({col for row in data.keys() for col in row})))
 
     # Iterate through the data and populate the DataFrame
     for service_ids, dates in data.items():

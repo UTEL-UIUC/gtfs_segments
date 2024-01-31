@@ -1,7 +1,9 @@
-import os
 import datetime
+import os
 import unittest
+
 import geopandas as gpd
+
 import gtfs_segments.partridge_mod as ptg
 
 test_dir = os.path.dirname(__file__)

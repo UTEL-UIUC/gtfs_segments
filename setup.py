@@ -1,22 +1,24 @@
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
-__version__ = '0.1.0'
-DESCRIPTION = 'GTFS segments'
+__version__ = "0.1.0"
+DESCRIPTION = "GTFS segments"
 with open("README.md", "r", encoding="utf8") as fh:
     LONG_DESCRIPTION = fh.read()
 
-REQUIREMENTS = ['geopandas',
-                'scipy',
-                'shapely',
-                'numpy',
-                'pandas',
-                'matplotlib',
-                'utm',
-                'contextily',
-                'requests',
-                'isoweek',
-                'faust-cchardet',
-                'charset_normalizer']
+REQUIREMENTS = [
+    "geopandas",
+    "scipy",
+    "shapely",
+    "numpy",
+    "pandas",
+    "matplotlib",
+    "utm",
+    "contextily",
+    "requests",
+    "isoweek",
+    "faust-cchardet",
+    "charset_normalizer",
+]
 
 # Setting up
 setup(
@@ -26,11 +28,11 @@ setup(
     author_email="<sd37@illinois.edu>",
     description=DESCRIPTION,
     long_description=LONG_DESCRIPTION,
-    long_description_content_type='text/markdown',
+    long_description_content_type="text/markdown",
     packages=find_packages(),
     install_requires=REQUIREMENTS,
     url="https://github.com/UTEL-UIUC/gtfs_segments",
-    keywords=['python', 'gtfs', 'geodata'],
+    keywords=["python", "gtfs", "geodata"],
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Intended Audience :: Education",
@@ -39,5 +41,5 @@ setup(
         "Operating System :: MacOS :: MacOS X",
         "Operating System :: Microsoft :: Windows",
         "License :: OSI Approved :: MIT License",
-    ]
+    ],
 )

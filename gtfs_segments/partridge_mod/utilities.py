@@ -1,4 +1,4 @@
-from typing import Any, Set, BinaryIO
+from typing import Any, BinaryIO, Set
 
 from charset_normalizer import detect
 from pandas.core.common import flatten

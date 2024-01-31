@@ -1,12 +1,14 @@
 import os
+
+import geopandas as gpd
 import numpy as np
 import pandas as pd
-import geopandas as gpd
 from shapely.geometry import LineString
-from .partridge_func import get_bus_feed
-from .geom_utils import nearest_points, get_zone_epsg, ret_high_res_shape, make_gdf
-from .utils import failed_pipeline, download_write_file, export_segments, plot_hist
+
+from .geom_utils import get_zone_epsg, make_gdf, nearest_points, ret_high_res_shape
 from .mobility import summary_stats_mobility
+from .partridge_func import get_bus_feed
+from .utils import download_write_file, export_segments, failed_pipeline, plot_hist
 
 
 def merge_trip_geom(trip_df, shape_df) -> gpd.GeoDataFrame:
@@ -90,9 +92,7 @@ def filter_stop_df(stop_df, trip_ids, stop_loc_df) -> gpd.GeoDataFrame:
         for trip in missing_trips:
             trip_ids.discard(trip)
             print(
-                "Removed the trip_id:",
-                trip,
-                "as stop locations are missing for stops in the trip"
+                "Removed the trip_id:", trip, "as stop locations are missing for stops in the trip"
             )
     # Filter the stop_df to only include the trip_ids in the trip_ids list
     stop_df = stop_df[stop_df.trip_id.isin(trip_ids)].reset_index(drop=True)
@@ -147,7 +147,9 @@ def create_segments(stop_df) -> gpd.GeoDataFrame:
     grp = (
         pd.DataFrame(stop_df).groupby("trip_id", group_keys=False).shift(-1).reset_index(drop=True)
     )
-    stop_df[["stop_id2", "end", "snap_end_id", "arrival_time2"]] = grp[["stop_id1", "start", "snap_start_id", "arrival_time1"]]
+    stop_df[["stop_id2", "end", "snap_end_id", "arrival_time2"]] = grp[
+        ["stop_id1", "start", "snap_start_id", "arrival_time1"]
+    ]
     stop_df["segment_id"] = stop_df.apply(
         lambda row: str(row["stop_id1"]) + "-" + str(row["stop_id2"]) + "-1", axis=1
     )
@@ -156,7 +158,7 @@ def create_segments(stop_df) -> gpd.GeoDataFrame:
     stop_df = stop_df[stop_df["snap_end_id"] > stop_df["snap_start_id"]].reset_index(drop=True)
     stop_df["geometry"] = stop_df.apply(
         lambda row: LineString(
-            row["geometry"].coords[row["snap_start_id"]: row["snap_end_id"] + 1]
+            row["geometry"].coords[row["snap_start_id"] : row["snap_end_id"] + 1]
         ),
         axis=1,
     )
@@ -289,15 +291,19 @@ def get_gtfs_segments(path, agency_id=None, threshold=1, max_spacing=None) -> gp
     the segment is split into multiple segments.
 
     Returns:
-      A GeoDataFrame containing information about the stops and segments in the feed with segments smaller than the max_spacing values. Each row contains the following columns:
-      segment_id: the segment's identifier, produced by gtfs-segments
-      stop_id1: The `stop_id` identifier of the segment's beginning stop. The identifier is the same one the agency has chosen in the stops.txt file of its GTFS package.
-      stop_id2: The `stop_id` identifier of the segment's ending stop.
-      route_id: The same route ID listed in the agency's routes.txt file.
-      direction_id: The route's direction identifier.
-      traversals: The number of times the indicated route traverses the segment during the "measurement interval." The "measurement interval" chosen is the busiest day in the GTFS schedule: the day which has the most bus services running.
-      distance: The length of the segment in meters.
-      geometry: The segment's LINESTRING (a format for encoding geographic paths). All geometries are re-projected onto Mercator (EPSG:4326/WGS84) to maintain consistency.
+      A GeoDataFrame containing information about the stops and segments in the feed with segments
+      smaller than the max_spacing values. Each row contains the following columns:
+      - segment_id: the segment's identifier, produced by gtfs-segments
+      - stop_id1: The `stop_id` identifier of the segment's beginning stop.
+        The identifier is the same one the agency has chosen in the stops.txt file of its GTFS package.
+      - stop_id2: The `stop_id` identifier of the segment's ending stop.
+      - route_id: The same route ID listed in the agency's routes.txt file.
+      - direction_id: The route's direction identifier.
+      - traversals: The number of times the indicated route traverses the segment during the "measurement interval."
+        The "measurement interval" chosen is the busiest day in the GTFS schedule: the day which has the most bus services running.
+      - distance: The length of the segment in meters.
+      - geometry: The segment's LINESTRING (a format for encoding geographic paths).
+        All geometries are re-projected onto Mercator (EPSG:4326/WGS84) to maintain consistency.
     """
     _, feed = get_bus_feed(path, agency_id=agency_id, threshold=threshold)
     return process_feed(feed, max_spacing)

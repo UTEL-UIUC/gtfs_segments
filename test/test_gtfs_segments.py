@@ -2,10 +2,11 @@
 
 import os
 import unittest
-from gtfs_segments.partridge_func import get_bus_feed
-from gtfs_segments.gtfs_segments import inspect_feed, get_gtfs_segments
 
 import geopandas as gpd
+
+from gtfs_segments.gtfs_segments import get_gtfs_segments, inspect_feed
+from gtfs_segments.partridge_func import get_bus_feed
 
 test_dir = os.path.dirname(__file__)
 

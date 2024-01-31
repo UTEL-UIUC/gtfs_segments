@@ -1,4 +1,5 @@
 __pycache__/
+.ruff_cache/
 *.ai
 .tox
 # Distribution / packaging

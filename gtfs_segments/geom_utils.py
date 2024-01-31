@@ -1,13 +1,13 @@
-import utm
+import contextily as cx
+import geopandas as gpd
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import geopandas as gpd
-from shapely.ops import split
-from shapely.geometry import Point, LineString
-from scipy.spatial import cKDTree
-import contextily as cx
-import matplotlib.pyplot as plt
+import utm
 from pyproj import Geod
+from scipy.spatial import cKDTree
+from shapely.geometry import LineString, Point
+from shapely.ops import split
 
 geod = Geod(ellps="WGS84")
 
@@ -112,7 +112,7 @@ def view_spacings(
     level="whole",
     axis="on",
     dpi=300,
-    **kwargs
+    **kwargs,
 ) -> plt.Figure:
     """
     The `view_spacings` function plots the spacings of a bus network, route, or segment, with options to
@@ -349,10 +349,13 @@ def nearest_points(stop_df, k_neighbors=3) -> pd.DataFrame:
 
         if not failed_trip:
             stop_df.loc[stop_df.trip_id == name, "snap_start_id"] = points
-            
+
     print("Total trips processed: ", total_trip_count)
     if defective_trip_count > 0:
         print("Total defective trips: ", defective_trip_count)
-        print("Percentage defective trips: ", defective_trip_count/total_trip_count*100)
+        print(
+            "Percentage defective trips: ",
+            defective_trip_count / total_trip_count * 100,
+        )
     stop_df = stop_df[~stop_df.trip_id.isin(failed_trips)].reset_index(drop=True)
     return stop_df

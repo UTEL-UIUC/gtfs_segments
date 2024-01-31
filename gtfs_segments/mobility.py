@@ -1,10 +1,14 @@
 import os
-from .utils import download_write_file
-import pandas as pd
+
 import numpy as np
+import pandas as pd
+
+from .utils import download_write_file
 
 MOBILITY_SOURCES_link = "https://bit.ly/catalogs-csv"
-ABBREV_link = "https://raw.githubusercontent.com/UTEL-UIUC/gtfs_segments/main/state_abbreviations.json"
+ABBREV_link = (
+    "https://raw.githubusercontent.com/UTEL-UIUC/gtfs_segments/main/state_abbreviations.json"
+)
 
 
 def fetch_gtfs_source(place="ALL", active=True) -> pd.DataFrame:
@@ -37,9 +41,7 @@ def fetch_gtfs_source(place="ALL", active=True) -> pd.DataFrame:
         right_on="state",
     )
     sources_df = sources_df[~sources_df.state_code.isna()]
-    sources_df["location.municipality"] = sources_df["location.municipality"].astype(
-        "str"
-    )
+    sources_df["location.municipality"] = sources_df["location.municipality"].astype("str")
     sources_df.drop(
         [
             "entity_type",
@@ -65,10 +67,7 @@ def fetch_gtfs_source(place="ALL", active=True) -> pd.DataFrame:
             if (
                 len(
                     sources_df[
-                        (
-                            sources_df["location.municipality"]
-                            == row["location.municipality"]
-                        )
+                        (sources_df["location.municipality"] == row["location.municipality"])
                         & (sources_df["provider"] == row["provider"])
                     ]
                 )
@@ -136,9 +135,7 @@ def fetch_gtfs_source(place="ALL", active=True) -> pd.DataFrame:
         inplace=True,
     )
     sources_df.insert(0, "provider", file_names)
-    sources_df.columns = sources_df.columns.str.replace(
-        "location.bounding_box.", "", regex=True
-    )
+    sources_df.columns = sources_df.columns.str.replace("location.bounding_box.", "", regex=True)
     sources_df.rename(
         columns={
             "minimum_longitude": "min_lon",
@@ -154,9 +151,7 @@ def fetch_gtfs_source(place="ALL", active=True) -> pd.DataFrame:
     else:
         sources_df = sources_df[
             sources_df.apply(
-                lambda row: row.astype(str)
-                .str.contains(place.lower(), case=False)
-                .any(),
+                lambda row: row.astype(str).str.contains(place.lower(), case=False).any(),
                 axis=1,
             )
         ]
@@ -168,7 +163,7 @@ def fetch_gtfs_source(place="ALL", active=True) -> pd.DataFrame:
 
 def summary_stats_mobility(
     df, folder_path, filename, b_day, link, bounds, max_spacing=3000, export=False
-)-> pd.DataFrame:
+) -> pd.DataFrame:
     """
     It takes in a dataframe, a folder path, a filename, a busiest day, a link, a bounding box, a max
     spacing, and a boolean for exporting the summary to a csv.
@@ -197,26 +192,16 @@ def summary_stats_mobility(
       A dataframe with the summary statistics of the mobility data.
     """
     percent_spacing = round(
-        df[df["distance"] > max_spacing]["traversals"].sum()
-        / df["traversals"].sum()
-        * 100,
+        df[df["distance"] > max_spacing]["traversals"].sum() / df["traversals"].sum() * 100,
         3,
     )
     df = df[df["distance"] <= max_spacing]
     csv_path = os.path.join(folder_path, "summary.csv")
     seg_weighted_mean = (
-        df.groupby(["segment_id", "distance"])
-        .first()
-        .reset_index()["distance"]
-        .mean()
-        .round(2)
+        df.groupby(["segment_id", "distance"]).first().reset_index()["distance"].mean().round(2)
     )
     seg_weighted_median = (
-        df.groupby(["segment_id", "distance"])
-        .first()
-        .reset_index()["distance"]
-        .median()
-        .round(2)
+        df.groupby(["segment_id", "distance"]).first().reset_index()["distance"].median().round(2)
     )
     route_weighted_mean = (
         df.groupby(["route_id", "segment_id", "distance"])
@@ -232,9 +217,7 @@ def summary_stats_mobility(
         .median()
         .round(2)
     )
-    weighted_data = np.hstack(
-        [np.repeat(x, y) for x, y in zip(df["distance"], df.traversals)]
-    )
+    weighted_data = np.hstack([np.repeat(x, y) for x, y in zip(df["distance"], df.traversals)])
     df_dict = {
         "Name": filename,
         "Busiest Day": b_day,
@@ -279,9 +262,7 @@ def download_latest_data(sources_df, out_folder_path) -> None:
     """
     for i, row in sources_df.iterrows():
         try:
-            download_write_file(
-                row["url"], os.path.join(out_folder_path, row["provider"])
-            )
+            download_write_file(row["url"], os.path.join(out_folder_path, row["provider"]))
         except Exception as e:
             print("Error downloading the file for " + row["provider"] + " : " + str(e))
             continue

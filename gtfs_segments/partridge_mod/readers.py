@@ -1,10 +1,10 @@
-from collections import defaultdict
 import datetime
 import os
 import shutil
 import tempfile
-from typing import DefaultDict, Dict, FrozenSet, Optional, Set, Tuple
 import weakref
+from collections import defaultdict
+from typing import DefaultDict, Dict, FrozenSet, Optional, Set, Tuple
 
 from isoweek import Week
 

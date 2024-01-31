@@ -1,13 +1,14 @@
 import os
 import shutil
-import requests
 import traceback
+from typing import Any
+
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
+import requests
 from scipy.stats import gaussian_kde
 from shapely.geometry import Point
-from typing import Any
 
 # Plot style
 plt.style.use("ggplot")

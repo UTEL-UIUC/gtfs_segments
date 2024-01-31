@@ -2,10 +2,12 @@
 
 import os
 import unittest
+
 import geopandas as gpd
-import pandas as pd
 import matplotlib
-from gtfs_segments import get_gtfs_segments, plot_hist, summary_stats, export_segments
+import pandas as pd
+
+from gtfs_segments import export_segments, get_gtfs_segments, plot_hist, summary_stats
 
 test_dir = os.path.dirname(__file__)
 test_folder = os.path.join(test_dir, "output")
