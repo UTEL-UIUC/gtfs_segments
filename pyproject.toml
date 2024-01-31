@@ -1,6 +1,46 @@
 [project]
+name = 'GTFS Segments'
 # Support Python 3.9+.
 requires-python = ">=3.9"
+version = "2.0.3"
+dependencies = [
+    "geopandas",
+    "scipy",
+    "shapely",
+    "numpy",
+    "pandas",
+    "matplotlib",
+    "utm",
+    "contextily",
+    "requests",
+    "isoweek",
+    "faust-cchardet",
+    "charset_normalizer",
+]
+authors = [
+    {name = "Saipraneeth Devunuri", email = "sd37@illinois.edu"},
+    {name = "Lewis Lehe", email = "lehe@illinois.edu"},
+]
+maintainers = [
+    {name = "Saipraneeth Devunuri", email = "sd37@illinois.edu"}
+]
+readme = "README.MD"
+license = {file = "LICENSE", name = "MIT License"}
+keywords=["Python", "GTFS", "Transit", "Stop Spacings", "GIS"],
+classifiers = [
+    "Development Status :: 5 - Stable",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.9",
+]
+
+[project.urls]
+Homepage = "https://github.com/UTEL-UIUC/gtfs_segments"
+Documentation = "https://gtfs-segments.readthedocs.io"
+Repository = "https://github.com/UTEL-UIUC/gtfs_segments"
+"Bug Tracker" = "https://github.com/UTEL-UIUC/gtfs_segments/issues"
 
 [tool.ruff]
 # Set the maximum line length to 100.
@@ -14,3 +54,35 @@ extend-select = ["E501"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"
+
+[tool.tox]
+legacy_tox_ini = """
+    [tox]
+    min_version = 4.0
+    env_list =
+        py{38,39,310,311}
+    minversion = 4.11.3
+
+    [gh-actions]
+    python =
+        3.8: py38
+        3.9: py39
+        3.10: py310
+        3.11: py311
+
+    [testenv]
+    description = run the tests with unittest
+    deps = -rrequirements.txt
+    commands =
+        python -m unittest
+
+    [testenv:lint]
+    description = run linters
+    skip_install = true
+    deps = flake8==6.1.0
+    commands = 
+        # stop the build if there are Python syntax errors or undefined names
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+"""
