@@ -15,7 +15,7 @@ REQUIREMENTS = ['geopandas',
                 'contextily',
                 'requests',
                 'isoweek',
-                'cchardet',
+                'faust-cchardet',
                 'charset_normalizer']
 
 # Setting up

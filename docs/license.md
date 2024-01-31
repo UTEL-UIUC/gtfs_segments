@@ -6,12 +6,14 @@ Distributed under the MIT License. See [`LICENSE.txt`](https://github.com/UTEL-U
 If you use gtfs-segments in your research please use the following BibTeX entry:
 
 ```bibtex
-@misc{gtfs_segments,
-  author =       {Devunuri, Saipraneeth},
-  title =        {gtfs-segments - A fast and efficient library to generate bus stop spacings},
-  howpublished = {Github},
-  year =         {2022},
-  url =          {https://github.com/UTEL-UIUC/gtfs_segments}
+@software{gtfs_segments,
+author = {Devunuri, Saipraneeth and Lehe, Lewis},
+doi = {10.5281/zenodo.10019419},
+month = oct,
+title = {{GTFS Segments: A fast and efficient library to generate bus stop spacings}},
+url = {https://github.com/UTEL-UIUC/gtfs_segments},
+version = {2.0.3},
+year = {2023}
 }
 
 ```
