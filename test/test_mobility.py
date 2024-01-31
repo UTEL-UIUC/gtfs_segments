@@ -16,6 +16,11 @@ class TestMobiliy(unittest.TestCase):
 
     def setUp(self):
         """Set up test fixtures, if any."""
+        self.gtfs_folder = os.path.join(
+            test_dir,
+            "data",
+            "San Francisco-San Francisco Municipal Transportation Agency (SFMTA, Muni)-CA",
+        )
         self.gtfs_path = os.path.join(
             test_dir,
             "data",
@@ -59,3 +64,7 @@ class TestMobiliy(unittest.TestCase):
         self.assertTrue(
             file.endswith(".zip"), "Check if the data folder contains a zip file"
         )
+        if os.path.exists(self.gtfs_path):
+            os.remove(self.gtfs_path)
+            # You can remove and empty folders with os.rmdir()
+            os.rmdir(self.gtfs_folder)
