@@ -37,4 +37,5 @@ def detect_encoding(file: BinaryIO, limit: int = 2500) -> str:
         return "utf-8"
 
     file.seek(0)
-    return detect(file.read())["encoding"]
+    encoding = detect(file.read())["encoding"]
+    return encoding

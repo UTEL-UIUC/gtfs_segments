@@ -49,8 +49,8 @@ indent-width = 4
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "Q", "I"]
-ignore = ["E203"]
-extend-select = ["E501"]
+ignore = ["E203","E501"]
+extend-select = []
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"

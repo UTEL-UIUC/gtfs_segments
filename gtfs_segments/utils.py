@@ -254,7 +254,7 @@ def download_write_file(url: str, folder_path: str) -> str:
     if not os.path.exists(folder_path):
         os.makedirs(folder_path)
     # Download file from URL
-    r = requests.get(url, allow_redirects=True)
+    r = requests.get(url, allow_redirects=True, timeout=300),
     gtfs_file_loc = os.path.join(folder_path, "gtfs.zip")
 
     # Write file locally

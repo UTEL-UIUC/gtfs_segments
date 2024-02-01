@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import utm
+from matplotlib.figure import Figure
 from pyproj import Geod
 from scipy.spatial import cKDTree
 from shapely.geometry import LineString, Point
@@ -12,7 +13,7 @@ from shapely.ops import split
 geod = Geod(ellps="WGS84")
 
 
-def split_route(row) -> str:
+def split_route(row: pd.Series) -> str:
     """
     It takes a row from a dataframe, and if the row has a start and end point,
     it splits the route into two segments
@@ -34,21 +35,21 @@ def split_route(row) -> str:
     return route.wkt
 
 
-def nearest_snap(route, point) -> str:
+def nearest_snap(route_string: LineString, stop_point: Point) -> str:
     """
     It takes a dataframe of bus stops and a dataframe of bus routes and
     returns a dataframe of the nearest bus stop to each bus stop
 
     Args:
-      route: the route id of the route you want to view
+      route: the route geometry
       point: the point you want to snap to the nearest point on the route
 
     Returns:
       A list of tuples. Each tuple contains the route_id, segment_id, and
       the distance between the two stops.
     """
-    route = np.array(route.coords)
-    point = np.array(point.coords)
+    route = np.array(route_string.coords)
+    point = np.array(stop_point.coords)
     ckd_tree = cKDTree(route)
     return Point(route[ckd_tree.query(point, k=1)[1]][0]).wkt
 
@@ -113,7 +114,7 @@ def view_spacings(
     axis="on",
     dpi=300,
     **kwargs,
-) -> plt.Figure:
+) -> Figure:
     """
     The `view_spacings` function plots the spacings of a bus network, route, or segment, with options to
     add a basemap and show stops.
@@ -140,10 +141,10 @@ def view_spacings(
     Returns:
       a matplotlib Figure object.
     """
-    fig, ax = plt.subplots(figsize=(10, 10), dpi=dpi)
+    _, ax = plt.subplots(figsize=(10, 10), dpi=dpi)
     crs = df.crs
     # Filter based on direction and level
-    if "direction" in kwargs.keys():
+    if "direction" in kwargs:
         df = df[df.direction_id == kwargs["direction"]].copy()
     if level == "whole":
         markersize = 20
@@ -157,17 +158,17 @@ def view_spacings(
         )
     elif level == "route":
         markersize = 40
-        assert "route" in kwargs.keys(), "Please provide a route_id in route attibute"
+        assert "route" in kwargs, "Please provide a route_id in route attibute"
         df = df[df.route_id == kwargs["route"]].copy()
     elif level == "segment":
         markersize = 60
-        assert "segment" in kwargs.keys(), "Please provide a segment_id in segment attibute"
+        assert "segment" in kwargs, "Please provide a segment_id in segment attibute"
         df = df[df.segment_id == kwargs["segment"]].copy()
     else:
         raise ValueError("level must be either whole, route, or segment")
 
     # Plot the spacings
-    if "route" in kwargs.keys():
+    if "route" in kwargs:
         df = df[df.route_id == kwargs["route"]].copy()
         ax = df.plot(
             ax=ax,
@@ -176,12 +177,12 @@ def view_spacings(
             label="Route ID:" + kwargs["route"],
             zorder=2,
         )
-    if "segment" in kwargs.keys():
+    if "segment" in kwargs:
         try:
             df = df[df.segment_id == kwargs["segment"]].copy()
         except ValueError as e:
             raise ValueError(
-                "No such segment exists. Check if direction_id is incorrect {}".format(e)
+                f"No such segment exists. Check if direction_id is incorrect {e}"
             )
         ax = df.plot(
             ax=ax,
@@ -313,12 +314,13 @@ def nearest_points(stop_df, k_neighbors=3) -> pd.DataFrame:
             continue
         failed_trip = False
         solution_found = False
+        points = []
         while not solution_found:
             np_dist, np_inds = tree.query(stops, workers=-1, k=neighbors)
             # Approx distance in meters
             np_dist = np_dist * geo_const
             prev_point = min(np_inds[0])
-            points = [prev_point]
+            points.append(prev_point)
             for i, nps in enumerate(np_inds[1:]):
                 condition = (nps > prev_point) & (nps < max(np_inds[i + 1]))
                 points_valid = nps[condition]

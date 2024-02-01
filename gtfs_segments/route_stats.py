@@ -1,10 +1,11 @@
 from datetime import timedelta
-from typing import Dict, List
+from typing import Any, Callable, Dict, List
 
 import matplotlib.cm as cm
 import numpy as np
 import pandas as pd
 import utm
+from numpy.typing import NDArray
 
 from .geom_utils import code
 
@@ -143,7 +144,7 @@ def get_route_grp(route_df) -> pd.DataFrame:
     return route_df_grp[col_subset]
 
 
-def get_all_peak_times(df_dir) -> Dict[str, List]:
+def get_all_peak_times(df_dir) -> Dict[str, NDArray[Any]]:
     """
     It takes a dataframe of bus trips and returns the peak number of buses and the time of the peak
 
@@ -169,8 +170,6 @@ def get_all_peak_times(df_dir) -> Dict[str, List]:
         if i > 0:
             if (time - peak_times[i - 1]) != 60:
                 time = str(timedelta(seconds=time))
-                #                 peak_time_condensed[-1] =  peak_time_condensed[-1].split('-')[0] + '-' + str(time)
-                #             else:
                 peak_time_condensed[-1] = (
                     str(peak_time_condensed[-1]) + "-" + str(timedelta(seconds=peak_times[i - 1]))
                 )
@@ -183,7 +182,7 @@ def get_all_peak_times(df_dir) -> Dict[str, List]:
     return {"peak_buses": peak_time_condensed}
 
 
-def get_cmap_string(palette, domain) -> str:
+def get_cmap_string(palette, domain) -> Callable:
     """
     It takes a list of colors and a list of values, and returns a function that maps each value to its
     corresponding color
@@ -262,6 +261,7 @@ def get_route_time(df_dir) -> Dict[str, float]:
     Returns:
       A dictionary with the total time for each direction.
     """
+    time_0 = 0
     if len(df_dir) > 1:
         shape_0 = df_dir.groupby("shape_id").count().trip_id.idxmax()
         trip_0 = df_dir[df_dir.trip_id == df_dir[df_dir.shape_id == shape_0].trip_id.unique()[0]]
@@ -284,7 +284,7 @@ def get_bus_spacing(route_dict) -> Dict[str, float]:
     return {"bus_spacing": np.round(route_dict["route_length"] / route_dict["n_bus_avg"], 3)}
 
 
-def average_active_buses(df_dir) -> Dict[str, float]:
+def average_active_buses(df_dir) -> Dict[str, np.floating[Any]]:
     n_buses = []
     df = get_route_grp(df_dir)
     start_time = int(min(df.start_time))

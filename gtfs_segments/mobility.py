@@ -1,17 +1,19 @@
 import os
+from datetime import date
+from typing import Any
 
 import numpy as np
 import pandas as pd
 
 from .utils import download_write_file
 
-MOBILITY_SOURCES_link = "https://bit.ly/catalogs-csv"
-ABBREV_link = (
+MOBILITY_SOURCES_LINK = "https://bit.ly/catalogs-csv"
+ABBREV_LINK = (
     "https://raw.githubusercontent.com/UTEL-UIUC/gtfs_segments/main/state_abbreviations.json"
 )
 
 
-def fetch_gtfs_source(place="ALL", active=True) -> pd.DataFrame:
+def fetch_gtfs_source(place: str = "ALL", active: bool = True) -> Any:
     """
     It reads the mobility data sources csv file and generates a dataframe with the sources that are of
     type gtfs and are from the US
@@ -25,8 +27,8 @@ def fetch_gtfs_source(place="ALL", active=True) -> pd.DataFrame:
     Returns:
       A dataframe with sources
     """
-    abb_df = pd.read_json(ABBREV_link)
-    sources_df = pd.read_csv(MOBILITY_SOURCES_link)
+    abb_df = pd.read_json(ABBREV_LINK)
+    sources_df = pd.read_csv(MOBILITY_SOURCES_LINK)
     sources_df = sources_df[sources_df["location.country_code"] == "US"]
     sources_df = sources_df[sources_df["data_type"] == "gtfs"]
     # Download only active feeds
@@ -156,14 +158,21 @@ def fetch_gtfs_source(place="ALL", active=True) -> pd.DataFrame:
             )
         ]
         if len(sources_df) == 0:
-            return "No sources found for the given place"
+            print("No sources found for the given place")
         else:
             return sources_df.reset_index(drop=True)
 
 
 def summary_stats_mobility(
-    df, folder_path, filename, b_day, link, bounds, max_spacing=3000, export=False
-) -> pd.DataFrame:
+    df: pd.DataFrame,
+    folder_path: str,
+    filename: str,
+    b_day: date,
+    link: str,
+    bounds,
+    max_spacing: float = 3000,
+    export=False,
+) -> Any:
     """
     It takes in a dataframe, a folder path, a filename, a busiest day, a link, a bounding box, a max
     spacing, and a boolean for exporting the summary to a csv.
@@ -198,15 +207,26 @@ def summary_stats_mobility(
     df = df[df["distance"] <= max_spacing]
     csv_path = os.path.join(folder_path, "summary.csv")
     seg_weighted_mean = (
-        df.groupby(["segment_id", "distance"]).first().reset_index()["distance"].mean().round(2)
+        df.groupby(["segment_id", "distance"])
+        .first()
+        .reset_index()["distance"]
+        .apply(pd.Series)
+        .mean()
+        .round(2)
     )
     seg_weighted_median = (
-        df.groupby(["segment_id", "distance"]).first().reset_index()["distance"].median().round(2)
+        df.groupby(["segment_id", "distance"])
+        .first()
+        .reset_index()["distance"]
+        .apply(pd.Series)
+        .median()
+        .round(2)
     )
     route_weighted_mean = (
         df.groupby(["route_id", "segment_id", "distance"])
         .first()
         .reset_index()["distance"]
+        .apply(pd.Series)
         .mean()
         .round(2)
     )
@@ -214,6 +234,7 @@ def summary_stats_mobility(
         df.groupby(["route_id", "segment_id", "distance"])
         .first()
         .reset_index()["distance"]
+        .apply(pd.Series)
         .median()
         .round(2)
     )
@@ -244,8 +265,11 @@ def summary_stats_mobility(
     }
     summary_df = pd.DataFrame([df_dict])
     if export:
-        summary_df.to_csv(csv_path, index=False)
-        return "Saved the summary.csv in " + folder_path
+        try:
+            summary_df.to_csv(csv_path, index=False)
+            print("Saved the summary.csv in " + folder_path)
+        except FileNotFoundError as e:
+            print("Error saving the summary.csv: " + str(e))
     else:
         summary_df = summary_df.T
         return summary_df

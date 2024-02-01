@@ -1,3 +1,4 @@
+from datetime import date
 from typing import Any, Tuple
 
 import pandas as pd
@@ -7,7 +8,7 @@ import gtfs_segments.partridge_mod as ptg
 from .partridge_mod.gtfs import Feed
 
 
-def get_bus_feed(path: str, agency_id: Any = None, threshold: int = 1) -> Tuple[str, Feed]:
+def get_bus_feed(path: str, agency_id: Any = None, threshold: int = 1) -> Tuple[date, Feed]:
     """
     The `get_bus_feed` function retrieves bus feed data from a specified path, with the option to filter
     by agency name, and returns the busiest date and a GTFS feed object.
@@ -70,8 +71,8 @@ def get_all_days_s_ids(path: str) -> pd.DataFrame:
 
     # Iterate through the data and populate the DataFrame
     for service_ids, dates in data.items():
-        for date in dates:
-            data_frame.loc[date, service_ids] = True
+        for date_value in dates:
+            data_frame.loc[date_value, list(service_ids)] = True
 
     # Fill missing values with False
     data_frame.fillna(False, inplace=True)

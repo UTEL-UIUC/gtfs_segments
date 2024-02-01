@@ -7,7 +7,7 @@ import pandas as pd
 from .parsers import transforms_dict
 from .utilities import detect_encoding
 
-View = Dict[str, Dict[str, Any]]
+View = Dict[str, Any]
 
 
 def _read_file(filename: str) -> property:

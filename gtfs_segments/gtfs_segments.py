@@ -1,4 +1,6 @@
 import os
+from datetime import date
+from typing import Set
 
 import geopandas as gpd
 import numpy as np
@@ -8,10 +10,11 @@ from shapely.geometry import LineString
 from .geom_utils import get_zone_epsg, make_gdf, nearest_points, ret_high_res_shape
 from .mobility import summary_stats_mobility
 from .partridge_func import get_bus_feed
+from .partridge_mod.gtfs import Feed
 from .utils import download_write_file, export_segments, failed_pipeline, plot_hist
 
 
-def merge_trip_geom(trip_df, shape_df) -> gpd.GeoDataFrame:
+def merge_trip_geom(trip_df: pd.DataFrame, shape_df: pd.DataFrame) -> gpd.GeoDataFrame:
     """
     It takes a dataframe of trips and a dataframe of shapes, and returns a geodataframe of trips with
     the geometry of the shapes
@@ -44,7 +47,7 @@ def merge_trip_geom(trip_df, shape_df) -> gpd.GeoDataFrame:
     return make_gdf(trip_df)
 
 
-def make_segments_unique(df, traversal_threshold=1) -> gpd.GeoDataFrame:
+def make_segments_unique(df: gpd.GeoDataFrame, traversal_threshold: int = 1) -> gpd.GeoDataFrame:
     """
     For each route_id and segment_id combination, if there are more than one unique distance values,
     then split the segment_id into three parts, and add a number to the end of the segment_id
@@ -60,20 +63,20 @@ def make_segments_unique(df, traversal_threshold=1) -> gpd.GeoDataFrame:
         lambda row: row["distance"].round().nunique() > 1
     )
     grp_dict = grp_filter.groupby(["route_id", "segment_id"]).groups
-    for key in grp_dict.keys():
+    for key in grp_dict:
         inds = grp_dict[key]
         for i, index in enumerate(inds):
             if i != 0:
-                seg_split = key[1].split("-")
-                df.loc[index, "segment_id"] = seg_split[0] + "-" + seg_split[1] + "-" + str(i + 1)
+                seg_split = str(key[1]).split("-")  # Convert key[1] to string before splitting
+                df.at[index, "segment_id"] = seg_split[0] + "-" + seg_split[1] + "-" + str(i + 1)
     grp_again = df.groupby(["route_id", "segment_id"])
-    df = grp_again.first().reset_index()
+    df = make_gdf(grp_again.first().reset_index())
     df["traversals"] = grp_again["traversals"].sum().values
-    df = df[df.traversals > traversal_threshold].reset_index(drop=True)
+    df = make_gdf(df[df.traversals > traversal_threshold].reset_index(drop=True))
     return df
 
 
-def filter_stop_df(stop_df, trip_ids, stop_loc_df) -> gpd.GeoDataFrame:
+def filter_stop_df(stop_df: pd.DataFrame, trip_ids: Set, stop_loc_df: pd.DataFrame) -> pd.DataFrame:
     """
     It takes a dataframe of stops and a list of trip IDs and returns a dataframe of stops that are in
     the list of trip IDs
@@ -106,7 +109,9 @@ def filter_stop_df(stop_df, trip_ids, stop_loc_df) -> gpd.GeoDataFrame:
         drop_inds.append(grp_f.loc[grp_f["pickup_type"] == 1, "main_index"])
     if "drop_off_type" in stop_df.columns:
         grp_l = stop_df_grp.last()
-        drop_inds.append(grp_l.loc[grp_f["drop_off_type"] == 1, "main_index"])
+        drop_inds.append(
+            grp_l.loc[grp_l["drop_off_type"] == 1, "main_index"]
+        )  # Fixed the variable name from grp_f to grp_l
     if len(drop_inds) > 0 and len(drop_inds[0]) > 0:
         stop_df = stop_df[~stop_df["main_index"].isin(drop_inds)].reset_index(drop=True)
     stop_df = stop_df[["trip_id", "stop_id", "stop_sequence", "arrival_time"]]
@@ -127,7 +132,8 @@ def merge_stop_geom(stop_df, stop_loc_df) -> gpd.GeoDataFrame:
       A GeoDataFrame
     """
     stop_df["start"] = stop_df.copy().merge(stop_loc_df, how="left", on="stop_id")["geometry"]
-    stop_df = gpd.GeoDataFrame(stop_df, geometry="start")
+    stop_df = gpd.GeoDataFrame(stop_df)  # Convert to GeoDataFrame
+    stop_df.set_geometry("start", inplace=True)  # Specify the geometry column
     return make_gdf(stop_df)
 
 
@@ -165,7 +171,7 @@ def create_segments(stop_df) -> gpd.GeoDataFrame:
     return make_gdf(stop_df)
 
 
-def process_feed_stops(feed, max_spacing=None) -> gpd.GeoDataFrame:
+def process_feed_stops(feed: Feed) -> gpd.GeoDataFrame:
     """
     It takes a GTFS feed, merges the trip and shape data, filters the stop_times data to only include
     the trips that are in the feed, merges the stop_times data with the stop data, creates a segment for
@@ -190,13 +196,13 @@ def process_feed_stops(feed, max_spacing=None) -> gpd.GeoDataFrame:
     stop_df = stop_df.groupby("shape_id").first().reset_index()
     stop_df["n_stops"] = stops
     epsg_zone = get_zone_epsg(stop_df)
-    stop_df = make_gdf(stop_df)
-    stop_df["distance"] = stop_df.set_geometry("geometry").to_crs(epsg_zone).geometry.length
-    stop_df["mean_distance"] = stop_df["distance"] / stop_df["n_stops"]
+    if epsg_zone is not None:
+        stop_df["distance"] = stop_df.geometry.to_crs(epsg_zone).length
+        stop_df["mean_distance"] = stop_df["distance"] / stop_df["n_stops"]
     return make_gdf(stop_df)
 
 
-def process_feed(feed, max_spacing=None) -> gpd.GeoDataFrame:
+def process_feed(feed: Feed, max_spacing=None) -> gpd.GeoDataFrame:
     """
     The function `process_feed` takes a feed and optional maximum spacing as input, performs various
     data processing and filtering operations on the feed, and returns a GeoDataFrame containing the
@@ -224,8 +230,9 @@ def process_feed(feed, max_spacing=None) -> gpd.GeoDataFrame:
     stop_df = create_segments(stop_df)
     epsg_zone = get_zone_epsg(stop_df)
     stop_df = make_gdf(stop_df)
-    stop_df["distance"] = stop_df.set_geometry("geometry").to_crs(epsg_zone).geometry.length
-    stop_df["distance"] = stop_df["distance"].round(2)  # round to 2 decimal places
+    if epsg_zone is not None:
+        stop_df["distance"] = stop_df.set_geometry("geometry").to_crs(epsg_zone).geometry.length
+        stop_df["distance"] = stop_df["distance"].round(2)  # round to 2 decimal places
     stop_df["traversal_time"] = stop_df["arrival_time2"] - stop_df["arrival_time1"]
     stop_df = stop_df[stop_df["traversal_time"] > 0].reset_index(drop=True)
     stop_df["speed"] = stop_df["distance"] / stop_df["traversal_time"]
@@ -252,7 +259,7 @@ def process_feed(feed, max_spacing=None) -> gpd.GeoDataFrame:
     return make_gdf(stop_df)
 
 
-def inspect_feed(feed) -> str:
+def inspect_feed(feed: Feed) -> str:
     """
     It checks to see if the feed has any bus routes and if it has a `shape_id` column in the `trips`
     table
@@ -263,7 +270,7 @@ def inspect_feed(feed) -> str:
     Returns:
       A message
     """
-    message = True
+    message = "Valid GTFS Feed"
     if len(feed.stop_times) == 0:
         message = "No Bus Routes in "
     if "shape_id" not in feed.trips.columns:
@@ -305,11 +312,14 @@ def get_gtfs_segments(path, agency_id=None, threshold=1, max_spacing=None) -> gp
       - geometry: The segment's LINESTRING (a format for encoding geographic paths).
         All geometries are re-projected onto Mercator (EPSG:4326/WGS84) to maintain consistency.
     """
-    _, feed = get_bus_feed(path, agency_id=agency_id, threshold=threshold)
+    b_day: date
+    feed: Feed
+    b_day, feed = get_bus_feed(path, agency_id=agency_id, threshold=threshold)
+    print("Using the busiest day:", b_day)
     return process_feed(feed, max_spacing)
 
 
-def pipeline_gtfs(filename, url, bounds, max_spacing) -> str:
+def pipeline_gtfs(filename: str, url: str, bounds, max_spacing: float) -> str:
     """
     It takes a GTFS file, downloads it, reads it, processes it, and then outputs a bunch of files.
 
@@ -345,7 +355,7 @@ def pipeline_gtfs(filename, url, bounds, max_spacing) -> str:
     busisest_day, feed = get_bus_feed(gtfs_file_loc)
     # Remove Null entries
     message = inspect_feed(feed)
-    if message is not True:
+    if message != "Valid GTFS Feed":
         return failed_pipeline(message, filename, folder_path)
 
     df = process_feed(feed)

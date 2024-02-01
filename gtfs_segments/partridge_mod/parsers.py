@@ -83,12 +83,12 @@ DEFAULT_CRS = "EPSG:4326"
 
 def build_shapes(df: pd.DataFrame) -> gpd.GeoDataFrame:
     """
-    The function takes a pandas DataFrame containing shape points and returns a GeoDataFrame with shape
-    IDs and corresponding geometries.
+    The function takes a pandas DataFrame containing shape points and returns a GeoDataFrame with
+    shape IDs and corresponding geometries.
 
     Args:
-      df (pd.DataFrame): The parameter `df` is a pandas DataFrame that contains information about
-    shapes. It is expected to have the following columns:
+      df (pd.DataFrame): The parameter `df` is a pandas DataFrame that contains information
+    about shapes. It is expected to have the following columns:
 
     Returns:
       a GeoDataFrame object.
@@ -106,17 +106,17 @@ def build_shapes(df: pd.DataFrame) -> gpd.GeoDataFrame:
 
 def build_stops(df: pd.DataFrame) -> gpd.GeoDataFrame:
     """
-    The function `build_stops` takes a pandas DataFrame `df` and returns a GeoDataFrame with the same
-    data but with a new geometry column created from the `stop_lon` and `stop_lat` columns.
+    The function `build_stops` takes a pandas DataFrame `df` and returns a GeoDataFrame with the
+    same data but with a new geometry column created from the `stop_lon` and `stop_lat` columns.
 
     Args:
-      df (pd.DataFrame): The parameter `df` is a pandas DataFrame that contains information about stops.
-    It is expected to have columns named "stop_lon" and "stop_lat" which represent the longitude and
-    latitude coordinates of each stop, respectively. The DataFrame may also contain other columns with
-    additional information about the stops.
+      df (pd.DataFrame): Pandas DataFrame that contains information about stops. It is expected to
+      have columns named "stop_lon" and "stop_lat" which represent the longitude and
+      latitude coordinates of each stop, respectively. The DataFrame may also contain other columns
+      with additional information about the stops.
 
     Returns:
-      a GeoDataFrame with the geometry column containing points created from the stop_lon and stop_lat
+    GeoDataFrame with the geometry column containing points created from the stop_lon and stop_lat
     columns of the input DataFrame. The stop_lon and stop_lat columns are then dropped from the
     DataFrame before returning the final GeoDataFrame.
     """
