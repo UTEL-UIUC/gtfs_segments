@@ -1,6 +1,6 @@
 import os
 from datetime import date
-from typing import Set
+from typing import List, Optional, Set
 
 import geopandas as gpd
 import numpy as np
@@ -120,7 +120,7 @@ def filter_stop_df(stop_df: pd.DataFrame, trip_ids: Set, stop_loc_df: pd.DataFra
     return stop_df
 
 
-def merge_stop_geom(stop_df, stop_loc_df) -> gpd.GeoDataFrame:
+def merge_stop_geom(stop_df: pd.DataFrame, stop_loc_df: pd.DataFrame) -> gpd.GeoDataFrame:
     """
     > Merge the stop_loc_df with the stop_df, and then convert the result to a GeoDataFrame
 
@@ -137,7 +137,7 @@ def merge_stop_geom(stop_df, stop_loc_df) -> gpd.GeoDataFrame:
     return make_gdf(stop_df)
 
 
-def create_segments(stop_df) -> gpd.GeoDataFrame:
+def create_segments(stop_df: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     """
     This function creates segments between stops based on their proximity and returns a GeoDataFrame.
 
@@ -202,7 +202,7 @@ def process_feed_stops(feed: Feed) -> gpd.GeoDataFrame:
     return make_gdf(stop_df)
 
 
-def process_feed(feed: Feed, max_spacing=None) -> gpd.GeoDataFrame:
+def process_feed(feed: Feed, max_spacing: Optional[float] = None) -> gpd.GeoDataFrame:
     """
     The function `process_feed` takes a feed and optional maximum spacing as input, performs various
     data processing and filtering operations on the feed, and returns a GeoDataFrame containing the
@@ -278,7 +278,9 @@ def inspect_feed(feed: Feed) -> str:
     return message
 
 
-def get_gtfs_segments(path, agency_id=None, threshold=1, max_spacing=None) -> gpd.GeoDataFrame:
+def get_gtfs_segments(
+    path: str, agency_id: Optional[str] = None, threshold: Optional[int] = 1, max_spacing: Optional[float] = None
+) -> gpd.GeoDataFrame:
     """
     The function `get_gtfs_segments` takes a path to a GTFS feed file, an optional agency name, a
     threshold value, and an optional maximum spacing value, and returns processed GTFS segments.
@@ -319,7 +321,7 @@ def get_gtfs_segments(path, agency_id=None, threshold=1, max_spacing=None) -> gp
     return process_feed(feed, max_spacing)
 
 
-def pipeline_gtfs(filename: str, url: str, bounds, max_spacing: float) -> str:
+def pipeline_gtfs(filename: str, url: str, bounds: List, max_spacing: float) -> str:
     """
     It takes a GTFS file, downloads it, reads it, processes it, and then outputs a bunch of files.
 

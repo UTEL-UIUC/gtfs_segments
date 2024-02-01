@@ -15,7 +15,7 @@ plt.style.use("ggplot")
 
 
 def plot_hist(
-    df: pd.DataFrame, save_fig: bool = False, show_mean: bool = False, **kwargs
+    df: pd.DataFrame, save_fig: bool = False, show_mean: bool = False, **kwargs: Any
 ) -> plt.Figure:
     """
     It takes a dataframe with two columns, one with the distance between stops and the other with the
@@ -75,7 +75,7 @@ def plot_hist(
 
 
 def summary_stats(
-    df: pd.DataFrame, max_spacing: float = 3000, export: bool = False, **kwargs
+    df: pd.DataFrame, max_spacing: float = 3000, export: bool = False, **kwargs: Any
 ) -> pd.DataFrame:
     """
     It takes in a dataframe, and returns a dataframe with summary statistics
@@ -94,38 +94,36 @@ def summary_stats(
     )
     df = df[df["distance"] <= max_spacing]
     seg_weighted_mean = (
-        df.groupby(["segment_id", "distance"]).first().reset_index()["distance"].mean().round(2)
+        df.groupby(["segment_id", "distance"]).first().reset_index()["distance"].mean()
     )
     seg_weighted_median = (
-        df.groupby(["segment_id", "distance"]).first().reset_index()["distance"].median().round(2)
+        df.groupby(["segment_id", "distance"]).first().reset_index()["distance"].median()
     )
     route_weighted_mean = (
         df.groupby(["route_id", "segment_id", "distance"])
         .first()
         .reset_index()["distance"]
         .mean()
-        .round(2)
     )
     route_weighted_median = (
         df.groupby(["route_id", "segment_id", "distance"])
         .first()
         .reset_index()["distance"]
         .median()
-        .round(2)
     )
     weighted_data = np.hstack([np.repeat(x, y) for x, y in zip(df["distance"], df.traversals)])
 
     df_dict = {
-        "Segment Weighted Mean": seg_weighted_mean,
-        "Route Weighted Mean": route_weighted_mean,
-        "Traversal Weighted Mean": round(np.mean(weighted_data), 3),
-        "Segment Weighted Median": seg_weighted_median,
-        "Route Weighted Median": route_weighted_median,
-        "Traversal Weighted Median": round(np.median(weighted_data), 2),
-        "Traversal Weighted Std": round(np.std(weighted_data), 3),
-        "Traversal Weighted 25 % Quantile": round(np.quantile(weighted_data, 0.25), 3),
-        "Traversal Weighted 50 % Quantile": round(np.quantile(weighted_data, 0.50), 3),
-        "Traversal Weighted 75 % Quantile": round(np.quantile(weighted_data, 0.75), 3),
+        "Segment Weighted Mean": np.round(seg_weighted_mean, 2),
+        "Route Weighted Mean": np.round(route_weighted_mean, 2),
+        "Traversal Weighted Mean": np.round(np.mean(weighted_data), 3),
+        "Segment Weighted Median": np.round(seg_weighted_median, 2),
+        "Route Weighted Median": np.round(route_weighted_median, 2),
+        "Traversal Weighted Median": np.round(np.median(weighted_data), 2),
+        "Traversal Weighted Std": np.round(np.std(weighted_data), 3),
+        "Traversal Weighted 25 % Quantile": np.round(np.quantile(weighted_data, 0.25), 3),
+        "Traversal Weighted 50 % Quantile": np.round(np.quantile(weighted_data, 0.50), 3),
+        "Traversal Weighted 75 % Quantile": np.round(np.quantile(weighted_data, 0.75), 3),
         "No of Segments": int(len(df.segment_id.unique())),
         "No of Routes": int(len(df.route_id.unique())),
         "No of Traversals": int(sum(df.traversals)),
@@ -254,11 +252,15 @@ def download_write_file(url: str, folder_path: str) -> str:
     if not os.path.exists(folder_path):
         os.makedirs(folder_path)
     # Download file from URL
-    r = requests.get(url, allow_redirects=True, timeout=300),
     gtfs_file_loc = os.path.join(folder_path, "gtfs.zip")
 
-    # Write file locally
-    file = open(gtfs_file_loc, "wb")
-    file.write(r.content)
-    file.close()
+    try:
+        r = requests.get(url, allow_redirects=True, timeout=300)
+        # Write file locally
+        file = open(gtfs_file_loc, "wb")
+        file.write(r.content)
+        file.close()
+    except requests.exceptions.RequestException as e:
+        print(e)
+        raise ValueError(f"Failed to download {url}") from e
     return gtfs_file_loc

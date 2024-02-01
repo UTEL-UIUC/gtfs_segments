@@ -1,5 +1,5 @@
 from datetime import date
-from typing import Any, Tuple
+from typing import Optional, Tuple
 
 import pandas as pd
 
@@ -8,7 +8,7 @@ import gtfs_segments.partridge_mod as ptg
 from .partridge_mod.gtfs import Feed
 
 
-def get_bus_feed(path: str, agency_id: Any = None, threshold: int = 1) -> Tuple[date, Feed]:
+def get_bus_feed(path: str, agency_id: Optional[str] = None, threshold: Optional[int] = 1) -> Tuple[date, Feed]:
     """
     The `get_bus_feed` function retrieves bus feed data from a specified path, with the option to filter
     by agency name, and returns the busiest date and a GTFS feed object.

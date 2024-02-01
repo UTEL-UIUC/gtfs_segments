@@ -1,3 +1,5 @@
+from typing import Any, List
+
 import contextily as cx
 import geopandas as gpd
 import matplotlib.pyplot as plt
@@ -54,7 +56,7 @@ def nearest_snap(route_string: LineString, stop_point: Point) -> str:
     return Point(route[ckd_tree.query(point, k=1)[1]][0]).wkt
 
 
-def make_gdf(df) -> gpd.GeoDataFrame:
+def make_gdf(df: pd.DataFrame) -> gpd.GeoDataFrame:
     """
     It takes a dataframe and returns a geodataframe
 
@@ -69,7 +71,7 @@ def make_gdf(df) -> gpd.GeoDataFrame:
     return gdf
 
 
-def code(zone, lat) -> int:
+def code(zone:List, lat: float) -> int:
     """
     If the latitude is negative, the EPSG code is 32700 + the zone number. If
     the latitude is positive, the EPSG code is 32600 + the zone number
@@ -88,7 +90,7 @@ def code(zone, lat) -> int:
     return epsg_code
 
 
-def get_zone_epsg(stop_df) -> int:
+def get_zone_epsg(stop_df: gpd.GeoDataFrame) -> int:
     """
     > The function takes a dataframe with a geometry column and returns the
     EPSG code for the UTM zone that contains the geometry
@@ -106,21 +108,21 @@ def get_zone_epsg(stop_df) -> int:
 
 
 def view_spacings(
-    df,
-    basemap=False,
-    map_provider=cx.providers.CartoDB.Positron,
-    show_stops=False,
-    level="whole",
-    axis="on",
-    dpi=300,
-    **kwargs,
+    gdf: gpd.GeoDataFrame,
+    basemap: bool=False,
+    map_provider: str=cx.providers.CartoDB.Positron,
+    show_stops: bool=False,
+    level: str="whole",
+    axis: str="on",
+    dpi: int=300,
+    **kwargs: Any,
 ) -> Figure:
     """
     The `view_spacings` function plots the spacings of a bus network, route, or segment, with options to
     add a basemap and show stops.
 
     Args:
-      df: The GTFS segments dataframe containing the bus network data.
+      gdf: The GTFS segments GeoDataframe containing the bus network data.
       basemap: The `basemap` parameter is a boolean value that determines whether to add a basemap to
     the plot. If set to `True`, a basemap will be added. If set to `False`, no basemap will be added.
     The default value is `False`. Defaults to False
@@ -142,13 +144,13 @@ def view_spacings(
       a matplotlib Figure object.
     """
     _, ax = plt.subplots(figsize=(10, 10), dpi=dpi)
-    crs = df.crs
+    crs = gdf.crs
     # Filter based on direction and level
     if "direction" in kwargs:
-        df = df[df.direction_id == kwargs["direction"]].copy()
+        gdf = gdf[gdf.direction_id == kwargs["direction"]].copy()
     if level == "whole":
         markersize = 20
-        ax = df.plot(
+        ax = gdf.plot(
             ax=ax,
             color="#34495e",
             linewidth=0.5,
@@ -159,18 +161,18 @@ def view_spacings(
     elif level == "route":
         markersize = 40
         assert "route" in kwargs, "Please provide a route_id in route attibute"
-        df = df[df.route_id == kwargs["route"]].copy()
+        gdf = gdf[gdf.route_id == kwargs["route"]].copy()
     elif level == "segment":
         markersize = 60
         assert "segment" in kwargs, "Please provide a segment_id in segment attibute"
-        df = df[df.segment_id == kwargs["segment"]].copy()
+        gdf = gdf[gdf.segment_id == kwargs["segment"]].copy()
     else:
         raise ValueError("level must be either whole, route, or segment")
 
     # Plot the spacings
     if "route" in kwargs:
-        df = df[df.route_id == kwargs["route"]].copy()
-        ax = df.plot(
+        gdf = gdf[gdf.route_id == kwargs["route"]].copy()
+        ax = gdf.plot(
             ax=ax,
             linewidth=1.5,
             color="#2ecc71",
@@ -179,12 +181,12 @@ def view_spacings(
         )
     if "segment" in kwargs:
         try:
-            df = df[df.segment_id == kwargs["segment"]].copy()
+            gdf = gdf[gdf.segment_id == kwargs["segment"]].copy()
         except ValueError as e:
             raise ValueError(
                 f"No such segment exists. Check if direction_id is incorrect {e}"
             )
-        ax = df.plot(
+        ax = gdf.plot(
             ax=ax,
             linewidth=2,
             color="#000000",
@@ -192,9 +194,9 @@ def view_spacings(
             zorder=3,
         )
     if show_stops:
-        geo_series = df.geometry.apply(lambda line: Point(line.coords[0]))
-        geo_series = pd.concat([geo_series, gpd.GeoSeries(Point(df.iloc[-1].geometry.coords[-1]))])
-        geo_series.set_crs(crs=df.crs).plot(
+        geo_series = gdf.geometry.apply(lambda line: Point(line.coords[0]))
+        geo_series = pd.concat([geo_series, gpd.GeoSeries(Point(gdf.iloc[-1].geometry.coords[-1]))])
+        geo_series.set_crs(crs=gdf.crs).plot(
             ax=ax,
             color="#FFD700",
             edgecolor="#000000",
@@ -205,14 +207,14 @@ def view_spacings(
         )
 
     if basemap:
-        df = gpd.GeoDataFrame(df, crs=crs)
+        df = gpd.GeoDataFrame(gdf, crs=crs)
         cx.add_basemap(ax, crs=df.crs, source=map_provider, attribution_size=5)
     plt.axis(axis)
     plt.legend(loc="lower right")
     return ax
 
 
-def increase_resolution(geom, spat_res=5) -> LineString:
+def increase_resolution(geom: LineString, spat_res:int=5) -> LineString:
     """
     This function increases the resolution of a LineString geometry by adding
     points along the line at a specified spatial resolution.
@@ -252,7 +254,7 @@ def increase_resolution(geom, spat_res=5) -> LineString:
     return LineString(new_ls)
 
 
-def ret_high_res_shape(shapes, spat_res=5) -> gpd.GeoDataFrame:
+def ret_high_res_shape(shapes: gpd.GeoDataFrame, spat_res: int=5) -> gpd.GeoDataFrame:
     """
     This function increases the resolution of the geometries in a given dataframe of shapes by a
     specified spatial resolution.
@@ -275,7 +277,7 @@ def ret_high_res_shape(shapes, spat_res=5) -> gpd.GeoDataFrame:
     return shapes
 
 
-def nearest_points(stop_df, k_neighbors=3) -> pd.DataFrame:
+def nearest_points(stop_df: gpd.GeoDataFrame, k_neighbors: int=3) -> pd.DataFrame:
     """
     The function takes a dataframe of stops and snaps them to the nearest points on a line geometry,
     with an option to specify the number of nearest neighbors to consider.

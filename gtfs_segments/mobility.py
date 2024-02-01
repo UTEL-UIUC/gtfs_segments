@@ -1,6 +1,6 @@
 import os
 from datetime import date
-from typing import Any
+from typing import Any, List
 
 import numpy as np
 import pandas as pd
@@ -169,7 +169,7 @@ def summary_stats_mobility(
     filename: str,
     b_day: date,
     link: str,
-    bounds,
+    bounds: List,
     max_spacing: float = 3000,
     export=False,
 ) -> Any:
@@ -275,7 +275,7 @@ def summary_stats_mobility(
         return summary_df
 
 
-def download_latest_data(sources_df, out_folder_path) -> None:
+def download_latest_data(sources_df: pd.DataFrame, out_folder_path: str) -> None:
     """
     It iterates over the rows of the dataframe, and for each row, it tries to download the file from the
     URL in the `urls.latest` column, and write it to the folder specified in the `provider` column
