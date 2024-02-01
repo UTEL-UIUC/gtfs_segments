@@ -71,7 +71,7 @@ def make_gdf(df: pd.DataFrame) -> gpd.GeoDataFrame:
     return gdf
 
 
-def code(zone:List, lat: float) -> int:
+def code(zone: List, lat: float) -> int:
     """
     If the latitude is negative, the EPSG code is 32700 + the zone number. If
     the latitude is positive, the EPSG code is 32600 + the zone number
@@ -109,12 +109,12 @@ def get_zone_epsg(stop_df: gpd.GeoDataFrame) -> int:
 
 def view_spacings(
     gdf: gpd.GeoDataFrame,
-    basemap: bool=False,
-    map_provider: str=cx.providers.CartoDB.Positron,
-    show_stops: bool=False,
-    level: str="whole",
-    axis: str="on",
-    dpi: int=300,
+    basemap: bool = False,
+    map_provider: str = cx.providers.CartoDB.Positron,
+    show_stops: bool = False,
+    level: str = "whole",
+    axis: str = "on",
+    dpi: int = 300,
     **kwargs: Any,
 ) -> Figure:
     """
@@ -183,9 +183,7 @@ def view_spacings(
         try:
             gdf = gdf[gdf.segment_id == kwargs["segment"]].copy()
         except ValueError as e:
-            raise ValueError(
-                f"No such segment exists. Check if direction_id is incorrect {e}"
-            )
+            raise ValueError(f"No such segment exists. Check if direction_id is incorrect {e}")
         ax = gdf.plot(
             ax=ax,
             linewidth=2,
@@ -214,7 +212,7 @@ def view_spacings(
     return ax
 
 
-def increase_resolution(geom: LineString, spat_res:int=5) -> LineString:
+def increase_resolution(geom: LineString, spat_res: int = 5) -> LineString:
     """
     This function increases the resolution of a LineString geometry by adding
     points along the line at a specified spatial resolution.
@@ -254,7 +252,7 @@ def increase_resolution(geom: LineString, spat_res:int=5) -> LineString:
     return LineString(new_ls)
 
 
-def ret_high_res_shape(shapes: gpd.GeoDataFrame, spat_res: int=5) -> gpd.GeoDataFrame:
+def ret_high_res_shape(shapes: gpd.GeoDataFrame, spat_res: int = 5) -> gpd.GeoDataFrame:
     """
     This function increases the resolution of the geometries in a given dataframe of shapes by a
     specified spatial resolution.
@@ -277,7 +275,7 @@ def ret_high_res_shape(shapes: gpd.GeoDataFrame, spat_res: int=5) -> gpd.GeoData
     return shapes
 
 
-def nearest_points(stop_df: gpd.GeoDataFrame, k_neighbors: int=3) -> pd.DataFrame:
+def nearest_points(stop_df: gpd.GeoDataFrame, k_neighbors: int = 3) -> pd.DataFrame:
     """
     The function takes a dataframe of stops and snaps them to the nearest points on a line geometry,
     with an option to specify the number of nearest neighbors to consider.
@@ -316,13 +314,12 @@ def nearest_points(stop_df: gpd.GeoDataFrame, k_neighbors: int=3) -> pd.DataFram
             continue
         failed_trip = False
         solution_found = False
-        points = []
         while not solution_found:
             np_dist, np_inds = tree.query(stops, workers=-1, k=neighbors)
             # Approx distance in meters
             np_dist = np_dist * geo_const
             prev_point = min(np_inds[0])
-            points.append(prev_point)
+            points = [prev_point]
             for i, nps in enumerate(np_inds[1:]):
                 condition = (nps > prev_point) & (nps < max(np_inds[i + 1]))
                 points_valid = nps[condition]
