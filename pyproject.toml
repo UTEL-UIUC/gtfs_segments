@@ -1,7 +1,7 @@
 [project]
 name = 'gtfs_segments'
-# Support Python 3.8+.
-requires-python = ">=3.8"
+# Support Python 3.9+.
+requires-python = ">=3.9"
 version = "2.0.3"
 dependencies = [
     "geopandas",
@@ -60,12 +60,11 @@ legacy_tox_ini = """
     [tox]
     min_version = 4.0
     env_list =
-        py{38,39,310,311}
+        py{39,310,311}
     minversion = 4.11.3
 
     [gh-actions]
     python =
-        3.8: py38
         3.9: py39
         3.10: py310
         3.11: py311
@@ -86,3 +85,12 @@ legacy_tox_ini = """
         # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 """
+
+[tool.mypy]
+disallow_untyped_defs = true
+warn_unused_configs = true
+show_error_codes = true
+
+[[tool.mypy.overrides]]
+module = "gtfs_segments.*"
+ignore_missing_imports = true
