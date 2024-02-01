@@ -72,7 +72,7 @@
   <img src="images/example.jpg" alt="map" width="400"/>
 </div> -->
 
-The `gtfs-segments` is a Python package that represents GTFS data for **buses** in a concise tabular manner using segments. The distribution of bus stop spacings can be viewed by generating histograms. The stop spacings can be visualized at the network, route, or segment level. The segment data can be exported to well-known formats such as `.csv` or `.geojson` for further analysis. Additionally, the package provides commands to download the latest data from [@mobility data](https://mobilitydata.org/) sources.
+The `gtfs-segments` is a Python (3.9+) package that represents GTFS data for **buses** in a concise tabular manner using segments. The distribution of bus stop spacings can be viewed by generating histograms. The stop spacings can be visualized at the network, route, or segment level. The segment data can be exported to well-known formats such as `.csv` or `.geojson` for further analysis. Additionally, the package provides commands to download the latest data from [@mobility data](https://mobilitydata.org/) sources.
 
 The package condenses the raw GTFS data by considering the services offered only on the `busiest day`(in the data). More discussion on the interpretation of different weightings for stop spacings, and the process in which the package condenses information can be seen in our [arXiv paper](https://arxiv.org/abs/2208.04394). The usage of the package is detailed in [documentation](https://gtfs-segments.readthedocs.io/en/latest/). The stop spacings dataset containing over 540 transit providers in the US generated using this package can be found on [Harvard Dataverse](https://doi.org/10.7910/DVN/SFBIVU).
 
