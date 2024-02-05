@@ -1,5 +1,6 @@
-from typing import Any, List
-
+from tkinter.tix import MAX
+from typing import Any, List, Tuple
+import os
 import contextily as cx
 import geopandas as gpd
 import matplotlib.pyplot as plt
@@ -11,6 +12,7 @@ from pyproj import Geod
 from scipy.spatial import cKDTree
 from shapely.geometry import LineString, Point
 from shapely.ops import split
+from concurrent.futures import ThreadPoolExecutor
 
 geod = Geod(ellps="WGS84")
 
@@ -274,6 +276,31 @@ def ret_high_res_shape(shapes: gpd.GeoDataFrame, spat_res: int = 5) -> gpd.GeoDa
     shapes.geometry = high_res_shapes
     return shapes
 
+def ret_high_res_shape_parallel(shapes: gpd.GeoDataFrame, spat_res: int = 5) -> gpd.GeoDataFrame:
+    """
+    This function increases the resolution of the geometries in a given dataframe of shapes by a
+    specified spatial resolution.
+
+    Args:
+      shapes: a pandas DataFrame containing a column named 'geometry' that contains shapely geometry
+    objects
+      spat_res: spatial resolution, which is the size of each pixel or cell in a raster dataset. In this
+    function, it is used to increase the resolution of the input shapes by creating more vertices in
+    their geometries. The default value is 5, which means that the resolution will be increased by
+    adding vertices. Defaults to 5
+
+    Returns:
+      a GeoDataFrame with the geometry column updated to have higher resolution shapes.
+    """
+    def process_shape(row):
+        return increase_resolution(row["geometry"], spat_res)
+    high_res_shapes = []
+    with ThreadPoolExecutor(max_workers=None) as executor:
+        high_res_shapes = list(executor.map(process_shape, shapes.to_dict('records')))
+
+    shapes.geometry = high_res_shapes
+    return shapes
+
 
 def nearest_points(stop_df: gpd.GeoDataFrame, k_neighbors: int = 3) -> pd.DataFrame:
     """
@@ -359,4 +386,112 @@ def nearest_points(stop_df: gpd.GeoDataFrame, k_neighbors: int = 3) -> pd.DataFr
             defective_trip_count / total_trip_count * 100,
         )
     stop_df = stop_df[~stop_df.trip_id.isin(failed_trips)].reset_index(drop=True)
+    return stop_df
+
+def process_trip_group(name: str, group: pd.core.groupby.DataFrameGroupBy, k_neighbors: int, geo_const: float) -> Tuple:
+    neighbors = k_neighbors
+    geom_line = group["geometry"].iloc[0]
+    tree = cKDTree(data=np.array(geom_line.coords))
+    stops = [x.coords[0] for x in group["start"]]
+    n_stops = len(stops)
+    if n_stops <= 1:
+        return name, None, True  # Failed trip due to too few stops
+
+    failed_trip = False
+    solution_found = False
+    points = []
+    while not solution_found:
+        np_dist, np_inds = tree.query(stops, workers=-1, k=neighbors)
+        np_dist = np_dist * geo_const  # Approx distance in meters
+        prev_point = min(np_inds[0])
+        points = [prev_point]
+        for i, nps in enumerate(np_inds[1:]):
+            condition = (nps > prev_point) & (nps < max(np_inds[i + 1]))
+            points_valid = nps[condition]
+            if len(points_valid) > 0:
+                points_score = np.power(points_valid - prev_point, 3) * np.power(np_dist[i + 1, condition], 1)
+                prev_point = nps[condition][np.argmin(points_score)]
+                points.append(prev_point)
+            else:
+                # Capping the number of nearest neighbors to 11
+                if neighbors < min(n_stops, 11):
+                    neighbors = min(neighbors + 2, n_stops)
+                    break
+                else:
+                    failed_trip = True
+                    solution_found = True
+                    break
+        if len(points) == n_stops:
+            solution_found = True
+
+    if failed_trip:
+        return name, None, True
+    else:
+        return name, points, False
+    
+def process_trip_group(name: str, group: pd.core.groupby.DataFrameGroupBy, k_neighbors: int, geo_const: float) -> Tuple:
+    neighbors = k_neighbors
+    geom_line = group["geometry"].iloc[0]
+    tree = cKDTree(data=np.array(geom_line.coords))
+    stops = [x.coords[0] for x in group["start"]]
+    n_stops = len(stops)
+    MAX_NEIGHBORS = min(n_stops,9)
+    if n_stops <= 1:
+        return name, None, True  # Failed trip due to too few stops
+
+    failed_trip = False
+    solution_found = False
+    points = []
+    np_dist_all, np_inds_all = tree.query(stops, workers=-1, k=MAX_NEIGHBORS)
+    np_dist_all = np_dist_all * geo_const  # Approx distance in meters
+    while not solution_found:
+        np_inds = np_inds_all[:, :neighbors]
+        np_dist = np_dist_all[:, :neighbors]
+        prev_point = min(np_inds[0])
+        points = [prev_point]
+        for i, nps in enumerate(np_inds[1:]):
+            condition = (nps > prev_point) & (nps < max(np_inds[i + 1]))
+            points_valid = nps[condition]
+            if len(points_valid) > 0:
+                points_score = np.power(points_valid - prev_point, 3) * np.power(np_dist[i + 1, condition], 1)
+                prev_point = nps[condition][np.argmin(points_score)]
+                points.append(prev_point)
+            else:
+                # Capping the number of nearest neighbors to 11
+                if neighbors < MAX_NEIGHBORS:
+                    neighbors = min(neighbors + 2, n_stops)
+                    break
+                else:
+                    failed_trip = True
+                    solution_found = True
+                    break
+        if len(points) == n_stops:
+            solution_found = True
+
+    if failed_trip:
+        return name, None, True
+    else:
+        return name, points, False
+
+def nearest_points_parallel(stop_df: gpd.GeoDataFrame, k_neighbors: int = 5) -> pd.DataFrame:
+    stop_df["snap_start_id"] = -1
+    geo_const = 6371000 * np.pi / 180
+    failed_trips = []
+    defective_trip_count = 0
+    with ThreadPoolExecutor(max_workers=None) as executor:
+        results = executor.map(lambda x: process_trip_group(x[0], x[1], k_neighbors, geo_const), stop_df.groupby("trip_id"))
+
+    for name, points, failed in results:
+        if failed:
+            failed_trips.append(name)
+        else:
+            stop_df.loc[stop_df.trip_id == name, "snap_start_id"] = points
+    defective_trip_count = stop_df[stop_df.trip_id.isin(failed_trips)].groupby("trip_id").first().traversals.sum()
+    total_trip_count = len(stop_df)
+    stop_df = stop_df[~stop_df.trip_id.isin(failed_trips)].reset_index(drop=True)
+
+    print("Total trips processed:", total_trip_count)
+    if defective_trip_count > 0:
+        print("Total defective trips:", defective_trip_count)
+        print("Percentage defective trips:{:.2f}".format(defective_trip_count / total_trip_count * 100))
     return stop_df

@@ -100,10 +100,7 @@ def summary_stats(
         df.groupby(["segment_id", "distance"]).first().reset_index()["distance"].median()
     )
     route_weighted_mean = (
-        df.groupby(["route_id", "segment_id", "distance"])
-        .first()
-        .reset_index()["distance"]
-        .mean()
+        df.groupby(["route_id", "segment_id", "distance"]).first().reset_index()["distance"].mean()
     )
     route_weighted_median = (
         df.groupby(["route_id", "segment_id", "distance"])

@@ -1,5 +1,4 @@
 import os
-from datetime import date
 from typing import List, Optional, Set
 
 import geopandas as gpd
@@ -7,7 +6,7 @@ import numpy as np
 import pandas as pd
 from shapely.geometry import LineString
 
-from .geom_utils import get_zone_epsg, make_gdf, nearest_points, ret_high_res_shape
+from .geom_utils import get_zone_epsg, make_gdf, nearest_points, nearest_points_parallel, ret_high_res_shape, ret_high_res_shape_parallel
 from .mobility import summary_stats_mobility
 from .partridge_func import get_bus_feed
 from .partridge_mod.gtfs import Feed
@@ -48,33 +47,29 @@ def merge_trip_geom(trip_df: pd.DataFrame, shape_df: pd.DataFrame) -> gpd.GeoDat
 
 
 def make_segments_unique(df: gpd.GeoDataFrame, traversal_threshold: int = 1) -> gpd.GeoDataFrame:
-    """
-    For each route_id and segment_id combination, if there are more than one unique distance values,
-    then split the segment_id into three parts, and add a number to the end of the segment_id
+    # Compute the number of unique rounded distances for each route_id and segment_id
+    unique_counts = df.groupby(["route_id", "segment_id"])["distance"].apply(lambda x: x.round().nunique())
 
-    Args:
-      df: the dataframe
+    # Filter rows where unique count is greater than 1
+    filtered_df = df[df.set_index(["route_id", "segment_id"]).index.isin(unique_counts[unique_counts > 1].index)].copy()
+    # Create a segment modification function
+    def modify_segment(segment_id: str, count: int) -> str:  
+        seg_split = str(segment_id).split("-")
+        return seg_split[0] + "-" + seg_split[1] + "-" + str(count + 1)
 
-    Returns:
-      A dataframe with unique segment_ids
-    """
+    # Apply the modification function to the segment_id
+    filtered_df["modification"] = filtered_df.groupby(["route_id", "segment_id"]).cumcount()
+    filtered_df["segment_id"] = filtered_df.apply(lambda row: modify_segment(row["segment_id"], row["modification"]) if row["modification"] != 0 else row["segment_id"], axis=1)
 
-    grp_filter = df.groupby(["route_id", "segment_id"]).filter(
-        lambda row: row["distance"].round().nunique() > 1
-    )
-    grp_dict = grp_filter.groupby(["route_id", "segment_id"]).groups
-    for key in grp_dict:
-        inds = grp_dict[key]
-        for i, index in enumerate(inds):
-            if i != 0:
-                seg_split = str(key[1]).split("-")  # Convert key[1] to string before splitting
-                df.at[index, "segment_id"] = seg_split[0] + "-" + seg_split[1] + "-" + str(i + 1)
+    # Merge the modified segments back into the original DataFrame
+    df = pd.concat([df[~df.index.isin(filtered_df.index)], filtered_df], ignore_index=True)
+
+    # Aggregate traversals and filter by traversal threshold
     grp_again = df.groupby(["route_id", "segment_id"])
-    df = make_gdf(grp_again.first().reset_index())
+    df = grp_again.first().reset_index()
     df["traversals"] = grp_again["traversals"].sum().values
-    df = make_gdf(df[df.traversals > traversal_threshold].reset_index(drop=True))
-    return df
-
+    df = df[df.traversals > traversal_threshold].reset_index(drop=True)
+    return make_gdf(df)
 
 def filter_stop_df(stop_df: pd.DataFrame, trip_ids: Set, stop_loc_df: pd.DataFrame) -> pd.DataFrame:
     """
@@ -132,12 +127,10 @@ def merge_stop_geom(stop_df: pd.DataFrame, stop_loc_df: pd.DataFrame) -> gpd.Geo
       A GeoDataFrame
     """
     stop_df["start"] = stop_df.copy().merge(stop_loc_df, how="left", on="stop_id")["geometry"]
-    stop_df = gpd.GeoDataFrame(stop_df)  # Convert to GeoDataFrame
-    stop_df.set_geometry("start", inplace=True)  # Specify the geometry column
-    return make_gdf(stop_df)
+    return stop_df
 
 
-def create_segments(stop_df: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
+def create_segments(stop_df: gpd.GeoDataFrame, parallel: bool = False) -> pd.DataFrame:
     """
     This function creates segments between stops based on their proximity and returns a GeoDataFrame.
 
@@ -148,7 +141,10 @@ def create_segments(stop_df: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     Returns:
       a GeoDataFrame with segments created from the input stop_df.
     """
-    stop_df = nearest_points(stop_df)
+    if parallel:
+      stop_df = nearest_points_parallel(stop_df)
+    else:
+      stop_df = nearest_points(stop_df)
     stop_df = stop_df.rename({"stop_id": "stop_id1", "arrival_time": "arrival_time1"}, axis=1)
     grp = (
         pd.DataFrame(stop_df).groupby("trip_id", group_keys=False).shift(-1).reset_index(drop=True)
@@ -168,7 +164,7 @@ def create_segments(stop_df: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
         ),
         axis=1,
     )
-    return make_gdf(stop_df)
+    return stop_df
 
 
 def process_feed_stops(feed: Feed) -> gpd.GeoDataFrame:
@@ -202,7 +198,7 @@ def process_feed_stops(feed: Feed) -> gpd.GeoDataFrame:
     return make_gdf(stop_df)
 
 
-def process_feed(feed: Feed, max_spacing: Optional[float] = None) -> gpd.GeoDataFrame:
+def process_feed(feed: Feed, parallel: bool = False, max_spacing: Optional[float] = None) -> gpd.GeoDataFrame:
     """
     The function `process_feed` takes a feed and optional maximum spacing as input, performs various
     data processing and filtering operations on the feed, and returns a GeoDataFrame containing the
@@ -220,6 +216,8 @@ def process_feed(feed: Feed, max_spacing: Optional[float] = None) -> gpd.GeoData
       A GeoDataFrame containing information about the stops and segments in the feed with segments smaller than the max_spacing values.
     """
     # Set a Spatial Resolution and increase the resolution of the shapes
+    # shapes = ret_high_res_shape_parallel(feed.shapes, spat_res=5)
+    ## Note: Currently, the parallel version of the function is not working as expected and is slower than the non-parallel version
     shapes = ret_high_res_shape(feed.shapes, spat_res=5)
     trip_df = merge_trip_geom(feed.trips, shapes)
     trip_ids = set(trip_df.trip_id.unique())
@@ -227,9 +225,9 @@ def process_feed(feed: Feed, max_spacing: Optional[float] = None) -> gpd.GeoData
     stop_df = filter_stop_df(feed.stop_times, trip_ids, stop_loc_df)
     stop_df = merge_stop_geom(stop_df, stop_loc_df)
     stop_df = stop_df.merge(trip_df, on="trip_id", how="left")
-    stop_df = create_segments(stop_df)
-    epsg_zone = get_zone_epsg(stop_df)
+    stop_df = create_segments(stop_df, parallel=parallel)
     stop_df = make_gdf(stop_df)
+    epsg_zone = get_zone_epsg(stop_df)
     if epsg_zone is not None:
         stop_df["distance"] = stop_df.set_geometry("geometry").to_crs(epsg_zone).geometry.length
         stop_df["distance"] = stop_df["distance"].round(2)  # round to 2 decimal places
@@ -279,7 +277,11 @@ def inspect_feed(feed: Feed) -> str:
 
 
 def get_gtfs_segments(
-    path: str, agency_id: Optional[str] = None, threshold: Optional[int] = 1, max_spacing: Optional[float] = None
+    path: str,
+    agency_id: Optional[str] = None,
+    threshold: Optional[int] = 1,
+    max_spacing: Optional[float] = None,
+    parallel: bool = False,
 ) -> gpd.GeoDataFrame:
     """
     The function `get_gtfs_segments` takes a path to a GTFS feed file, an optional agency name, a
@@ -314,11 +316,9 @@ def get_gtfs_segments(
       - geometry: The segment's LINESTRING (a format for encoding geographic paths).
         All geometries are re-projected onto Mercator (EPSG:4326/WGS84) to maintain consistency.
     """
-    b_day: date
-    feed: Feed
-    b_day, feed = get_bus_feed(path, agency_id=agency_id, threshold=threshold)
-    print("Using the busiest day:", b_day)
-    return process_feed(feed, max_spacing)
+    feed = get_bus_feed(path, agency_id=agency_id, threshold=threshold, parallel = parallel)
+    df = process_feed(feed, parallel=parallel)
+    return df
 
 
 def pipeline_gtfs(filename: str, url: str, bounds: List, max_spacing: float) -> str:

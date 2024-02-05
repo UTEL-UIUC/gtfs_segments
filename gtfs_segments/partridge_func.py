@@ -1,14 +1,13 @@
-from datetime import date
-from typing import Optional, Tuple
+from typing import Optional
 
+import os
 import pandas as pd
-
 import gtfs_segments.partridge_mod as ptg
 
-from .partridge_mod.gtfs import Feed
+from .partridge_mod.gtfs import Feed, parallel_read
 
 
-def get_bus_feed(path: str, agency_id: Optional[str] = None, threshold: Optional[int] = 1) -> Tuple[date, Feed]:
+def get_bus_feed(path: str, agency_id: Optional[str] = None, threshold: Optional[int] = 1, parallel: bool = False) -> Feed:
     """
     The `get_bus_feed` function retrieves bus feed data from a specified path, with the option to filter
     by agency name, and returns the busiest date and a GTFS feed object.
@@ -29,7 +28,8 @@ def get_bus_feed(path: str, agency_id: Optional[str] = None, threshold: Optional
       A tuple containing the busiest date and a GTFS feed object. The GTFS feed object contains
     information about routes, stops, stop times, trips, and shapes for a transit agency's schedule.
     """
-    _date, bday_service_ids = ptg.read_busiest_date(path)
+    b_day, bday_service_ids = ptg.read_busiest_date(path)
+    print("Using the busiest day:", b_day)
     all_days_s_ids_df = get_all_days_s_ids(path)
     series = all_days_s_ids_df[bday_service_ids].sum(axis=0) > threshold
     service_ids = series[series].index.values
@@ -50,7 +50,11 @@ def get_bus_feed(path: str, agency_id: Optional[str] = None, threshold: Optional
             "trips.txt": {"service_id": service_ids},  # Busiest day only
         }
     feed = ptg.load_geo_feed(path, view=view)
-    return _date, feed
+    if parallel:
+        num_cores = os.cpu_count()
+        print(":: Proessing Feed in Parallel :: Number of cores:", num_cores)
+        parallel_read(feed)
+    return feed
 
 
 def get_all_days_s_ids(path: str) -> pd.DataFrame:

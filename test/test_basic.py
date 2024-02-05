@@ -57,7 +57,7 @@ class TestBasic(unittest.TestCase):
             ptg.__version__ == "1.1.1b1",
             "Please use the following version of partridge 1.1.1b1",
         )
-        _date, feed = get_bus_feed(self.gtfs_path)
+        feed = get_bus_feed(self.gtfs_path)
         self.assertTrue(
             isinstance(feed, ptg.gtfs.Feed),
             "Error with feed type. Make sure the partridge library is installed correctly",
