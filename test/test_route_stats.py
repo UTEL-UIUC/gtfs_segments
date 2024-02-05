@@ -21,7 +21,7 @@ class TestRouteStats(unittest.TestCase):
         )
 
     def test_route_stats(self):
-        _, feed = get_bus_feed(self.gtfs_path)
+        feed = get_bus_feed(self.gtfs_path)
         route_stats_df = get_route_stats(feed)
         self.assertTrue(
             isinstance(route_stats_df, pd.DataFrame),

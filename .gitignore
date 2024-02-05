@@ -33,3 +33,5 @@ src/
 gtfs_tool/
 !docs/tutorials/*
 docs/tutorials/data/
+.Rproj.user
+/paper/GTFS2GPS

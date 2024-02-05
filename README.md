@@ -199,6 +199,8 @@ Download the GTFS `.zip` files from [@transitfeeds](https://transitfeeds.com/) o
 ```python
 from gtfs_segments import get_gtfs_segments
 segments_df = get_gtfs_segments("path_to_gtfs_zip_file")
+# [Optional] Run in parallel using multiple CPU cores
+segments_df = get_gtfs_segments("path_to_gtfs_zip_file", parallel = True)
 ```
 
 Alternatively, filter a specific agency by passing `agency_id` as a string or multiple agencies as list ["SFMTA",]
@@ -267,7 +269,7 @@ summary_stats(segments_df,max_spacing = 3000,export = True,file_path = "summary.
 
 ```python
 from gtfs_segments import get_route_stats,get_bus_feed
-_,feed = get_bus_feed('path_to_gtfs.zip')
+feed = get_bus_feed('path_to_gtfs.zip')
 get_route_stats(feed)
 ```
 

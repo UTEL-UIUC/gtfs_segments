@@ -48,6 +48,13 @@ def load_geo_feed(path: str, view: Optional[View] = None) -> Feed:
     return load_feed(path, view=view)
 
 
+def read_busiest_date_feed(path: str) -> Tuple[Feed, datetime.date, FrozenSet[str]]:
+    """Find the earliest date with the most trips"""
+    feed = load_raw_feed(path)
+    date, service_ids = _busiest_date(feed)
+    return feed, date, service_ids
+
+
 def read_busiest_date(path: str) -> Tuple[datetime.date, FrozenSet[str]]:
     """Find the earliest date with the most trips"""
     feed = load_raw_feed(path)

@@ -1,4 +1,6 @@
 import os
+
+import concurrent.futures
 from threading import RLock
 from typing import Any, Dict, Optional, Union
 
@@ -38,6 +40,25 @@ class Feed(object):
         else:
             raise ValueError("Invalid source")
 
+        file_list = [
+            "agency.txt",
+            "calendar.txt",
+            "calendar_dates.txt",
+            "routes.txt",
+            "trips.txt",
+            "shapes.txt",
+            "stop_times.txt",
+            "stops.txt",
+            "fare_attributes.txt",
+            "fare_rules.txt",
+            "feed_info.txt",
+            "frequencies.txt",
+            "transfers.txt",
+        ]
+        for file_name in file_list:
+            property_name = file_name[:-4]  # Strip '.txt' from the file name
+            self._create_property(property_name, file_name)
+
     def get(self, filename: str) -> pd.DataFrame:
         lock = self._locks.get(filename, self._shared_lock)
         with lock:
@@ -56,22 +77,11 @@ class Feed(object):
         with lock:
             self._cache[filename] = df
 
-    # Required files
-    agency = _read_file("agency.txt")
-    calendar = _read_file("calendar.txt")
-    calendar_dates = _read_file("calendar_dates.txt")
-    routes = _read_file("routes.txt")
-    trips = _read_file("trips.txt")
-    shapes = _read_file("shapes.txt")
-    stop_times = _read_file("stop_times.txt")
-    stops = _read_file("stops.txt")
+    def _create_property(self, property_name: str, filename: str):
+        def getter(self) -> pd.DataFrame:
+            return self.get(filename)
 
-    # Optional files
-    fare_attributes = _read_file("fare_attributes.txt")
-    fare_rules = _read_file("fare_rules.txt")
-    feed_info = _read_file("feed_info.txt")
-    frequencies = _read_file("frequencies.txt")
-    transfers = _read_file("transfers.txt")
+        setattr(self.__class__, property_name, property(getter))
 
     def _bootstrap(self, path: str) -> None:
         # Walk recursively through the directory
@@ -97,16 +107,40 @@ class Feed(object):
         # If the file isn't in the zip, return an empty DataFrame.
         with open(path, "rb") as f:
             encoding = detect_encoding(f)
-
-        df = pd.read_csv(path, dtype=str, encoding=encoding, index_col=False)
-
+        # file_columns = self._transforms_dict[filename].get("usecols", [])
+        # df = pd.read_csv(path, usecols=file_columns, dtype=str, encoding=encoding, index_col=False)
+        df_head = pd.read_csv(
+            path, header=0, dtype=str, encoding=encoding, engine="c", index_col=False, nrows=1
+        )
+        available_columns = set(df_head.columns)
+        file_columns = self._transforms_dict[filename].get("usecols", [])
+        if len(file_columns) != 0:
+            use_cols = set(file_columns.keys()).intersection(available_columns)
+            df = pd.read_csv(
+                path,
+                usecols=use_cols,
+                header=0,
+                dtype="str",
+                encoding=encoding,
+                engine="c",
+                index_col=False,
+            )
+        else:
+            df = pd.read_csv(
+                path,
+                header=0,
+                dtype="str",
+                encoding=encoding,
+                engine="c",
+                index_col=False,
+            )
         # Strip leading/trailing whitespace from column names
-        df.rename(columns=lambda x: x.strip(), inplace=True)
+        # df.rename(columns=lambda x: x.strip(), inplace=True)
 
-        if not df.empty:
-            # Strip leading/trailing whitespace from column values
-            for col in df.columns:
-                df.loc[:, col] = df[col].str.strip()
+        # if not df.empty:
+        #     # Strip leading/trailing whitespace from column values
+        #     for col in df.columns:
+        #         df.loc[:, col] = df[col].str.strip()
 
         return df
 
@@ -141,3 +175,27 @@ class Feed(object):
                 df = transform(df)
 
         return df
+
+def fetch_data(feed: Feed, property_name: str):
+    """Function to fetch data for a given property name."""
+    return getattr(feed, property_name)
+
+def parallel_read(feed: Feed) -> None:
+    """
+    Fetches GTFS data in parallel using ThreadPoolExecutor.
+
+    Args:
+        feed (Feed): The GTFS feed object.
+
+    Returns:
+        None
+    """
+    property_names = [
+       "stop_times", "stops", "agency", "calendar", "calendar_dates", "routes",
+        "trips", "shapes",
+    ]
+
+    # Use ThreadPoolExecutor to fetch data in parallel
+    with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
+        # Create a future for each property
+        futures = {executor.submit(fetch_data, feed, name): name for name in property_names}

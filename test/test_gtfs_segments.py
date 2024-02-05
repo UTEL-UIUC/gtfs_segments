@@ -30,7 +30,7 @@ class TestGTFSSegments(unittest.TestCase):
         """
         The function `test_feed_inspect` tests the `inspect_feed` function on a specific feed.
         """
-        _, feed = get_bus_feed(self.gtfs_path)
+        feed = get_bus_feed(self.gtfs_path)
         self.assertTrue(
             inspect_feed(feed),
             "Error with feed inspection. Should work for the Ann Arbor example feed",

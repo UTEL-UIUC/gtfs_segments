@@ -14,7 +14,7 @@ authors:
     affiliation: 1 
   - name: Lewis Lehe
     orcid: 0000-0001-8029-1706
-    equal-contrib: true
+    equal-contrib: false
     affiliation: 1 
 affiliations:
  - name: Department of Civil and Environmental Engineering, University of Illinois Urbana-Champaign
@@ -36,7 +36,9 @@ The choice of bus stop spacing involves a tradeoff between accessibility and spe
 
 `gtfs-segments` was designed for researchers, transit planners, students and anyone interested in bus networks. The package has been used in several scholarly articles [@devunuri2023bus; @devunuri2023chatgpt; @lehe4135394bus] and to create databases of spacings for over 550 agencies in the US [@DVN/SFBIVU_2022] and 80 agencies in Canada[@DVN/QFTAPM_2023]. Several transit agencies, such as Regional Transportation District Denver (RTD- Denver), have used the package to visualize the effects of their bus stop consolidation efforts. Filtering functions allow the user to explore datasets, identify errors and compute specialized statistics.
 
-# Computing Segments
+# Functionality
+
+## Computing segments
 
 A `segment` is defined by three elements: (i) a start stop, (ii) end stop and (iii) the path that the bus travels along the route in between the two consecutive stops. The segments are computed using route shape geometries and stop locations included in GTFS data. Packages such as `gtfs2gps`[@pereira2023exploring] and `gtfs_functions`[@Toso2023] can compute segments, but this package does so in computationally-efficient way and includes a new way to account for cases when the reported stop locations are misaligned with the route shapes. \autoref{fig:example} provides some example cases where a stop is equidistant from multiple points on a route. Thus, projecting the stop onto the route or snapping to nearest geo-coordinate (lat,lon) may produce errors, such as stops that are out-of-order or stop being snapped far from their locations. Also, the time complexity of projection or snapping is $O(mn)$ using brute force for `m` geo-coordinates that represent the route shape and `n` stops that have to projected.
 
