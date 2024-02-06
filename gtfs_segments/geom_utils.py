@@ -1,5 +1,6 @@
 from concurrent.futures import ThreadPoolExecutor
-from typing import Any, List, Tuple
+from typing import Any, List, Tuple, Optional
+from click import style
 
 import contextily as cx
 import folium
@@ -600,3 +601,53 @@ def nearest_points_parallel(stop_df: gpd.GeoDataFrame, k_neighbors: int = 5) -> 
             )
         )
     return stop_df
+
+
+def view_heatmap(gdf: gpd.GeoDataFrame, cmap: Optional[str] = "RdYlBu", light_mode : bool = True, interactive:bool = False) -> Any:
+    """
+    Generates a heatmap visualization of a GeoDataFrame.
+
+    Parameters:
+        gdf (gpd.GeoDataFrame): The GeoDataFrame containing the data to be visualized.
+        cmap (str, optional): The matplotlib colormap to be used for the heatmap. Defaults to "RdBu".
+
+    Returns:
+        Figure: The generated heatmap visualization as a matplotlib Figure object.
+    """
+    MAX_RANGE = gdf["distance"].max()
+    df_filtered = gdf[(gdf["distance"] >= 30)].copy()
+    df_filtered["speed"] = pd.to_numeric(df_filtered["speed"])
+    bins = [150, 300, 500, 800, 1200, 1500, 2000, MAX_RANGE]
+    if interactive:
+        fmap = df_filtered.explore(
+            column="distance",
+            scheme="UserDefined",
+            tooltip=["segment_id", "distance"],
+            tiles= "CartoDB Positron" if light_mode else "CartoDB Dark Matter",
+            legend=True,
+            cmap=cmap,  # YlOrRd
+            classification_kwds=dict(bins=bins),
+            legend_kwds=dict(colorbar=False),
+            style_kwds=dict(opacity=0.6, fillOpacity=.6),
+            popup = True
+        )
+        return fmap
+    else:
+        fig, ax = plt.subplots(figsize=(10, 10), dpi=300)
+        df_filtered.plot(
+            column="distance",
+            scheme="UserDefined",
+            cmap=cmap,  # YlOrRd
+            kind="geo",
+            ax=ax,
+            legend=True,
+            classification_kwds=dict(bins=bins),
+            legend_kwds=dict(fmt="{:.0f}", loc="upper left", bbox_to_anchor=(0, 1), interval=True),
+            alpha=0.6,
+            # # scheme="fisherjenks",
+        )
+        map_provider = cx.providers.CartoDB.Positron if light_mode else cx.providers.CartoDB.DarkMatter
+        cx.add_basemap(ax, crs=gdf.crs, source=map_provider, attribution_size=5)
+        plt.axis("off")
+        plt.close()
+        return fig

@@ -337,6 +337,9 @@ def get_gtfs_segments(
     """
     feed = get_bus_feed(path, agency_id=agency_id, threshold=threshold, parallel=parallel)
     df = process_feed(feed, parallel=parallel)
+    if max_spacing is not None:
+      print("Using max_spacing {:.0f} to filter segments".format(max_spacing))
+      df = df[df["distance"] <= max_spacing]
     return df
 
 
@@ -373,7 +376,7 @@ def pipeline_gtfs(filename: str, url: str, bounds: List, max_spacing: float) -> 
     gtfs_file_loc = download_write_file(url, folder_path)
 
     # read file using GTFS Fucntions
-    busisest_day, feed = get_bus_feed(gtfs_file_loc)
+    feed = get_bus_feed(gtfs_file_loc)
     # Remove Null entries
     message = inspect_feed(feed)
     if message != "Valid GTFS Feed":
