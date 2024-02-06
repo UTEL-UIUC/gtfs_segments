@@ -1,6 +1,5 @@
-import os
-
 import concurrent.futures
+import os
 from threading import RLock
 from typing import Any, Dict, Optional, Union
 
@@ -176,9 +175,11 @@ class Feed(object):
 
         return df
 
+
 def fetch_data(feed: Feed, property_name: str):
     """Function to fetch data for a given property name."""
     return getattr(feed, property_name)
+
 
 def parallel_read(feed: Feed) -> None:
     """
@@ -191,8 +192,14 @@ def parallel_read(feed: Feed) -> None:
         None
     """
     property_names = [
-       "stop_times", "stops", "agency", "calendar", "calendar_dates", "routes",
-        "trips", "shapes",
+        "stop_times",
+        "stops",
+        "agency",
+        "calendar",
+        "calendar_dates",
+        "routes",
+        "trips",
+        "shapes",
     ]
 
     # Use ThreadPoolExecutor to fetch data in parallel

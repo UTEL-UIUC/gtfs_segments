@@ -18,6 +18,7 @@ REQUIREMENTS = [
     "isoweek",
     "faust-cchardet",
     "charset_normalizer",
+    "folium",
 ]
 
 # Setting up

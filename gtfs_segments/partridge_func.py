@@ -1,13 +1,16 @@
+import os
 from typing import Optional
 
-import os
 import pandas as pd
+
 import gtfs_segments.partridge_mod as ptg
 
 from .partridge_mod.gtfs import Feed, parallel_read
 
 
-def get_bus_feed(path: str, agency_id: Optional[str] = None, threshold: Optional[int] = 1, parallel: bool = False) -> Feed:
+def get_bus_feed(
+    path: str, agency_id: Optional[str] = None, threshold: Optional[int] = 1, parallel: bool = False
+) -> Feed:
     """
     The `get_bus_feed` function retrieves bus feed data from a specified path, with the option to filter
     by agency name, and returns the busiest date and a GTFS feed object.

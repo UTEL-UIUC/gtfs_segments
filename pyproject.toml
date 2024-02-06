@@ -16,6 +16,7 @@ dependencies = [
     "isoweek",
     "faust-cchardet",
     "charset_normalizer",
+    "folium",
 ]
 authors = [
     {name = "Saipraneeth Devunuri", email = "sd37@illinois.edu"},
