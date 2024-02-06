@@ -222,6 +222,27 @@ def view_spacings_interactive(
     level: str = "whole",
     **kwargs: Any,
 ) -> folium.Map:
+    """
+    Generates an interactive Folium map to visualize stop spacings.
+
+    Parameters:
+        gdf (gpd.GeoDataFrame): The GeoDataFrame containing the stop spacing data.
+        basemap (bool, optional): Whether to add a basemap to the map. Defaults to True.
+        show_stops (bool, optional): Whether to show the stops on the map. Defaults to False.
+        level (str, optional): The level at which to filter the data. Can be 'whole', 'route', or 'segment'.
+            Defaults to 'whole'.
+        **kwargs: Additional keyword arguments for filtering the data based on level.
+
+    Returns:
+        folium.Map: The generated Folium map.
+
+    Raises:
+        AssertionError: If the required attributes for filtering the data are not provided.
+
+    Example usage:
+        gdf = gpd.GeoDataFrame(...)
+        map = view_spacings_interactive(gdf, basemap=True, show_stops=True, level='route', route='123')
+    """
     if "direction" in kwargs:
         gdf = gdf[gdf.direction_id == kwargs["direction"]].copy()
     # Convert CRS to EPSG:4326 if needed
@@ -609,10 +630,13 @@ def view_heatmap(gdf: gpd.GeoDataFrame, cmap: Optional[str] = "RdYlBu", light_mo
 
     Parameters:
         gdf (gpd.GeoDataFrame): The GeoDataFrame containing the data to be visualized.
-        cmap (str, optional): The matplotlib colormap to be used for the heatmap. Defaults to "RdBu".
+        cmap (Optional[str], optional): The colormap to be used for the heatmap. Defaults to "RdYlBu".
+        light_mode (bool, optional): Specifies whether to use a light mode basemap. Defaults to True.
+        interactive (bool, optional): Specifies whether to generate an interactive map. Defaults to False.
 
     Returns:
-        Figure: The generated heatmap visualization as a matplotlib Figure object.
+        Any: The generated heatmap visualization.
+
     """
     MAX_RANGE = gdf["distance"].max()
     df_filtered = gdf[(gdf["distance"] >= 30)].copy()
