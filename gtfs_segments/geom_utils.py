@@ -1,7 +1,8 @@
-from tkinter.tix import MAX
+from concurrent.futures import ThreadPoolExecutor
 from typing import Any, List, Tuple
-import os
+
 import contextily as cx
+import folium
 import geopandas as gpd
 import matplotlib.pyplot as plt
 import numpy as np
@@ -12,7 +13,6 @@ from pyproj import Geod
 from scipy.spatial import cKDTree
 from shapely.geometry import LineString, Point
 from shapely.ops import split
-from concurrent.futures import ThreadPoolExecutor
 
 geod = Geod(ellps="WGS84")
 
@@ -214,6 +214,88 @@ def view_spacings(
     return ax
 
 
+def view_spacings_interactive(
+    gdf: gpd.GeoDataFrame,
+    basemap: bool = True,
+    show_stops: bool = False,
+    level: str = "whole",
+    **kwargs: Any,
+) -> folium.Map:
+    if "direction" in kwargs:
+        gdf = gdf[gdf.direction_id == kwargs["direction"]].copy()
+    # Convert CRS to EPSG:4326 if needed
+    if gdf.crs.to_string() != "EPSG:4326":
+        gdf = gdf.to_crs(epsg=4326)
+
+    # Initialize Folium Map
+    bounds = gdf.total_bounds
+    map_center = [(bounds[1] + bounds[3]) / 2, (bounds[0] + bounds[2]) / 2]
+    fmap = folium.Map(location=map_center, control_scale=True, zoom_start=12)
+
+    # Filter and plot based on level
+    if level == "route":
+        assert "route" in kwargs, "Please provide a route_id in route attribute"
+        gdf = gdf[gdf.route_id == kwargs["route"]].copy()
+    elif level == "segment":
+        assert "segment" in kwargs, "Please provide a segment_id in segment attribute"
+        gdf = gdf[gdf.segment_id == kwargs["segment"]].copy()
+
+    # Add lines to map
+    tooltip = folium.GeoJsonTooltip(fields=["segment_id", "distance"])
+    popup = folium.GeoJsonPopup(fields=gdf.drop(columns=["geometry"]).columns.tolist())
+
+    def style_function(x: Any) -> dict[str, Any]:
+        if "route" in kwargs:
+            return {
+                "color": (
+                    "#2ecc71" if x["properties"]["route_id"] == kwargs["route"] else "#34495e"
+                ),
+                "weight": (5 if x["properties"]["route_id"] == kwargs["route"] else 2),
+            }
+        if "segment" in kwargs:
+            return {
+                "color": (
+                    "#000000" if x["properties"]["segment_id"] == kwargs["segment"] else "#34495e"
+                ),
+                "weight": (5 if x["properties"]["segment_id"] == kwargs["segment"] else 2),
+                "z_index": 1000,
+            }
+        return {"color": "#34495e", "weight": 2}
+
+    folium.GeoJson(
+        gdf, tooltip=tooltip, popup=popup, zoom_on_click=True, style_function=style_function
+    ).add_to(fmap)
+
+    # Show stops
+    if show_stops:
+        if "route" in kwargs:
+            gdf = gdf[gdf.route_id == kwargs["route"]].copy()
+        if "segment" in kwargs:
+            gdf = gdf[gdf.segment_id == kwargs["segment"]].copy()
+        stop_ids = {}
+        for _, row in gdf.iterrows():
+            stop_ids[row["stop_id1"]] = Point(row["geometry"].coords[0])
+            stop_ids[row["stop_id2"]] = Point(row["geometry"].coords[-1])
+        for stop_id, point in stop_ids.items():
+            folium.CircleMarker(
+                location=[point.y, point.x],
+                radius=(6 if "segment" in kwargs else 4 if "route" in kwargs else 2),
+                scale_radius=True,
+                weight=1,
+                fill_opacity=0.9,
+                color="#000000",
+                fill_color="#FFD700",
+                fill=True,
+                tooltip=str(stop_id),
+            ).add_to(fmap)
+
+    # Add basemap
+    if basemap:
+        folium.TileLayer("CartoDB positron", name="Light Map", control=False).add_to(fmap)
+
+    return fmap
+
+
 def increase_resolution(geom: LineString, spat_res: int = 5) -> LineString:
     """
     This function increases the resolution of a LineString geometry by adding
@@ -276,6 +358,7 @@ def ret_high_res_shape(shapes: gpd.GeoDataFrame, spat_res: int = 5) -> gpd.GeoDa
     shapes.geometry = high_res_shapes
     return shapes
 
+
 def ret_high_res_shape_parallel(shapes: gpd.GeoDataFrame, spat_res: int = 5) -> gpd.GeoDataFrame:
     """
     This function increases the resolution of the geometries in a given dataframe of shapes by a
@@ -292,11 +375,13 @@ def ret_high_res_shape_parallel(shapes: gpd.GeoDataFrame, spat_res: int = 5) -> 
     Returns:
       a GeoDataFrame with the geometry column updated to have higher resolution shapes.
     """
+
     def process_shape(row):
         return increase_resolution(row["geometry"], spat_res)
+
     high_res_shapes = []
     with ThreadPoolExecutor(max_workers=None) as executor:
-        high_res_shapes = list(executor.map(process_shape, shapes.to_dict('records')))
+        high_res_shapes = list(executor.map(process_shape, shapes.to_dict("records")))
 
     shapes.geometry = high_res_shapes
     return shapes
@@ -388,54 +473,62 @@ def nearest_points(stop_df: gpd.GeoDataFrame, k_neighbors: int = 3) -> pd.DataFr
     stop_df = stop_df[~stop_df.trip_id.isin(failed_trips)].reset_index(drop=True)
     return stop_df
 
-def process_trip_group(name: str, group: pd.core.groupby.DataFrameGroupBy, k_neighbors: int, geo_const: float) -> Tuple:
+
+# def process_trip_group(
+#     name: str, group: pd.core.groupby.DataFrameGroupBy, k_neighbors: int, geo_const: float
+# ) -> Tuple:
+#     neighbors = k_neighbors
+#     geom_line = group["geometry"].iloc[0]
+#     tree = cKDTree(data=np.array(geom_line.coords))
+#     stops = [x.coords[0] for x in group["start"]]
+#     n_stops = len(stops)
+#     if n_stops <= 1:
+#         return name, None, True  # Failed trip due to too few stops
+
+#     failed_trip = False
+#     solution_found = False
+#     points = []
+#     while not solution_found:
+#         np_dist, np_inds = tree.query(stops, workers=-1, k=neighbors)
+#         np_dist = np_dist * geo_const  # Approx distance in meters
+#         prev_point = min(np_inds[0])
+#         points = [prev_point]
+#         for i, nps in enumerate(np_inds[1:]):
+#             condition = (nps > prev_point) & (nps < max(np_inds[i + 1]))
+#             points_valid = nps[condition]
+#             if len(points_valid) > 0:
+#                 points_score = np.power(points_valid - prev_point, 3) * np.power(
+#                     np_dist[i + 1, condition], 1
+#                 )
+#                 prev_point = nps[condition][np.argmin(points_score)]
+#                 points.append(prev_point)
+#             else:
+#                 # Capping the number of nearest neighbors to 11
+#                 if neighbors < min(n_stops, 11):
+#                     neighbors = min(neighbors + 2, n_stops)
+#                     break
+#                 else:
+#                     failed_trip = True
+#                     solution_found = True
+#                     break
+#         if len(points) == n_stops:
+#             solution_found = True
+
+#     if failed_trip:
+#         return name, None, True
+#     else:
+#         return name, points, False
+
+
+def process_trip_group(
+    name: str, group: pd.core.groupby.DataFrameGroupBy, k_neighbors: int, geo_const: float
+) -> Tuple:
     neighbors = k_neighbors
     geom_line = group["geometry"].iloc[0]
     tree = cKDTree(data=np.array(geom_line.coords))
     stops = [x.coords[0] for x in group["start"]]
     n_stops = len(stops)
-    if n_stops <= 1:
-        return name, None, True  # Failed trip due to too few stops
-
-    failed_trip = False
-    solution_found = False
-    points = []
-    while not solution_found:
-        np_dist, np_inds = tree.query(stops, workers=-1, k=neighbors)
-        np_dist = np_dist * geo_const  # Approx distance in meters
-        prev_point = min(np_inds[0])
-        points = [prev_point]
-        for i, nps in enumerate(np_inds[1:]):
-            condition = (nps > prev_point) & (nps < max(np_inds[i + 1]))
-            points_valid = nps[condition]
-            if len(points_valid) > 0:
-                points_score = np.power(points_valid - prev_point, 3) * np.power(np_dist[i + 1, condition], 1)
-                prev_point = nps[condition][np.argmin(points_score)]
-                points.append(prev_point)
-            else:
-                # Capping the number of nearest neighbors to 11
-                if neighbors < min(n_stops, 11):
-                    neighbors = min(neighbors + 2, n_stops)
-                    break
-                else:
-                    failed_trip = True
-                    solution_found = True
-                    break
-        if len(points) == n_stops:
-            solution_found = True
-
-    if failed_trip:
-        return name, None, True
-    else:
-        return name, points, False
-    
-def process_trip_group(name: str, group: pd.core.groupby.DataFrameGroupBy, k_neighbors: int, geo_const: float) -> Tuple:
-    neighbors = k_neighbors
-    geom_line = group["geometry"].iloc[0]
-    tree = cKDTree(data=np.array(geom_line.coords))
-    stops = [x.coords[0] for x in group["start"]]
-    n_stops = len(stops)
-    MAX_NEIGHBORS = min(n_stops,9)
+    MAX_NEIGHBORS = min(n_stops, 9)
     if n_stops <= 1:
         return name, None, True  # Failed trip due to too few stops
 
@@ -453,7 +546,9 @@ def process_trip_group(name: str, group: pd.core.groupby.DataFrameGroupBy, k_nei
             condition = (nps > prev_point) & (nps < max(np_inds[i + 1]))
             points_valid = nps[condition]
             if len(points_valid) > 0:
-                points_score = np.power(points_valid - prev_point, 3) * np.power(np_dist[i + 1, condition], 1)
+                points_score = np.power(points_valid - prev_point, 3) * np.power(
+                    np_dist[i + 1, condition], 1
+                )
                 prev_point = nps[condition][np.argmin(points_score)]
                 points.append(prev_point)
             else:
@@ -473,25 +568,35 @@ def process_trip_group(name: str, group: pd.core.groupby.DataFrameGroupBy, k_nei
     else:
         return name, points, False
 
+
 def nearest_points_parallel(stop_df: gpd.GeoDataFrame, k_neighbors: int = 5) -> pd.DataFrame:
     stop_df["snap_start_id"] = -1
     geo_const = 6371000 * np.pi / 180
     failed_trips = []
     defective_trip_count = 0
     with ThreadPoolExecutor(max_workers=None) as executor:
-        results = executor.map(lambda x: process_trip_group(x[0], x[1], k_neighbors, geo_const), stop_df.groupby("trip_id"))
+        results = executor.map(
+            lambda x: process_trip_group(x[0], x[1], k_neighbors, geo_const),
+            stop_df.groupby("trip_id"),
+        )
 
     for name, points, failed in results:
         if failed:
             failed_trips.append(name)
         else:
             stop_df.loc[stop_df.trip_id == name, "snap_start_id"] = points
-    defective_trip_count = stop_df[stop_df.trip_id.isin(failed_trips)].groupby("trip_id").first().traversals.sum()
+    defective_trip_count = (
+        stop_df[stop_df.trip_id.isin(failed_trips)].groupby("trip_id").first().traversals.sum()
+    )
     total_trip_count = len(stop_df)
     stop_df = stop_df[~stop_df.trip_id.isin(failed_trips)].reset_index(drop=True)
 
     print("Total trips processed:", total_trip_count)
     if defective_trip_count > 0:
         print("Total defective trips:", defective_trip_count)
-        print("Percentage defective trips:{:.2f}".format(defective_trip_count / total_trip_count * 100))
+        print(
+            "Percentage defective trips:{:.2f}".format(
+                defective_trip_count / total_trip_count * 100
+            )
+        )
     return stop_df

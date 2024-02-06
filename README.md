@@ -230,6 +230,8 @@ Each row does not represent one segment. Rather, each row maps to a combination 
 >
 > ℹ️ For more information on visualization refer to the [Visualization Tutorial](https://gtfs-segments.readthedocs.io/en/latest/tutorials/Visualization)
 
+> ℹ️ Alternatively, use `view_spacings_interactive` to view the stop spacings interactively.
+
 ```python
 from gtfs_segments import view_spacings
 view_spacings(segments_df,route = '8',segment = '6364-3725-1',basemap=True)
@@ -238,6 +240,7 @@ view_spacings(segments_df,route = '8',segment = '6364-3725-1',basemap=True)
 <div align='center'><a>
     <img src="https://raw.githubusercontent.com/UTEL-UIUC/gtfs_segments/main/images/visualize.jpg" alt="data" width=600>
 </a></div>  
+
 
 ## Plot Distributions
 
@@ -310,8 +313,9 @@ export_segments(segments_df,'filename', output_format ='csv',geometry = False)
 - [x] Integrate partridge library dependency
 - [x] Remove unusual trips
 - [x] Add unit tests for the package
+- [x] Add interactive visualization with folium
 - [ ] Visualize catchment areas for stops
-- [ ] Migrate to folium for basemap and plotting
+
 
 See the [open issues](https://github.com/UTEL-UIUC/gtfs_segments/issues) for a full list of proposed features (and known issues).
 

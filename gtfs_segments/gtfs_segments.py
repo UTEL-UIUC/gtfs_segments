@@ -6,7 +6,13 @@ import numpy as np
 import pandas as pd
 from shapely.geometry import LineString
 
-from .geom_utils import get_zone_epsg, make_gdf, nearest_points, nearest_points_parallel, ret_high_res_shape, ret_high_res_shape_parallel
+from .geom_utils import (
+    get_zone_epsg,
+    make_gdf,
+    nearest_points,
+    nearest_points_parallel,
+    ret_high_res_shape,
+)
 from .mobility import summary_stats_mobility
 from .partridge_func import get_bus_feed
 from .partridge_mod.gtfs import Feed
@@ -48,18 +54,28 @@ def merge_trip_geom(trip_df: pd.DataFrame, shape_df: pd.DataFrame) -> gpd.GeoDat
 
 def make_segments_unique(df: gpd.GeoDataFrame, traversal_threshold: int = 1) -> gpd.GeoDataFrame:
     # Compute the number of unique rounded distances for each route_id and segment_id
-    unique_counts = df.groupby(["route_id", "segment_id"])["distance"].apply(lambda x: x.round().nunique())
+    unique_counts = df.groupby(["route_id", "segment_id"])["distance"].apply(
+        lambda x: x.round().nunique()
+    )
 
     # Filter rows where unique count is greater than 1
-    filtered_df = df[df.set_index(["route_id", "segment_id"]).index.isin(unique_counts[unique_counts > 1].index)].copy()
+    filtered_df = df[
+        df.set_index(["route_id", "segment_id"]).index.isin(unique_counts[unique_counts > 1].index)
+    ].copy()
+
     # Create a segment modification function
-    def modify_segment(segment_id: str, count: int) -> str:  
+    def modify_segment(segment_id: str, count: int) -> str:
         seg_split = str(segment_id).split("-")
         return seg_split[0] + "-" + seg_split[1] + "-" + str(count + 1)
 
     # Apply the modification function to the segment_id
     filtered_df["modification"] = filtered_df.groupby(["route_id", "segment_id"]).cumcount()
-    filtered_df["segment_id"] = filtered_df.apply(lambda row: modify_segment(row["segment_id"], row["modification"]) if row["modification"] != 0 else row["segment_id"], axis=1)
+    filtered_df["segment_id"] = filtered_df.apply(
+        lambda row: modify_segment(row["segment_id"], row["modification"])
+        if row["modification"] != 0
+        else row["segment_id"],
+        axis=1,
+    )
 
     # Merge the modified segments back into the original DataFrame
     df = pd.concat([df[~df.index.isin(filtered_df.index)], filtered_df], ignore_index=True)
@@ -70,6 +86,7 @@ def make_segments_unique(df: gpd.GeoDataFrame, traversal_threshold: int = 1) -> 
     df["traversals"] = grp_again["traversals"].sum().values
     df = df[df.traversals > traversal_threshold].reset_index(drop=True)
     return make_gdf(df)
+
 
 def filter_stop_df(stop_df: pd.DataFrame, trip_ids: Set, stop_loc_df: pd.DataFrame) -> pd.DataFrame:
     """
@@ -142,9 +159,9 @@ def create_segments(stop_df: gpd.GeoDataFrame, parallel: bool = False) -> pd.Dat
       a GeoDataFrame with segments created from the input stop_df.
     """
     if parallel:
-      stop_df = nearest_points_parallel(stop_df)
+        stop_df = nearest_points_parallel(stop_df)
     else:
-      stop_df = nearest_points(stop_df)
+        stop_df = nearest_points(stop_df)
     stop_df = stop_df.rename({"stop_id": "stop_id1", "arrival_time": "arrival_time1"}, axis=1)
     grp = (
         pd.DataFrame(stop_df).groupby("trip_id", group_keys=False).shift(-1).reset_index(drop=True)
@@ -198,7 +215,9 @@ def process_feed_stops(feed: Feed) -> gpd.GeoDataFrame:
     return make_gdf(stop_df)
 
 
-def process_feed(feed: Feed, parallel: bool = False, max_spacing: Optional[float] = None) -> gpd.GeoDataFrame:
+def process_feed(
+    feed: Feed, parallel: bool = False, max_spacing: Optional[float] = None
+) -> gpd.GeoDataFrame:
     """
     The function `process_feed` takes a feed and optional maximum spacing as input, performs various
     data processing and filtering operations on the feed, and returns a GeoDataFrame containing the
@@ -316,7 +335,7 @@ def get_gtfs_segments(
       - geometry: The segment's LINESTRING (a format for encoding geographic paths).
         All geometries are re-projected onto Mercator (EPSG:4326/WGS84) to maintain consistency.
     """
-    feed = get_bus_feed(path, agency_id=agency_id, threshold=threshold, parallel = parallel)
+    feed = get_bus_feed(path, agency_id=agency_id, threshold=threshold, parallel=parallel)
     df = process_feed(feed, parallel=parallel)
     return df
 
