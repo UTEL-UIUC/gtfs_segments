@@ -2,7 +2,7 @@
 The gtfs_segments package main init file.
 """
 __version__ = "0.1.0"
-from .geom_utils import view_spacings, view_spacings_interactive
+from .geom_utils import view_spacings, view_spacings_interactive, view_heatmap
 from .gtfs_segments import get_gtfs_segments, pipeline_gtfs, process_feed
 from .mobility import (
     download_latest_data,
@@ -25,6 +25,7 @@ __all__ = [
     "process",
     "view_spacings",
     "view_spacings_interactive",
+    "view_heatmap"
     "summary_stats_mobility",
     "download_latest_data",
     "get_route_stats",

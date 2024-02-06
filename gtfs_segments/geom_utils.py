@@ -628,7 +628,7 @@ def view_heatmap(gdf: gpd.GeoDataFrame, cmap: Optional[str] = "RdYlBu", light_mo
             cmap=cmap,  # YlOrRd
             classification_kwds=dict(bins=bins),
             legend_kwds=dict(colorbar=False),
-            style_kwds=dict(opacity=0.6, fillOpacity=.6),
+            style_kwds=dict(opacity=0.85, fillOpacity=.85),
             popup = True
         )
         return fmap
@@ -643,7 +643,7 @@ def view_heatmap(gdf: gpd.GeoDataFrame, cmap: Optional[str] = "RdYlBu", light_mo
             legend=True,
             classification_kwds=dict(bins=bins),
             legend_kwds=dict(fmt="{:.0f}", loc="upper left", bbox_to_anchor=(0, 1), interval=True),
-            alpha=0.6,
+            alpha=0.85,
             # # scheme="fisherjenks",
         )
         map_provider = cx.providers.CartoDB.Positron if light_mode else cx.providers.CartoDB.DarkMatter
