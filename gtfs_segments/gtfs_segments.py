@@ -338,8 +338,8 @@ def get_gtfs_segments(
     feed = get_bus_feed(path, agency_id=agency_id, threshold=threshold, parallel=parallel)
     df = process_feed(feed, parallel=parallel)
     if max_spacing is not None:
-      print("Using max_spacing {:.0f} to filter segments".format(max_spacing))
-      df = df[df["distance"] <= max_spacing]
+        print("Using max_spacing {:.0f} to filter segments".format(max_spacing))
+        df = df[df["distance"] <= max_spacing]
     return df
 
 

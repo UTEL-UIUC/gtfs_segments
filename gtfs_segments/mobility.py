@@ -1,9 +1,10 @@
 import os
 from datetime import date
-from typing import Any, List
+from typing import Any, List, Optional
 
 import numpy as np
 import pandas as pd
+from thefuzz import fuzz
 
 from .utils import download_write_file
 
@@ -13,27 +14,39 @@ ABBREV_LINK = (
 )
 
 
-def fetch_gtfs_source(place: str = "ALL", active: bool = True) -> Any:
+def fetch_gtfs_source(
+    place: Optional[str] = "ALL",
+    country_code: Optional[str] = "US",
+    active: Optional[bool] = True,
+    use_fuzz: bool = False,
+) -> Any:
     """
-    It reads the mobility data sources csv file and generates a dataframe with the sources that are of
-    type gtfs and are from the US
+    Fetches GTFS data sources from a mobility data file and generates a dataframe.
 
     Args:
-      place: The place you want to get the GTFS data for. This can be a city, state, or country.
-    Defaults to ALL. Defaults to ALL
-      [Optional] active: If True, it will only download active feeds. If False, it will download all feeds.
-    Defaults to True
+        place (str): The place you want to get the GTFS data for. This can be a city, state, or country. Defaults to "ALL".
+        country_code (str): The country code for filtering the data sources. Defaults to "US".
+        active (bool): If True, it will only download active feeds. If False, it will download all feeds. Defaults to True.
 
     Returns:
-      A dataframe with sources
+        pd.DataFrame: A dataframe with GTFS data sources.
+
+    Examples:
+        >>> fetch_gtfs_source()
+        Returns all GTFS data sources from the US.
+
+        >>> fetch_gtfs_source(place="New York")
+        Returns GTFS data sources for the place "New York" in the US.
     """
     abb_df = pd.read_json(ABBREV_LINK)
     sources_df = pd.read_csv(MOBILITY_SOURCES_LINK)
-    sources_df = sources_df[sources_df["location.country_code"] == "US"]
+
+    if country_code != "ALL":
+        sources_df = sources_df[sources_df["location.country_code"] == country_code]
     sources_df = sources_df[sources_df["data_type"] == "gtfs"]
     # Download only active feeds
     if active:
-        sources_df = sources_df[sources_df["status"].isin(["active", np.NAN])]
+        sources_df = sources_df[sources_df["status"].isin(["active", np.NAN, None])]
         sources_df.drop(["status"], axis=1, inplace=True)
     sources_df = pd.merge(
         sources_df,
@@ -42,14 +55,13 @@ def fetch_gtfs_source(place: str = "ALL", active: bool = True) -> Any:
         left_on="location.subdivision_name",
         right_on="state",
     )
-    sources_df = sources_df[~sources_df.state_code.isna()]
+    # sources_df = sources_df[~sources_df.state_code.isna()]
     sources_df["location.municipality"] = sources_df["location.municipality"].astype("str")
     sources_df.drop(
         [
             "entity_type",
             "mdb_source_id",
             "data_type",
-            "location.country_code",
             "note",
             "static_reference",
             "urls.direct_download",
@@ -140,6 +152,7 @@ def fetch_gtfs_source(place: str = "ALL", active: bool = True) -> Any:
     sources_df.columns = sources_df.columns.str.replace("location.bounding_box.", "", regex=True)
     sources_df.rename(
         columns={
+            "location.country_code": "country_code",
             "minimum_longitude": "min_lon",
             "maximum_longitude": "max_lon",
             "minimum_latitude": "min_lat",
@@ -151,16 +164,28 @@ def fetch_gtfs_source(place: str = "ALL", active: bool = True) -> Any:
     if place == "ALL":
         return sources_df.reset_index(drop=True)
     else:
-        sources_df = sources_df[
-            sources_df.apply(
-                lambda row: row.astype(str).str.contains(place.lower(), case=False).any(),
-                axis=1,
-            )
-        ]
+        if use_fuzz:
+            sources_df = fuzzy_match(place, sources_df)
+        else:
+            sources_df = sources_df[
+                sources_df.apply(
+                    lambda row: row.astype(str).str.contains(place.lower(), case=False).any(),
+                    axis=1,
+                )
+            ]
         if len(sources_df) == 0:
             print("No sources found for the given place")
         else:
             return sources_df.reset_index(drop=True)
+
+
+def fuzzy_match(place: str, sources_df: pd.DataFrame) -> pd.DataFrame:
+    sources_df["fuzz_ratio"] = sources_df["provider"].apply(
+        lambda x: fuzz.partial_token_sort_ratio(x.lower(), place.lower())
+    )
+    sources_df = sources_df[sources_df["fuzz_ratio"] >= 75]
+
+    return sources_df.drop("fuzz_ratio", axis=1).reset_index(drop=True)
 
 
 def summary_stats_mobility(
@@ -172,7 +197,7 @@ def summary_stats_mobility(
     bounds: List,
     max_spacing: float = 3000,
     export=False,
-) -> Any:
+) -> pd.DataFrame:
     """
     It takes in a dataframe, a folder path, a filename, a busiest day, a link, a bounding box, a max
     spacing, and a boolean for exporting the summary to a csv.

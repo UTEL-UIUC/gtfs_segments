@@ -1,6 +1,5 @@
 from concurrent.futures import ThreadPoolExecutor
-from typing import Any, List, Tuple, Optional
-from click import style
+from typing import Any, List, Optional, Tuple
 
 import contextily as cx
 import folium
@@ -164,32 +163,43 @@ def view_spacings(
     elif level == "route":
         markersize = 40
         assert "route" in kwargs, "Please provide a route_id in route attibute"
-        gdf = gdf[gdf.route_id == kwargs["route"]].copy()
+        gdf = gdf[gdf.route_id.isin(kwargs["route"])].copy()
     elif level == "segment":
         markersize = 60
         assert "segment" in kwargs, "Please provide a segment_id in segment attibute"
-        gdf = gdf[gdf.segment_id == kwargs["segment"]].copy()
+        gdf = gdf[gdf.segment_id.isin(kwargs["segment"])].copy()
     else:
         raise ValueError("level must be either whole, route, or segment")
 
     # Plot the spacings
     if "route" in kwargs:
-        gdf = gdf[gdf.route_id == kwargs["route"]].copy()
-        ax = gdf.plot(
-            ax=ax,
-            linewidth=1.5,
-            color="#2ecc71",
-            label="Route ID:" + kwargs["route"],
-            zorder=2,
-        )
+        gdf = gdf[gdf.route_id.isin(kwargs["route"])].copy()
+        if len(kwargs["route"]) > 1:
+            ax = gdf.plot(
+                ax=ax,
+                linewidth=2,
+                column="route_id",
+                label="Route ID:" + str(kwargs["route"]),
+                zorder=2,
+                cmap="tab20",
+                legend=True,
+            )
+        else:
+            ax = gdf.plot(
+                ax=ax,
+                linewidth=2,
+                color="#2ecc71",
+                label="Route ID:" + str(kwargs["route"]),
+                zorder=2,
+            )
     if "segment" in kwargs:
         try:
-            gdf = gdf[gdf.segment_id == kwargs["segment"]].copy()
+            gdf = gdf[gdf.segment_id.isin(kwargs["segment"])].copy()
         except ValueError as e:
             raise ValueError(f"No such segment exists. Check if direction_id is incorrect {e}")
         ax = gdf.plot(
             ax=ax,
-            linewidth=2,
+            linewidth=2.5,
             color="#000000",
             label="Segment ID: " + str(kwargs["segment"]),
             zorder=3,
@@ -211,7 +221,10 @@ def view_spacings(
         df = gpd.GeoDataFrame(gdf, crs=crs)
         cx.add_basemap(ax, crs=df.crs, source=map_provider, attribution_size=5)
     plt.axis(axis)
-    plt.legend(loc="lower right")
+    if level != "segment":
+        plt.legend(loc="best")
+    else:
+        ax.legend().set_visible(False)
     return ax
 
 
@@ -624,7 +637,13 @@ def nearest_points_parallel(stop_df: gpd.GeoDataFrame, k_neighbors: int = 5) -> 
     return stop_df
 
 
-def view_heatmap(gdf: gpd.GeoDataFrame, cmap: Optional[str] = "RdYlBu", light_mode : bool = True, interactive:bool = False) -> Any:
+def view_heatmap(
+    gdf: gpd.GeoDataFrame,
+    column: str = "distance",
+    cmap: Optional[str] = "RdYlBu",
+    light_mode: bool = True,
+    interactive: bool = False,
+) -> Any:
     """
     Generates a heatmap visualization of a GeoDataFrame.
 
@@ -638,39 +657,71 @@ def view_heatmap(gdf: gpd.GeoDataFrame, cmap: Optional[str] = "RdYlBu", light_mo
         Any: The generated heatmap visualization.
 
     """
-    MAX_RANGE = gdf["distance"].max()
-    df_filtered = gdf[(gdf["distance"] >= 30)].copy()
-    df_filtered["speed"] = pd.to_numeric(df_filtered["speed"])
-    bins = [150, 300, 500, 800, 1200, 1500, 2000, MAX_RANGE]
+    df_filtered = gdf.copy()
+    df_filtered[column] = pd.to_numeric(df_filtered[column])
+    if column == "distance":
+        MAX_RANGE = gdf["distance"].max()
+        df_filtered = gdf[(gdf["distance"] >= 30)].copy()
+        bins = [125, 200, 400, 600, 800, 1000, 1200, 1500, 2000, MAX_RANGE]
+    else:
+        df_filtered = df_filtered[(df_filtered[column] >= df_filtered[column].quantile(0.01))]
+        df_filtered = df_filtered[(df_filtered[column] <= df_filtered[column].quantile(1 - 0.01))]
     if interactive:
-        fmap = df_filtered.explore(
-            column="distance",
-            scheme="UserDefined",
-            tooltip=["segment_id", "distance"],
-            tiles= "CartoDB Positron" if light_mode else "CartoDB Dark Matter",
-            legend=True,
-            cmap=cmap,  # YlOrRd
-            classification_kwds=dict(bins=bins),
-            legend_kwds=dict(colorbar=False),
-            style_kwds=dict(opacity=0.85, fillOpacity=.85),
-            popup = True
-        )
+        if column == "distance":
+            fmap = df_filtered.explore(
+                column=column,
+                scheme="UserDefined",
+                tooltip=["segment_id", "distance"],
+                tiles="CartoDB Positron" if light_mode else "CartoDB Dark Matter",
+                legend=True,
+                cmap=cmap,  # YlOrRd
+                classification_kwds=dict(bins=bins),
+                legend_kwds=dict(colorbar=False),
+                style_kwds=dict(opacity=0.75, fillOpacity=0.75),
+                popup=True,
+            )
+        else:
+            fmap = df_filtered.explore(
+                column=column,
+                cmap=cmap,  # YlOrRd
+                tooltip=["segment_id", column],
+                tiles="CartoDB Positron" if light_mode else "CartoDB Dark Matter",
+                legend=True,
+                style_kwds=dict(opacity=0.75, fillOpacity=0.75),
+                popup=True,
+                scheme="Quantiles",
+                legend_kwds=dict(colorbar=False),
+            )
         return fmap
     else:
-        fig, ax = plt.subplots(figsize=(10, 10), dpi=300)
-        df_filtered.plot(
-            column="distance",
-            scheme="UserDefined",
-            cmap=cmap,  # YlOrRd
-            kind="geo",
-            ax=ax,
-            legend=True,
-            classification_kwds=dict(bins=bins),
-            legend_kwds=dict(fmt="{:.0f}", loc="upper left", bbox_to_anchor=(0, 1), interval=True),
-            alpha=0.85,
-            # # scheme="fisherjenks",
+        fig, ax = plt.subplots(figsize=(10, 8), dpi=300)
+        if column == "distance":
+            df_filtered.plot(
+                column=column,
+                scheme="UserDefined",
+                cmap=cmap,  # YlOrRd
+                kind="geo",
+                ax=ax,
+                legend=True,
+                classification_kwds=dict(bins=bins),
+                legend_kwds=dict(
+                    fmt="{:.0f}", loc="upper left", bbox_to_anchor=(0, 1), interval=True
+                ),
+                alpha=0.75,
+            )
+        else:
+            df_filtered.plot(
+                column=column,
+                cmap=cmap,  # YlOrRd
+                kind="geo",
+                ax=ax,
+                legend=True,
+                alpha=0.275,
+                scheme="Quantiles",
+            )
+        map_provider = (
+            cx.providers.CartoDB.Positron if light_mode else cx.providers.CartoDB.DarkMatter
         )
-        map_provider = cx.providers.CartoDB.Positron if light_mode else cx.providers.CartoDB.DarkMatter
         cx.add_basemap(ax, crs=gdf.crs, source=map_provider, attribution_size=5)
         plt.axis("off")
         plt.close()

@@ -247,7 +247,7 @@ View the heatmap of stop spacings ("distance" as metric). Use `Diverging` colorm
 
 ```python
 from gtfs_segments import view_heatmap
-view_heatmap(df, cmap='RdYlGn', light_mode=True)
+f = view_heatmap(df, cmap='RdBu', light_mode=True)
 ``` 
 
 <div align='center'><a>
@@ -261,7 +261,7 @@ view_heatmap(df, cmap="YlOrRd", interactive=True, light_mode=False)
     <img src="https://raw.githubusercontent.com/UTEL-UIUC/gtfs_segments/main/images/heatmap_interactive.jpg" alt="data" width=600>
 </a></div>  
 
-## Plot Distributions
+### Plot Distributions
 
 ```python
 from gtfs_segments import plot_hist
@@ -276,8 +276,9 @@ plot_hist(segments_df, max_spacing = 1200)
 plot_hist(segments_df,file_path = "spacings_hist.png",save_fig = True)
 ```
 
-## Get Summary Stats
+## Summary Statistics
 
+### Get Network Summary Stats
 ```python
 from gtfs_segments import summary_stats
 summary_stats(segments_df,max_spacing = 3000,export = True,file_path = "summary.csv")
@@ -287,7 +288,7 @@ summary_stats(segments_df,max_spacing = 3000,export = True,file_path = "summary.
     <img src="https://raw.githubusercontent.com/UTEL-UIUC/gtfs_segments/main/images/summary.jpg" alt="histogram" width=300>
 </a></div>  
 
-## Get Route Summary Stats
+### Get Route Summary Stats
 
 ```python
 from gtfs_segments import get_route_stats,get_bus_feed

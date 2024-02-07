@@ -55,7 +55,7 @@ def get_bus_feed(
     feed = ptg.load_geo_feed(path, view=view)
     if parallel:
         num_cores = os.cpu_count()
-        print(":: Proessing Feed in Parallel :: Number of cores:", num_cores)
+        print(":: Processing Feed in Parallel :: Number of cores:", num_cores)
         parallel_read(feed)
     return feed
 
