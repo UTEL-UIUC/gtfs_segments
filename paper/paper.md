@@ -52,7 +52,7 @@ A `segment` is defined by three elements: (i) a start stop, (ii) an end stop and
 
 Firstly, unlike `gtfs2gps`, we filter the feed to use trips scheduled on the busiest day alone. We also filter unusual trips on the busiest day such as trips with considerably fewer traversals and trips added due to an exception in the service on `busiest_day`. Next, while processing the feed, we group trips based on their respective route shapes and process a representative trip in the group instead of all trips. While computing segments, we parallelize several intermediate steps on multiple CPU cores. However, without parallel processing, the `gtfs_segments` is faster than its alternatives at computing segments on most feeds. \autoref{tab:comparison} shows a comparison of average processing times (averaged over 3 independent runs) for `gtfs2gps`, `gtfs_functions`, and `gtfs_segmnets` packages. The experiments were run with an `Intel(R) Core(TM) i9-10920X` processor at 3.50GHz with 12 hyperthreaded CPU cores and 64 GB RAM, running on Windows. As of February 2024, the most recent GTFS feeds of the respective agencies are tested. The results demonstrate that our package has the best processing time for all but `TriMet` feed, which has higher than usual out-of-order stops.
 
-\begin{table}[!hp]
+\begin{table}[!h]
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{llc|cccc|}
 \cline{4-7}
