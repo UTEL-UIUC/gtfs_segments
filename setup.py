@@ -19,6 +19,7 @@ REQUIREMENTS = [
     "faust-cchardet",
     "charset_normalizer",
     "folium",
+    "thefuzz",
 ]
 
 # Setting up

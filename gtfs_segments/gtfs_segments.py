@@ -387,9 +387,7 @@ def pipeline_gtfs(filename: str, url: str, bounds: List, max_spacing: float) -> 
     if len(df_sub) == 0:
         return failed_pipeline("Only Long Bus Routes in ", filename, folder_path)
     # Output files and Stats
-    summary_stats_mobility(
-        df, folder_path, filename, busisest_day, url, bounds, max_spacing, export=True
-    )
+    summary_stats_mobility(df, folder_path, filename, url, bounds, max_spacing, export=True)
 
     plot_hist(
         df,

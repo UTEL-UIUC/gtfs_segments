@@ -17,6 +17,7 @@ dependencies = [
     "faust-cchardet",
     "charset_normalizer",
     "folium",
+    "thefuzz",
 ]
 authors = [
     {name = "Saipraneeth Devunuri", email = "sd37@illinois.edu"},
@@ -44,14 +45,31 @@ Repository = "https://github.com/UTEL-UIUC/gtfs_segments"
 "Bug Tracker" = "https://github.com/UTEL-UIUC/gtfs_segments/issues"
 
 [tool.ruff]
+src = ["gtfs_segments"]
 # Set the maximum line length to 100.
 line-length = 100
 indent-width = 4
 
+# Assume Python 3.9+
+target-version = "py39"
+
 [tool.ruff.lint]
+exclude = ["*.ipynb"]
 select = ["E", "F", "W", "Q", "I"]
 ignore = ["E203","E501"]
 extend-select = []
+# Allow fix for all enabled rules (when `--fix`) is provided.
+fixable = ["ALL"]
+unfixable = []
+
+[tool.ruff.format]
+exclude = ["*.ipynb"]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+docstring-code-format = true
+docstring-code-line-length = "dynamic"
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"

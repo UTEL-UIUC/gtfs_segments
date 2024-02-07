@@ -157,7 +157,7 @@ The computed segments are output as a `GeoDataFrame` which consists of the segme
 The package also provides a few other visualization features that using the individual segments obtained. The user can generate a heatmap (interactive and static) by assigning a color to the segment based on the value of the column of interest. The distance-based heatmap provides an overview of the distribution and density of stops and stop spacings. The colormap helps the user identify the hotspot of interest. For example \autoref{fig:seq} uses a sequential colormap to represent wide spacings in red which are not convenient from a user's perspective.  An alternative is to use a divergent colormap (see \autoref{fig:div}) which highlights spacings that are on extremes of the tradeoff between accessibility and speed. Besides heatmap, a full distribution of stop spacings can be obtained as a histogram,see \autoref{fig:hist}.  A histogram helps to identify the most frequent spacing and outliers. It can also reveal if the spacings are distributed evenly and around the mean.  For policymakers and planners, understanding the distribution of stop spacings can inform broader strategic decisions about transport network design, urban density, and land use planning. From a modeling perspective, it can aid with the decision to use an unimodal, bimodal or multimodal approximation of the network.
 
 \begin{figure}[!h]
-\begin{subfigure}[]{0.5\textwidth}
+\begin{subfigure}[]{0.65\textwidth}
   \centering
   \includegraphics[width=\textwidth]{heatmap_interactive.jpg}
   \caption{Interactive Heatmap [Sequential]}

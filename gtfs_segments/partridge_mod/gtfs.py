@@ -11,13 +11,6 @@ from .utilities import detect_encoding
 View = Dict[str, Any]
 
 
-def _read_file(filename: str) -> property:
-    def getter(self) -> pd.DataFrame:
-        return self.get(filename)
-
-    return property(getter)
-
-
 class Feed(object):
     def __init__(
         self,
@@ -39,7 +32,7 @@ class Feed(object):
         else:
             raise ValueError("Invalid source")
 
-        file_list = [
+        self.file_list = [
             "agency.txt",
             "calendar.txt",
             "calendar_dates.txt",
@@ -54,9 +47,11 @@ class Feed(object):
             "frequencies.txt",
             "transfers.txt",
         ]
-        for file_name in file_list:
-            property_name = file_name[:-4]  # Strip '.txt' from the file name
-            self._create_property(property_name, file_name)
+
+    def __getattr__(self, name: str) -> pd.DataFrame:
+        if name in [f[:-4] for f in self.file_list]:
+            return self.get(f"{name}.txt")
+        raise AttributeError(f"'{type(self).__name__}' object has no attribute '{name}'")
 
     def get(self, filename: str) -> pd.DataFrame:
         lock = self._locks.get(filename, self._shared_lock)
@@ -75,12 +70,6 @@ class Feed(object):
         lock = self._locks.get(filename, self._shared_lock)
         with lock:
             self._cache[filename] = df
-
-    def _create_property(self, property_name: str, filename: str):
-        def getter(self) -> pd.DataFrame:
-            return self.get(filename)
-
-        setattr(self.__class__, property_name, property(getter))
 
     def _bootstrap(self, path: str) -> None:
         # Walk recursively through the directory
@@ -114,7 +103,7 @@ class Feed(object):
         available_columns = set(df_head.columns)
         file_columns = self._transforms_dict[filename].get("usecols", [])
         if len(file_columns) != 0:
-            use_cols = set(file_columns.keys()).intersection(available_columns)
+            use_cols = list(set(file_columns.keys()).intersection(available_columns))
             df = pd.read_csv(
                 path,
                 usecols=use_cols,
@@ -176,9 +165,9 @@ class Feed(object):
         return df
 
 
-def fetch_data(feed: Feed, property_name: str):
+def fetch_data(feed: Feed, property_name: str) -> None:
     """Function to fetch data for a given property name."""
-    return getattr(feed, property_name)
+    getattr(feed, property_name)
 
 
 def parallel_read(feed: Feed) -> None:
@@ -205,4 +194,4 @@ def parallel_read(feed: Feed) -> None:
     # Use ThreadPoolExecutor to fetch data in parallel
     with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
         # Create a future for each property
-        futures = {executor.submit(fetch_data, feed, name): name for name in property_names}
+        {executor.submit(fetch_data, feed, name): name for name in property_names}
