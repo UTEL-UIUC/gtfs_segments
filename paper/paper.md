@@ -121,7 +121,8 @@ A `segment` is defined by three elements: (i) a start stop, (ii) an end stop and
 \begin{subfigure}[]{0.75\textwidth}
   \centering
   \includegraphics[width=\textwidth]{interpolation.jpg}
-  \caption{Improvement in snapping due to an increase in resolution and using k-nearest neighbors. Adapted from ``Bus Stop Spacings Statistics: Theory and Evidence'' \cite{devunuri2023bus}}
+  \caption{Improvement in snapping due to an increase in resolution and using k-nearest neighbors. Adapted from ``Bus Stop Spacings Statistics: Theory and Evidence'' (\protect\hyperlink{ref-devunuri2023bus}{Devunuri, Qiam, Lehe, Pandey,
+et al., 2023})}
   \label{fig:interpolate}
 \end{subfigure}
 \caption{Handling misaligned stops that are far from their route shapes}
