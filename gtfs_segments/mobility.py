@@ -15,7 +15,7 @@ ABBREV_LINK = (
 
 
 def fetch_gtfs_source(
-    place: Optional[str] = "ALL",
+    place: str = "ALL",
     country_code: Optional[str] = "US",
     active: Optional[bool] = True,
     use_fuzz: bool = False,
@@ -192,12 +192,11 @@ def summary_stats_mobility(
     df: pd.DataFrame,
     folder_path: str,
     filename: str,
-    b_day: date,
     link: str,
     bounds: List,
     max_spacing: float = 3000,
-    export=False,
-) -> pd.DataFrame:
+    export: bool = False
+) -> Optional[pd.DataFrame]:
     """
     It takes in a dataframe, a folder path, a filename, a busiest day, a link, a bounding box, a max
     spacing, and a boolean for exporting the summary to a csv.
@@ -266,7 +265,6 @@ def summary_stats_mobility(
     weighted_data = np.hstack([np.repeat(x, y) for x, y in zip(df["distance"], df.traversals)])
     df_dict = {
         "Name": filename,
-        "Busiest Day": b_day,
         "Link": link,
         "Min Latitude": bounds[0][1],
         "Min Longitude": bounds[0][0],
@@ -295,6 +293,7 @@ def summary_stats_mobility(
             print("Saved the summary.csv in " + folder_path)
         except FileNotFoundError as e:
             print("Error saving the summary.csv: " + str(e))
+        return None
     else:
         summary_df = summary_df.T
         return summary_df

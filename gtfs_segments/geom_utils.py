@@ -371,7 +371,9 @@ def increase_resolution(geom: LineString, spat_res: int = 5) -> LineString:
     return LineString(new_ls)
 
 
-def ret_high_res_shape(shapes: gpd.GeoDataFrame, trips: pd.DataFrame, spat_res: int = 5) -> gpd.GeoDataFrame:
+def ret_high_res_shape(
+    shapes: gpd.GeoDataFrame, trips: pd.DataFrame, spat_res: int = 5
+) -> gpd.GeoDataFrame:
     """
     This function increases the resolution of the geometries in a given dataframe of shapes by a
     specified spatial resolution.
@@ -389,7 +391,9 @@ def ret_high_res_shape(shapes: gpd.GeoDataFrame, trips: pd.DataFrame, spat_res: 
     """
     shape_ids = trips.shape_id.unique()
     shapes = shapes[shapes.shape_id.isin(shape_ids)].copy()
-    high_res_shapes = [increase_resolution(row["geometry"], spat_res) for i, row in shapes.iterrows()]
+    high_res_shapes = [
+        increase_resolution(row["geometry"], spat_res) for i, row in shapes.iterrows()
+    ]
     shapes.geometry = high_res_shapes
     return shapes
 
@@ -411,7 +415,7 @@ def ret_high_res_shape_parallel(shapes: gpd.GeoDataFrame, spat_res: int = 5) -> 
       a GeoDataFrame with the geometry column updated to have higher resolution shapes.
     """
 
-    def process_shape(row):
+    def process_shape(row: pd.core.series.Series) -> LineString:
         return increase_resolution(row["geometry"], spat_res)
 
     high_res_shapes = []
@@ -669,28 +673,28 @@ def view_heatmap(
     if interactive:
         if column == "distance":
             fmap = df_filtered.explore(
-                column=column,
-                scheme="UserDefined",
-                tooltip=["segment_id", "distance"],
-                tiles="CartoDB Positron" if light_mode else "CartoDB Dark Matter",
-                legend=True,
-                cmap=cmap,  # YlOrRd
-                classification_kwds=dict(bins=bins),
-                legend_kwds=dict(colorbar=False),
-                style_kwds=dict(opacity=0.75, fillOpacity=0.75),
-                popup=True,
+                column = column,
+                scheme = "UserDefined",
+                tooltip = ["segment_id", "distance"],
+                tiles = "CartoDB Positron" if light_mode else "CartoDB Dark Matter",
+                legend = True,
+                cmap = cmap,  # YlOrRd
+                classification_kwds = dict(bins=bins),
+                legend_kwds = dict(colorbar=False, fmt="{:.0f}"),
+                style_kwds = dict(opacity=0.75, fillOpacity=0.75),
+                popup = True,
             )
         else:
             fmap = df_filtered.explore(
-                column=column,
-                cmap=cmap,  # YlOrRd
-                tooltip=["segment_id", column],
-                tiles="CartoDB Positron" if light_mode else "CartoDB Dark Matter",
-                legend=True,
-                style_kwds=dict(opacity=0.75, fillOpacity=0.75),
-                popup=True,
-                scheme="Quantiles",
-                legend_kwds=dict(colorbar=False),
+                column = column,
+                cmap = cmap,  # YlOrRd
+                tooltip = ["segment_id", column],
+                tiles = "CartoDB Positron" if light_mode else "CartoDB Dark Matter",
+                legend = True,
+                style_kwds = dict(opacity=0.75, fillOpacity=0.75),
+                popup = True,
+                scheme = "Quantiles",
+                legend_kwds = dict(colorbar=False, fmt="{:.0f}"),
             )
         return fmap
     else:
