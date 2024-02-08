@@ -44,20 +44,25 @@ The `gtfs-segments` package has four main functionalities: (1) Acquiring GTFS fe
 
 ## Acquiring GTFS feeds
 
-GTFS feeds undergo frequent changes, and obtaining the latest feed is essential to calculate up-to-date stop spacings. The package provides a convenient functionality to source and download over 1100 GTFS active feeds from across the world (over 550 in the US and 80 in Canada) from Mobility Database Catalogs[@MobData2023]. The package includes keyword search functionality to search for GTFS feeds using the name of the provider (full name or abbreviation) or the place (city or state (applicable only for the US)). Additionally, to account for typographical errors, the package also implements a fuzzy search feature by matching sub-strings based on [Levenshtein distance](https://en.wikipedia.org/wiki/Levenshtein_distance) algorithm, which is used popularly in text auto-correct.
+GTFS feeds undergo frequent changes, and obtaining the latest feed is essential to calculate up-to-date stop spacings. The package provides a convenient functionality to source and download over 1100 active GTFS feeds from across the world (over 550 in the US and 80 in Canada) from Mobility Database Catalogs[@MobData2023]. The package includes keyword search functionality to search for GTFS feeds using either the name of the provider (full name or abbreviation) or the place (city or state[^1]). Additionally, to account for typographical errors, the package also implements a fuzzy search feature by matching sub-strings based on Levenshtein distance[@levenshtein1965binary] algorithm, which is used popularly in text auto-correct.
+
+[^1]: Search by state is currently applicable only to the US alone.
 
 ## Computing segments
 
 A `segment` is defined by three elements: (i) a start stop, (ii) an end stop and (iii) the path that the bus travels along the route in between the two consecutive stops. The segments are computed using route shape geometries and stop locations included in GTFS data. Packages such as `gtfs2gps`[@pereira2023exploring] and `gtfs_functions`[@Toso2023] can compute segments, but this package does so in computationally-efficient way and includes a new way to account for *errors* in the GTFS feed.
 
-Firstly, unlike `gtfs2gps`, we filter the feed to use trips scheduled on the busiest day alone. We also filter unusual trips on the busiest day such as trips with considerably fewer traversals and trips added due to an exception in the service on `busiest_day`. Next, while processing the feed, we group trips based on their respective route shapes and process a representative trip in the group instead of all trips. While computing segments, we parallelize several intermediate steps on multiple CPU cores. However, without parallel processing, the `gtfs_segments` is faster than its alternatives at computing segments on most feeds. \autoref{tab:comparison} shows a comparison of average processing times (averaged over 3 independent runs) for `gtfs2gps`, `gtfs_functions`, and `gtfs_segmnets` packages. The experiments were run with an `Intel(R) Core(TM) i9-10920X` processor at 3.50GHz with 12 hyperthreaded CPU cores and 64 GB RAM, running on Windows. As of February 2024, the most recent GTFS feeds of the respective agencies are tested. The results demonstrate that our package has the best processing time for all but `TriMet` feed, which has higher than usual out-of-order stops.
+Firstly, unlike `gtfs2gps`, we filter the feed to use trips scheduled on the busiest day alone. We also filter unusual trips on the busiest day such as trips with considerably fewer traversals and trips added due to an exception in the service on `busiest_day`. Next, while processing the feed, we group trips based on their respective route shapes and process a representative trip in the group instead of all trips. While computing segments, we parallelize several intermediate steps on multiple CPU cores. However, without parallel processing, the `gtfs_segments` is faster than its alternatives at computing segments on most feeds. \autoref{tab:comparison} shows a comparison of the average processing rate[^2] for `gtfs2gps`, `gtfs_functions`, and `gtfs_segmnets` packages. The experiments were run with an `Intel(R) Core(TM) i9-10920X` processor at 3.50GHz with 12 hyperthreaded CPU cores and 64 GB RAM, running on Windows. As of February 2024, the most recent GTFS feeds of the respective agencies are tested. The results demonstrate that our package has the best processing rate for all GTFS feeds tested, both with and without parallel processing.
+
+[^2]: The average processing rate is the average number of trips processed per second, averaged over 3 independent runs.
 
 \begin{table}[!h]
+\centering
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{llc|cccc|}
 \cline{4-7}
 \multicolumn{3}{l|}{} &
-  \multicolumn{4}{c|}{Average Processing Time (seconds) {[}n=3{]}} \\ \hline
+  \multicolumn{4}{c|}{Average Processing Rate (Trips/Second) {[}n=3{]}} \\ \hline
 \multicolumn{3}{|r|}{\textit{Package}} &
   \multicolumn{1}{c|}{\textit{gtfs2gps}} &
   \multicolumn{1}{c|}{\textit{gtfs\_functions}} &
@@ -65,8 +70,8 @@ Firstly, unlike `gtfs2gps`, we filter the feed to use trips scheduled on the bus
 \multicolumn{3}{|r|}{\textit{Parallel Processing}} &
   \multicolumn{1}{c|}{\textit{Y}} &
   \multicolumn{1}{c|}{\textit{N}} &
-  \multicolumn{1}{c|}{\textit{N}} &
-  \textit{Y} \\ \hline
+  \multicolumn{1}{p{.5in}|}{\textit{\hfil N}} &
+  \multicolumn{1}{p{.5in}|}{\textit{\hfil Y}} \\ \hline
 \multicolumn{1}{|l|}{\textbf{Agency}} &
   \multicolumn{1}{l|}{\textbf{City}} &
   \textbf{\begin{tabular}[c]{@{}c@{}}File \\ Size\\  (MB)\end{tabular}} &
@@ -77,44 +82,44 @@ Firstly, unlike `gtfs2gps`, we filter the feed to use trips scheduled on the bus
   \multicolumn{1}{l|}{Ann Arbor} &
   1.5 &
   \multicolumn{1}{c|}{-} &
-  \multicolumn{1}{c|}{7.0} &
-  \multicolumn{1}{c|}{4.9} &
-  \textbf{4.6} \\ \hline
+  \multicolumn{1}{c|}{272} &
+  \multicolumn{1}{c|}{388} &
+  \textbf{413} \\ \hline
 \multicolumn{1}{|l|}{\begin{tabular}[c]{@{}l@{}}Capital \\ Metro\end{tabular}} &
   \multicolumn{1}{l|}{Austin} &
   6.8 &
-  \multicolumn{1}{c|}{330.4} &
+  \multicolumn{1}{c|}{47} &
   \multicolumn{1}{c|}{-} &
-  \multicolumn{1}{c|}{23.8} &
-  \textbf{22.9} \\ \hline
+  \multicolumn{1}{c|}{198} &
+  \textbf{206} \\ \hline
 \multicolumn{1}{|l|}{SFMTA} &
   \multicolumn{1}{l|}{\begin{tabular}[c]{@{}l@{}}San \\ Francisco\end{tabular}} &
   10.0 &
-  \multicolumn{1}{c|}{1313.1} &
-  \multicolumn{1}{c|}{15.8} &
-  \multicolumn{1}{c|}{15.7} &
-  \textbf{13.7} \\ \hline
+  \multicolumn{1}{c|}{41} &
+  \multicolumn{1}{c|}{621} &
+  \multicolumn{1}{c|}{625} &
+  \textbf{716} \\ \hline
 \multicolumn{1}{|l|}{MBTA} &
   \multicolumn{1}{l|}{Boston} &
   14.9 &
-  \multicolumn{1}{c|}{959.3} &
-  \multicolumn{1}{c|}{47.1} &
-  \multicolumn{1}{c|}{41.5} &
-  \textbf{37.4} \\ \hline
+  \multicolumn{1}{c|}{87} &
+  \multicolumn{1}{c|}{325} &
+  \multicolumn{1}{c|}{388} &
+  \textbf{431} \\ \hline
 \multicolumn{1}{|l|}{SEPTA} &
   \multicolumn{1}{l|}{Philadelphia} &
   21.3 &
   \multicolumn{1}{c|}{-} &
-  \multicolumn{1}{c|}{95.0} &
-  \multicolumn{1}{c|}{73.0} &
-  \textbf{60.0} \\ \hline
+  \multicolumn{1}{c|}{162} &
+  \multicolumn{1}{c|}{213} &
+  \textbf{260} \\ \hline
 \multicolumn{1}{|l|}{TriMet} &
   \multicolumn{1}{l|}{Portland} &
   35.5 &
-  \multicolumn{1}{c|}{1255.3} &
-  \multicolumn{1}{c|}{\textbf{59.1}} &
-  \multicolumn{1}{c|}{67.0} &
-  65.0 \\ \hline
+  \multicolumn{1}{c|}{64} &
+  \multicolumn{1}{c|}{85} &
+  \multicolumn{1}{c|}{103} &
+  \textbf{106} \\ \hline
 \end{tabular}%
 }
 \caption{Comparison of average processing times for gtfs2gps, gtfs\_functions and gtfs\_segments. An empty value (-) indicates that the respective package could not compute segments for the Feed}\label{tab:comparison}

@@ -19,7 +19,7 @@ from .partridge_mod.gtfs import Feed
 from .utils import download_write_file, export_segments, failed_pipeline, plot_hist
 
 
-def merge_trip_geom(trip_df: pd.DataFrame, shape_df: pd.DataFrame) -> gpd.GeoDataFrame:
+def merge_trip_geom(trip_df: pd.DataFrame, shape_df: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     """
     It takes a dataframe of trips and a dataframe of shapes, and returns a geodataframe of trips with
     the geometry of the shapes
@@ -237,7 +237,7 @@ def process_feed(
     # Set a Spatial Resolution and increase the resolution of the shapes
     # shapes = ret_high_res_shape_parallel(feed.shapes, spat_res=5)
     ## Note: Currently, the parallel version of the function is not working as expected and is slower than the non-parallel version
-    shapes = ret_high_res_shape(feed.shapes, spat_res=5)
+    shapes = ret_high_res_shape(feed.shapes, feed.trips, spat_res=5)
     trip_df = merge_trip_geom(feed.trips, shapes)
     trip_ids = set(trip_df.trip_id.unique())
     stop_loc_df = feed.stops[["stop_id", "geometry"]]

@@ -371,7 +371,7 @@ def increase_resolution(geom: LineString, spat_res: int = 5) -> LineString:
     return LineString(new_ls)
 
 
-def ret_high_res_shape(shapes: gpd.GeoDataFrame, spat_res: int = 5) -> gpd.GeoDataFrame:
+def ret_high_res_shape(shapes: gpd.GeoDataFrame, trips: pd.DataFrame, spat_res: int = 5) -> gpd.GeoDataFrame:
     """
     This function increases the resolution of the geometries in a given dataframe of shapes by a
     specified spatial resolution.
@@ -387,9 +387,9 @@ def ret_high_res_shape(shapes: gpd.GeoDataFrame, spat_res: int = 5) -> gpd.GeoDa
     Returns:
       a GeoDataFrame with the geometry column updated to have higher resolution shapes.
     """
-    high_res_shapes = []
-    for i, row in shapes.iterrows():
-        high_res_shapes.append(increase_resolution(row["geometry"], spat_res))
+    shape_ids = trips.shape_id.unique()
+    shapes = shapes[shapes.shape_id.isin(shape_ids)].copy()
+    high_res_shapes = [increase_resolution(row["geometry"], spat_res) for i, row in shapes.iterrows()]
     shapes.geometry = high_res_shapes
     return shapes
 
