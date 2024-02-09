@@ -68,14 +68,14 @@ et al., 2023})}
 
 Packages such as `gtfs2gps` [@pereira2023exploring] and `gtfs_functions` [@Toso2023] also compute segments. In addition to its visualization and statistical functionalities, `gtfs-segments` is distinguished from those in the following ways:
 
-- Faster processing rate[^2] both with and without parallel processing, as evidenced by \autoref{tab:comparison}
+- Faster processing rate[^1] both with and without parallel processing, as evidenced by \autoref{tab:comparison}
 <!-- - Computationally efficient through lazy loading. -->
 <!-- - Filters unusual trips on the `busiest_day` such as trips with considerably fewer traversals or added as an exception to regular service. -->
 <!-- - Filters out unusual trips -->
-- Tolerant to deviations from the GTFS standard such as missing files or fields. For example, because the Chicago Transit Authority does not have an agency_id in its routes.txt, `gtfs2gps` fails to read it even though this field is not needed for computations.
+- Tolerant to deviations from the GTFS standard. For example, because the Chicago Transit Authority does not have an agency_id in its routes.txt, `gtfs2gps` fails to read it even though this field is not needed for computations.
 - Lastly, `gtfs-segments` uses a unique algorithm to snap stops to route shapes (further detailed below).
 
-[^2]: The average processing rate is the average number of trips processed per second, averaged over 3 independent runs. The experiments were run with an `Intel(R) Core(TM) i9-10920X` processor at 3.50GHz with 12 hyperthreaded CPU cores and 64 GB RAM, running on Windows. The most recent GTFS feeds (as of February 2024) for the respective agencies were used.
+[^1]: The average processing rate is the average number of trips processed per second, averaged over 3 independent runs. The experiments were run with an `Intel(R) Core(TM) i9-10920X` processor at 3.50GHz with 12 hyperthreaded CPU cores and 64 GB RAM, running on Windows. The most recent GTFS feeds (as of February 2024) for the respective agencies were used.
 
 \begin{table}[!h]
   \centering
@@ -125,9 +125,10 @@ Packages such as `gtfs2gps` [@pereira2023exploring] and `gtfs_functions` [@Toso2
   \caption{Comparison of average processing times for gtfs2gps, gtfs\_functions and gtfs\_segments.}\label{tab:comparison}
 \end{table}
 
+\pagebreak
 ## Visualizing stop spacings
 
-The package creates maps of stops and segments, including interactive maps. See Figure \autoref{fig:div}, which colors segments by spacing. The package can also produce histograms of stop spacings for an agency. Understanding the distribution of stop spacings can inform broader strategic decisions about transport network design and land use planning.
+The package can create maps of stops and segments (with basemap), including interactive maps. See Figure \autoref{fig:div}, which colors segments by spacing (distance). The package can also produce histograms of stop spacings for an agency. Understanding the distribution of stop spacings can inform broader strategic decisions about transport network design and land use planning.
 
 \begin{figure}[!h]
 \centering
@@ -148,7 +149,13 @@ The package creates maps of stops and segments, including interactive maps. See 
 
 ## Calculating stop spacing summary statistics
 
-In discussions about stop spacings, it is common to report statistical metrics such as means and medians. These metrics help compare different agencies or track changes within an agency over time. At a network level, weighted mean and median values are provided, incorporating weights based on segments, routes, and traversals (as outlined by @devunuri2023bus), in addition to providing measures of standard deviation and various quantiles. At a route level, we provide average values for stop spacings, bus spacings, headways, speeds, number of buses in operation, route lengths and journey times across all routes.
+In discussions about stop spacings, it is common to report statistical metrics such as means and medians. These metrics help compare spacings between different agencies or track changes within an agency over time. At a network level, weighted mean and median values are provided in addition to providing measures of standard deviation and quantiles. The following weightings (as outlined by @devunuri2023bus) are used:
+
+- Segment-weighted: All segments receive an equal weight.
+- Route-weighted: Segments are weighted by the number of routes that they are part of.
+- Traversal-weighted: Each segment is weighted by the number of times a bus traverses the segment in the schedule.
+
+At a route level, we provide average values for stop spacings, bus spacings, headways, speeds, number of buses in operation, route lengths and journey times for all routes.
 
 # Acknowledgments
 
