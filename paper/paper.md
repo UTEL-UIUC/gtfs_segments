@@ -58,6 +58,7 @@ Packages such as `gtfs2gps` [@pereira2023exploring] and `gtfs_functions` [@Toso2
 
 ![\label{tab:comparison}](comparison_table.pdf)\
 
+\pagebreak
 ## Visualizing stop spacings
 
 The package can create maps of stops and segments (with basemap), including interactive maps. See \autoref{fig:heatmap}a, which colors segments by spacing. The package can also produce histograms of stop spacings (see \autoref{fig:heatmap}b), which can inform strategic decisions about network design.
