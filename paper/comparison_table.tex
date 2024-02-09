@@ -1,0 +1,53 @@
+\documentclass[preview]{standalone}
+\usepackage{graphicx}
+\begin{document}
+\begin{table}[!h]
+  \centering
+  \resizebox{\textwidth}{!}{%
+  \begin{tabular}{llc|cccc|}
+    \cline{4-7}
+    \multicolumn{3}{l|}{} &
+      \multicolumn{4}{c|}{Average Processing Rate (Trips/Second) {[}n=3{]}} \\ \hline
+    \multicolumn{3}{|r|}{\textit{Package}} &
+      \multicolumn{1}{c|}{\textit{gtfs2gps}} &
+      \multicolumn{1}{c|}{\textit{gtfs\_functions}} &
+      \multicolumn{2}{c|}{\textit{gtfs\_segments}} \\ \hline
+    \multicolumn{3}{|r|}{\textit{Parallel Processing}} &
+      \multicolumn{1}{c|}{\textit{Y}} &
+      \multicolumn{1}{c|}{\textit{N}} &
+      \multicolumn{1}{p{.5in}|}{\textit{\hfil N}} &
+      \multicolumn{1}{p{.5in}|}{\textit{\hfil Y}} \\ \hline
+    \multicolumn{1}{|l|}{\textbf{Agency}} &
+      \multicolumn{1}{l|}{\textbf{City}} &
+      \textbf{\begin{tabular}[c]{@{}c@{}}File \\ Size\\  (MB)\end{tabular}} &
+      \multicolumn{1}{c|}{v2.1.0} &
+      \multicolumn{1}{c|}{v2.3.0} &
+      \multicolumn{2}{c|}{v2.1.0} \\ \hline
+    \multicolumn{1}{|l|}{SFMTA} &
+      \multicolumn{1}{l|}{\begin{tabular}[c]{@{}l@{}}San \\ Francisco\end{tabular}} &
+      10.0 &
+      \multicolumn{1}{c|}{41} &
+      \multicolumn{1}{c|}{621} &
+      \multicolumn{1}{c|}{625} &
+      \textbf{716} \\ \hline
+    \multicolumn{1}{|l|}{MBTA} &
+      \multicolumn{1}{l|}{Boston} &
+      14.9 &
+      \multicolumn{1}{c|}{87} &
+      \multicolumn{1}{c|}{325} &
+      \multicolumn{1}{c|}{388} &
+      \textbf{431} \\ \hline
+    \multicolumn{1}{|l|}{TriMet} &
+      \multicolumn{1}{l|}{Portland} &
+      35.5 &
+      \multicolumn{1}{c|}{64} &
+      \multicolumn{1}{c|}{85} &
+      \multicolumn{1}{c|}{103} &
+      \textbf{106} \\ \hline
+  \end{tabular}%
+  }
+  \caption{Comparison of average processing rates for gtfs2gps, gtfs\_functions and gtfs\_segments.}
+  \label{tab:comparison}
+\end{table}
+
+\end{document}

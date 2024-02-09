@@ -22,10 +22,6 @@ affiliations:
 
 date: 25 September 2023
 bibliography: paper.bib
-header-includes: |
-    \usepackage{caption}
-    \usepackage{subcaption}
-    \usepackage{graphicx}
 ---
 
 # Summary
@@ -47,102 +43,30 @@ The choice of bus stop spacing involves a tradeoff between accessibility and spe
 The package permits the user to search and download recent GTFS feeds from the Mobility Database Catalogs [@MobData2023]. It allows for keyword and fuzzy search of GTFS feeds using location (e.g., `Minneapolis`, `San Francisco`) or provider name (e.g., `WMATA`, `Capital Metro`) as input.
 
 ## Computing segments
+
 The fundamental unit of analysis used by `gtfs-segments` is the *segment*, which is a piece of a bus network defined by three properties: (i) a start stop, (ii) an end stop and (iii) the path that the bus travels along the route in between the two consecutive stops. A segment's *spacing* is the distance of (iii). `gtfs-segments` produces segments by efficiently and robustly snapping stop locations onto route shapes. \autoref{fig:snapping_difficulty} shows examples where a stop is equidistant from multiple route coordinates. Here, projecting the stop onto the route or snapping to the nearest geo-coordinate (lat, lon) may yield stops that are out-of-order or snapped far from their locations. Also, the time complexity of projection or snapping using brute force is $O(nm)$ for `n` stops and `m` geo-coordinates that represent the route shape.
 
-\begin{figure}[!h]
-  \centering
-  \includegraphics[width=\textwidth]{snapping_difficulty.jpg}
-  \caption{Example route shapes with stop locations that are equidistant from multiple points along the route.}
-  \label{fig:snapping_difficulty}
-\end{figure}
+![Example route shapes with stop locations that are equidistant from multiple points along the route.\label{fig:snapping_difficulty}](snapping_difficulty.jpg){ width=80% }
 
-`gtfs-segments` overcomes these challenges by increasing the route resolution (i.e., adding points in between geo-coordinates), using spatial k-d trees, and using more than one nearest neighbor. The increase in resolution allows stops to be snapped to nearby points. Using k-d trees reduces the time complexity to $O(nlog(m))$ and makes it possible to compare among several snapping points without added computation. \autoref{fig:interpolate} shows an example where initially snapping to the nearest point produces out-of-order stops (3/4/2) and stop 5 is snapped far away from its location. Increasing the resolution (second panel) fixes 5's location problem but the ordering problem persists. By using `k=3` nearest neighbors, we find a proper ordering (last panel). Once every stop has been snapped to a geo-coordinate on the route shape, the shape is segmented between stops and each segment's geometry is stored in a GeoDataFrame. 
+`gtfs-segments` overcomes these challenges by increasing the route resolution (i.e., adding points in between geo-coordinates), using spatial k-d trees, and using more than one nearest neighbor. The increase in resolution allows stops to be snapped to nearby points. Using k-d trees reduces the time complexity to $O(nlog(m))$ and makes it possible to compare among several snapping points without added computation. \autoref{fig:interpolate} shows an example where initially snapping to the nearest point produces out-of-order stops (3/4/2) and stop 5 is snapped far away from its location. Increasing the resolution (second panel) fixes 5's location problem but the ordering problem persists. By using `k=3` nearest neighbors, we find a proper ordering (last panel). Once every stop has been snapped to a geo-coordinate on the route shape, the shape is segmented between stops and each segment's geometry is stored in a GeoDataFrame.
 
-\begin{figure}[!h]
-\centering
-  \includegraphics[width=\textwidth]{interpolation.jpg}
-  \caption{Improvement in snapping due to an increase in resolution and using k-nearest neighbors. Adapted from ``Bus Stop Spacings Statistics: Theory and Evidence'' (\protect\hyperlink{ref-devunuri2023bus}{Devunuri, Qiam, Lehe, Pandey,
-et al., 2023})}
-  \label{fig:interpolate}
-\end{figure}
+![Improvement in snapping due to an increase in resolution and suing k-nearest neighbors.\label{fig:interpolate}. Adapted from "Bus Stop Spacings Statistics: Theory and Evidence" [@devunuri2023bus]](interpolation.jpg){ width=80% }
 
-Packages such as `gtfs2gps` [@pereira2023exploring] and `gtfs_functions` [@Toso2023] also compute segments. In addition to its snapping algorithm, visualization, download, and statistical functionalities, `gtfs-segments` is distinguished from those in two ways. First, it has a faster processing rate[^1] to compute segments both with and without parallel processing (see \autoref{tab:comparison}). Second, `gtfs_segments` is tolerant to deviations from GTFS standards. For example, because the Chicago Transit Authority does not have an agency_id in its routes.txt, `gtfs2gps` fails to read it even though this field is not needed for obtaining segments.
+Packages such as `gtfs2gps` [@pereira2023exploring] and `gtfs_functions` [@Toso2023] also compute segments. In addition to its snapping algorithm, visualization, download, and statistical functionalities, `gtfs-segments` is distinguished from those in two ways. First, it has a faster processing rate[^1] to compute segments both with and without parallel processing (see Table 1). Second, `gtfs-segments` is tolerant to deviations from GTFS standards. For example, because the Chicago Transit Authority does not have an agency_id in its routes.txt, `gtfs2gps` fails to read it even though this field is not needed for obtaining segments.
 
 [^1]: The average processing rate is the average number of trips processed per second, averaged over 3 independent runs. The experiments were run with an `Intel(R) Core(TM) i9-10920X` processor at 3.50GHz with 12 hyperthreaded CPU cores and 64 GB RAM, running on Windows. The most recent GTFS feeds (as of February 2024) for the respective agencies were used.
 
-
-\begin{table}[!h]
-  \centering
-  \resizebox{\textwidth}{!}{%
-  \begin{tabular}{llc|cccc|}
-    \cline{4-7}
-    \multicolumn{3}{l|}{} &
-      \multicolumn{4}{c|}{Average Processing Rate (Trips/Second) {[}n=3{]}} \\ \hline
-    \multicolumn{3}{|r|}{\textit{Package}} &
-      \multicolumn{1}{c|}{\textit{gtfs2gps}} &
-      \multicolumn{1}{c|}{\textit{gtfs\_functions}} &
-      \multicolumn{2}{c|}{\textit{gtfs\_segments}} \\ \hline
-    \multicolumn{3}{|r|}{\textit{Parallel Processing}} &
-      \multicolumn{1}{c|}{\textit{Y}} &
-      \multicolumn{1}{c|}{\textit{N}} &
-      \multicolumn{1}{p{.5in}|}{\textit{\hfil N}} &
-      \multicolumn{1}{p{.5in}|}{\textit{\hfil Y}} \\ \hline
-    \multicolumn{1}{|l|}{\textbf{Agency}} &
-      \multicolumn{1}{l|}{\textbf{City}} &
-      \textbf{\begin{tabular}[c]{@{}c@{}}File \\ Size\\  (MB)\end{tabular}} &
-      \multicolumn{1}{c|}{v2.1.0} &
-      \multicolumn{1}{c|}{v2.3.0} &
-      \multicolumn{2}{c|}{v2.1.0} \\ \hline
-    \multicolumn{1}{|l|}{SFMTA} &
-      \multicolumn{1}{l|}{\begin{tabular}[c]{@{}l@{}}San \\ Francisco\end{tabular}} &
-      10.0 &
-      \multicolumn{1}{c|}{41} &
-      \multicolumn{1}{c|}{621} &
-      \multicolumn{1}{c|}{625} &
-      \textbf{716} \\ \hline
-    \multicolumn{1}{|l|}{MBTA} &
-      \multicolumn{1}{l|}{Boston} &
-      14.9 &
-      \multicolumn{1}{c|}{87} &
-      \multicolumn{1}{c|}{325} &
-      \multicolumn{1}{c|}{388} &
-      \textbf{431} \\ \hline
-    \multicolumn{1}{|l|}{TriMet} &
-      \multicolumn{1}{l|}{Portland} &
-      35.5 &
-      \multicolumn{1}{c|}{64} &
-      \multicolumn{1}{c|}{85} &
-      \multicolumn{1}{c|}{103} &
-      \textbf{106} \\ \hline
-  \end{tabular}%
-  }
-  \caption{Comparison of average processing times for gtfs2gps, gtfs\_functions and gtfs\_segments.}\label{tab:comparison}
-\end{table}
+![\label{tab:comparison}](comparison_table.pdf)\
 
 ## Visualizing stop spacings
 
-The package can create maps of stops and segments (with basemap), including interactive maps. See Figure \autoref{fig:div}, which colors segments by spacing. The package can also produce histograms of stop spacings, which can inform strategic decisions about network design.
+The package can create maps of stops and segments (with basemap), including interactive maps. See \autoref{fig:heatmap}a, which colors segments by spacing. The package can also produce histograms of stop spacings (see \autoref{fig:heatmap}b), which can inform strategic decisions about network design.
 
-\begin{figure}[!h]
-\centering
-\begin{subfigure}[]{0.5\textwidth}
-  \centering
-  \includegraphics[width=\textwidth]{heatmap_interactive.jpg}
-  \caption{Interactive Heatmap}
-  \label{fig:div}
-  \end{subfigure}
-\begin{subfigure}[]{0.45\textwidth}
-  \centering
-  \includegraphics[width=\textwidth]{hist.jpg}
-  \caption{Histogram of stop spacings}
-  \label{fig:hist}
-\end{subfigure}
-\caption{Other visualization features in the package. SFMTA GTFS feed was used to generate these.}
-\end{figure}
+![Other visualization features in the package. SFMTA GTFS feed was used to generate these. \label{fig:heatmap}](heatmap_and_histogram.pdf)
 
 ## Calculating stop spacing summary statistics
 
- Discussions about stop spacings, commonly include statistical metrics such as means and medians, used to spacings between different agencies or track changes within an agency over time. `gtfs_segments` can produce weighted mean, median, and standard deviations for an agency, using different weighting systems (e.g., weighting segments by the number of times a bus traverses it or the number of routes that include it) as outlined by @devunuri2023bus. For each route, `gtfs_segments` can give metrics such as mean spacing, headways, speeds, number of buses in operation and route lengths.
+ Discussions about stop spacings, commonly include statistical metrics such as means and medians, used to spacings between different agencies or track changes within an agency over time. `gtfs-segments` can produce weighted mean, median, and standard deviations for an agency, using different weighting systems (e.g., weighting segments by the number of times a bus traverses it or the number of routes that include it) as outlined by @devunuri2023bus. For each route, `gtfs-segments` can give metrics such as mean spacing, headways, speeds, number of buses in operation and route lengths.
 
 # Acknowledgments
 
