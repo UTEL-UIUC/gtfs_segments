@@ -15,6 +15,8 @@ on:
     branches: [ "main" ]
     paths:
       - '.github/workflows/python-publish.yml'
+      - 'pyproject.toml'
+      - 'setup.py'
       
 permissions:
   contents: read
