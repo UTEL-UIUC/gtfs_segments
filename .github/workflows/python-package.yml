@@ -6,8 +6,20 @@ name: Python Tests
 on:
   push:
     branches: [ "main" ]
+    paths:
+      - '**.py'
+      - 'requirements.txt'
+      - 'setup.py'
+      - 'tox.ini'
+      - 'pyproject.toml'
   pull_request:
     branches: [ "main" ]
+    paths:
+      - '**.py'
+      - 'requirements.txt'
+      - 'setup.py'
+      - 'tox.ini'
+      - 'pyproject.toml'
 
 jobs:
   build:
