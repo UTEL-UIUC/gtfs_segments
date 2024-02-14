@@ -3,7 +3,7 @@ name = 'gtfs_segments'
 description = "GTFS Segments"
 # Support Python 3.9+.
 requires-python = ">=3.9"
-version = "2.1.0"
+version = "2.1.0a"
 dependencies = [
     "geopandas",
     "scipy",
