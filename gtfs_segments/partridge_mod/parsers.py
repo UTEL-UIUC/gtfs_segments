@@ -43,6 +43,7 @@ def parse_time(val: str) -> int:
     return ssm
 
 
+@lru_cache(maxsize=2**18)
 def parse_date(val: str) -> datetime.date:
     """
     The function `parse_date` takes a string or a `datetime.date` object as input and returns a
@@ -59,6 +60,15 @@ def parse_date(val: str) -> datetime.date:
     return datetime.datetime.strptime(val, DATE_FORMAT).date()
 
 
+@lru_cache(maxsize=2**18)
+def parse_numeric(val: Any) -> float:
+    try:
+        return float(val)
+    except ValueError:
+        return np.nan
+
+
+vparse_numeric = np.vectorize(parse_numeric)
 vparse_time = np.vectorize(parse_time)
 vparse_date = np.vectorize(parse_date)
 
@@ -154,13 +164,13 @@ def transforms_dict() -> Dict[str, Dict[str, Any]]:
             "converters": {
                 "start_date": vparse_date,
                 "end_date": vparse_date,
-                "monday": pd.to_numeric,
-                "tuesday": pd.to_numeric,
-                "wednesday": pd.to_numeric,
-                "thursday": pd.to_numeric,
-                "friday": pd.to_numeric,
-                "saturday": pd.to_numeric,
-                "sunday": pd.to_numeric,
+                "monday": vparse_numeric,
+                "tuesday": vparse_numeric,
+                "wednesday": vparse_numeric,
+                "thursday": vparse_numeric,
+                "friday": vparse_numeric,
+                "saturday": vparse_numeric,
+                "sunday": vparse_numeric,
             },
             "required_columns": (
                 "service_id",
@@ -179,7 +189,7 @@ def transforms_dict() -> Dict[str, Dict[str, Any]]:
             "usecols": {"service_id": "str", "date": "str", "exception_type": "int8"},
             "converters": {
                 "date": vparse_date,
-                "exception_type": pd.to_numeric,
+                "exception_type": vparse_numeric,
             },
             "required_columns": ("service_id", "date", "exception_type"),
         },
@@ -193,9 +203,9 @@ def transforms_dict() -> Dict[str, Dict[str, Any]]:
                 "transfer_duration": "float16",
             },
             "converters": {
-                "price": pd.to_numeric,
-                "payment_method": pd.to_numeric,
-                "transfer_duration": pd.to_numeric,
+                "price": vparse_numeric,
+                "payment_method": vparse_numeric,
+                "transfer_duration": vparse_numeric,
             },
             "required_columns": (
                 "fare_id",
@@ -242,8 +252,8 @@ def transforms_dict() -> Dict[str, Dict[str, Any]]:
                 "exact_times": "bool",
             },
             "converters": {
-                "headway_secs": pd.to_numeric,
-                "exact_times": pd.to_numeric,
+                "headway_secs": vparse_numeric,
+                "exact_times": vparse_numeric,
                 "start_time": vparse_time,
                 "end_time": vparse_time,
             },
@@ -264,7 +274,7 @@ def transforms_dict() -> Dict[str, Dict[str, Any]]:
                 # "route_text_color": "str",
             },
             "converters": {
-                "route_type": pd.to_numeric,
+                "route_type": vparse_numeric,
             },
             "required_columns": (
                 "route_id",
@@ -282,10 +292,10 @@ def transforms_dict() -> Dict[str, Dict[str, Any]]:
                 # "shape_dist_traveled":"float32",
             },
             "converters": {
-                "shape_pt_lat": pd.to_numeric,
-                "shape_pt_lon": pd.to_numeric,
-                "shape_pt_sequence": pd.to_numeric,
-                # "shape_dist_traveled": pd.to_numeric,
+                "shape_pt_lat": vparse_numeric,
+                "shape_pt_lon": vparse_numeric,
+                "shape_pt_sequence": vparse_numeric,
+                # "shape_dist_traveled": vparse_numeric,
             },
             "required_columns": (
                 "shape_id",
@@ -306,11 +316,11 @@ def transforms_dict() -> Dict[str, Dict[str, Any]]:
                 # "timepoint":"bool",
             },
             "converters": {
-                "stop_lat": pd.to_numeric,
-                "stop_lon": pd.to_numeric,
-                # "location_type": pd.to_numeric,
-                "wheelchair_boarding": pd.to_numeric,
-                "timepoint": pd.to_numeric,
+                "stop_lat": vparse_numeric,
+                "stop_lon": vparse_numeric,
+                # "location_type": vparse_numeric,
+                "wheelchair_boarding": vparse_numeric,
+                "timepoint": vparse_numeric,
             },
             "required_columns": (
                 "stop_id",
@@ -335,11 +345,11 @@ def transforms_dict() -> Dict[str, Dict[str, Any]]:
             "converters": {
                 "arrival_time": vparse_time,
                 "departure_time": vparse_time,
-                "pickup_type": pd.to_numeric,
-                "drop_off_type": pd.to_numeric,
-                # "shape_dist_traveled": pd.to_numeric,
-                "stop_sequence": pd.to_numeric,
-                # "timepoint": pd.to_numeric,
+                "pickup_type": vparse_numeric,
+                "drop_off_type": vparse_numeric,
+                # "shape_dist_traveled": vparse_numeric,
+                "stop_sequence": vparse_numeric,
+                # "timepoint": vparse_numeric,
             },
             "required_columns": (
                 "trip_id",
@@ -352,8 +362,8 @@ def transforms_dict() -> Dict[str, Dict[str, Any]]:
         "transfers.txt": {
             "usecols": ["from_stop_id", "to_stop_id", "transfer_type", "min_transfer_time"],
             "converters": {
-                "transfer_type": pd.to_numeric,
-                "min_transfer_time": pd.to_numeric,
+                "transfer_type": vparse_numeric,
+                "min_transfer_time": vparse_numeric,
             },
             "required_columns": ("from_stop_id", "to_stop_id", "transfer_type"),
         },
@@ -368,9 +378,9 @@ def transforms_dict() -> Dict[str, Dict[str, Any]]:
                 # "bikes_allowed":"int8",
             },
             "converters": {
-                "direction_id": pd.to_numeric,
-                # "wheelchair_accessible": pd.to_numeric,
-                "bikes_allowed": pd.to_numeric,
+                "direction_id": vparse_numeric,
+                # "wheelchair_accessible": vparse_numeric,
+                "bikes_allowed": vparse_numeric,
             },
             "required_columns": ("route_id", "service_id", "trip_id"),
         },

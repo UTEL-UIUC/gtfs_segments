@@ -1,5 +1,4 @@
 import os
-from datetime import date
 from typing import Any, List, Optional
 
 import numpy as np
@@ -195,7 +194,7 @@ def summary_stats_mobility(
     link: str,
     bounds: List,
     max_spacing: float = 3000,
-    export: bool = False
+    export: bool = False,
 ) -> Optional[pd.DataFrame]:
     """
     It takes in a dataframe, a folder path, a filename, a busiest day, a link, a bounding box, a max

@@ -673,28 +673,28 @@ def view_heatmap(
     if interactive:
         if column == "distance":
             fmap = df_filtered.explore(
-                column = column,
-                scheme = "UserDefined",
-                tooltip = ["segment_id", "distance"],
-                tiles = "CartoDB Positron" if light_mode else "CartoDB Dark Matter",
-                legend = True,
-                cmap = cmap,  # YlOrRd
-                classification_kwds = dict(bins=bins),
-                legend_kwds = dict(colorbar=False, fmt="{:.0f}"),
-                style_kwds = dict(opacity=0.75, fillOpacity=0.75),
-                popup = True,
+                column=column,
+                scheme="UserDefined",
+                tooltip=["segment_id", "distance"],
+                tiles="CartoDB Positron" if light_mode else "CartoDB Dark Matter",
+                legend=True,
+                cmap=cmap,  # YlOrRd
+                classification_kwds=dict(bins=bins),
+                legend_kwds=dict(colorbar=False, fmt="{:.0f}"),
+                style_kwds=dict(opacity=0.75, fillOpacity=0.75),
+                popup=True,
             )
         else:
             fmap = df_filtered.explore(
-                column = column,
-                cmap = cmap,  # YlOrRd
-                tooltip = ["segment_id", column],
-                tiles = "CartoDB Positron" if light_mode else "CartoDB Dark Matter",
-                legend = True,
-                style_kwds = dict(opacity=0.75, fillOpacity=0.75),
-                popup = True,
-                scheme = "Quantiles",
-                legend_kwds = dict(colorbar=False, fmt="{:.0f}"),
+                column=column,
+                cmap=cmap,  # YlOrRd
+                tooltip=["segment_id", column],
+                tiles="CartoDB Positron" if light_mode else "CartoDB Dark Matter",
+                legend=True,
+                style_kwds=dict(opacity=0.75, fillOpacity=0.75),
+                popup=True,
+                scheme="Quantiles",
+                legend_kwds=dict(colorbar=False, fmt="{:.0f}"),
             )
         return fmap
     else:
