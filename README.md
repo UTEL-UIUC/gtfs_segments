@@ -135,6 +135,7 @@ pip install gtfs-segments
 
     ```sh
     conda create -n geo_env -c conda-forge python=3.11 geopandas
+    conda activate geo_env
     ```
 
 3. Install the `gtfs_segments` package
