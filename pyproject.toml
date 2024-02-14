@@ -1,9 +1,9 @@
 [project]
 name = 'gtfs_segments'
-description = "GTFS Segments"
+description = "GTFS Segments: A fast and efficient library to generate bus stop spacings"
 # Support Python 3.9+.
 requires-python = ">=3.9"
-version = "2.1.0a"
+version = "2.1.1"
 dependencies = [
     "geopandas",
     "scipy",
