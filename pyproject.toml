@@ -2,7 +2,7 @@
 name = 'gtfs_segments'
 # Support Python 3.9+.
 requires-python = ">=3.9"
-version = "2.0.3"
+version = "2.1.0"
 dependencies = [
     "geopandas",
     "scipy",
@@ -30,7 +30,8 @@ readme = "README.MD"
 license = {file = "LICENSE", name = "MIT License"}
 keywords=["Python", "GTFS", "Transit", "Stop Spacings", "GIS"]
 classifiers = [
-    "Development Status :: 5 - Stable",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Development Status :: 5 - Production/Stable",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
