@@ -327,14 +327,10 @@ export_segments(segments_df,'filename', output_format ='csv',geometry = False)
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 <!-- ROADMAP -->
-# Roadmap
-
-- [x] Add `.ipynb` examples
-- [x] Integrate partridge library dependency
-- [x] Remove unusual trips
-- [x] Add unit tests for the package
+# Roadmapackage
 - [x] Add interactive visualization with folium
 - [ ] Visualize catchment areas for stops
+- [ ] Log trips that do not have shapes
 
 
 See the [open issues](https://github.com/UTEL-UIUC/gtfs_segments/issues) for a full list of proposed features (and known issues).

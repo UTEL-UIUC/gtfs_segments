@@ -28,6 +28,7 @@ src/
 *.csv
 *.png
 *.geojson
+*.coverage
 # VsCode
 .vscode/
 gtfs_tool/
