@@ -1,7 +1,7 @@
 """
 The gtfs_segments package main init file.
 """
-__version__ = "2.1.4"
+__version__ = "2.1.5"
 from .geom_utils import view_heatmap, view_spacings, view_spacings_interactive
 from .gtfs_segments import get_gtfs_segments, pipeline_gtfs, process_feed
 from .mobility import (
