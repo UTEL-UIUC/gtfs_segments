@@ -250,10 +250,9 @@ def process_feed(
     if epsg_zone is not None:
         stop_df["distance"] = stop_df.set_geometry("geometry").to_crs(epsg_zone).geometry.length
         stop_df["distance"] = stop_df["distance"].round(2)  # round to 2 decimal places
-    stop_df["traversal_time"] = stop_df["arrival_time2"] - stop_df["arrival_time1"]
-    stop_df = stop_df[stop_df["traversal_time"] > 0].reset_index(drop=True)
-    stop_df["speed"] = stop_df["distance"] / stop_df["traversal_time"]
-    stop_df = make_segments_unique(stop_df, traversal_threshold=1)
+    stop_df["traversal_time"] = (stop_df["arrival_time2"] - stop_df["arrival_time1"]).astype("float")
+    stop_df["speed"] = stop_df["distance"].div(stop_df["traversal_time"])
+    stop_df = make_segments_unique(stop_df, traversal_threshold=0)
     subset_list = np.array(
         [
             "segment_id",
