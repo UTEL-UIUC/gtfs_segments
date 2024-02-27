@@ -31,6 +31,17 @@ def merge_trip_geom(trip_df: pd.DataFrame, shape_df: gpd.GeoDataFrame) -> gpd.Ge
     Returns:
       A GeoDataFrame
     """
+    trips_with_no_shape_id = list(trip_df[trip_df["shape_id"].isna()].trip_id)
+    if len(trips_with_no_shape_id) > 0:
+        print("Excluding Trips with no shape_id:", trips_with_no_shape_id)
+        trip_df = trip_df[~trip_df["trip_id"].isin(trips_with_no_shape_id)]
+
+    non_existent_shape_id = set(trip_df["shape_id"]) - set(shape_df["shape_id"])
+    if len(non_existent_shape_id) > 0:
+        trips_with_no_corresponding_shape = list(trip_df[trip_df["shape_id"].isin(non_existent_shape_id)].trip_id)
+        print("Excluding Trips with non-existent shape_ids in shapes.txt:", trips_with_no_corresponding_shape)
+        trip_df = trip_df[~trip_df["shape_id"].isin(non_existent_shape_id)]
+
     # `direction_id` and `shape_id` are optional
     if "direction_id" in trip_df.columns:
         # Check is direction_ids are listed as null
@@ -236,7 +247,7 @@ def process_feed(
     """
     # Set a Spatial Resolution and increase the resolution of the shapes
     # shapes = ret_high_res_shape_parallel(feed.shapes, spat_res=5)
-    ## Note: Currently, the parallel version of the function is not working as expected and is slower than the non-parallel version
+    ## Note: Currently, the parallel version of the function ret_high_res_shape_parallel is not working as expected and is slower than the non-parallel version
     shapes = ret_high_res_shape(feed.shapes, feed.trips, spat_res=5)
     trip_df = merge_trip_geom(feed.trips, shapes)
     trip_ids = set(trip_df.trip_id.unique())
@@ -250,7 +261,9 @@ def process_feed(
     if epsg_zone is not None:
         stop_df["distance"] = stop_df.set_geometry("geometry").to_crs(epsg_zone).geometry.length
         stop_df["distance"] = stop_df["distance"].round(2)  # round to 2 decimal places
-    stop_df["traversal_time"] = (stop_df["arrival_time2"] - stop_df["arrival_time1"]).astype("float")
+    stop_df["traversal_time"] = (stop_df["arrival_time2"] - stop_df["arrival_time1"]).astype(
+        "float"
+    )
     stop_df["speed"] = stop_df["distance"].div(stop_df["traversal_time"])
     stop_df = make_segments_unique(stop_df, traversal_threshold=0)
     subset_list = np.array(

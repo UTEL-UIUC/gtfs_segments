@@ -504,10 +504,9 @@ def nearest_points(stop_df: gpd.GeoDataFrame, k_neighbors: int = 3) -> pd.DataFr
 
     print("Total trips processed: ", total_trip_count)
     if defective_trip_count > 0:
+        percent_defective = defective_trip_count / total_trip_count * 100
         print("Total defective trips: ", defective_trip_count)
-        print(
-            "Percentage defective trips: ",
-            defective_trip_count / total_trip_count * 100,
+        print(f"Percentage defective trips: {percent_defective:.2f}%",
         )
     stop_df = stop_df[~stop_df.trip_id.isin(failed_trips)].reset_index(drop=True)
     return stop_df
