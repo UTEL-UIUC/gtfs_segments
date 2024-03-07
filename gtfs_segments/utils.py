@@ -75,24 +75,28 @@ def plot_hist(
 
 
 def summary_stats(
-    df: pd.DataFrame, max_spacing: float = 3000, export: bool = False, **kwargs: Any
+    df: pd.DataFrame, max_spacing: float = 3000, min_spacing: float = 10, export: bool = False, **kwargs: Any
 ) -> pd.DataFrame:
     """
-    It takes in a dataframe, and returns a dataframe with summary statistics
+    It takes in a dataframe, and returns a dataframe with summary statistics.
+    The max_spacing and min_spacing serve as threshold to remove outliers.
 
     Args:
       df: The dataframe that you want to get the summary statistics for.
+      max_spacing: The maximum spacing between two stops. Defaults to 3000[m]
+      min_spacing: The minimum spacing between two stops. Defaults to 10[m]
       export: If True, the summary will be exported to a csv file. Defaults to False
 
     Returns:
       A dataframe with the summary statistics
     """
     print("Using max_spacing = ", max_spacing)
+    print("Using min_spacing = ", min_spacing)
     percent_spacing = round(
         df[df["distance"] > max_spacing]["traversals"].sum() / df["traversals"].sum() * 100,
         3,
     )
-    df = df[df["distance"] <= max_spacing]
+    df = df[(df["distance"] <= max_spacing) & (df["distance"] >= min_spacing)]
     seg_weighted_mean = (
         df.groupby(["segment_id", "distance"]).first().reset_index()["distance"].mean()
     )
