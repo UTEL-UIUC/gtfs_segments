@@ -10,11 +10,12 @@
 [![image](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1mGmFxw8G194bmg3VQm6vg7dVxCt715eD?usp=sharing)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.10019419.svg)](https://doi.org/10.5281/zenodo.10019419)
 
-[![Contributors][contributors-shield]][contributors-url]
-[![Forks][forks-shield]][forks-url]
+[![Elsevier](https://a11ybadges.com/badge?logo=elsevier)](https://doi.org/10.1016/j.jpubtr.2024.100083)
 [![Stargazers][stars-shield]][stars-url]
 [![Issues][issues-shield]][issues-url]
 [![MIT License][license-shield]][license-url]
+<!-- [![Contributors][contributors-shield]][contributors-url] -->
+<!-- [![Forks][forks-shield]][forks-url] -->
 
 <!-- PROJECT LOGO -->
 <div align="center">
@@ -74,7 +75,7 @@
 
 The `gtfs-segments` is a Python (3.9+) package that represents GTFS data for **buses** in a concise tabular manner using segments. The distribution of bus stop spacings can be viewed by generating histograms. The stop spacings can be visualized at the network, route, or segment level. The segment data can be exported to well-known formats such as `.csv` or `.geojson` for further analysis. Additionally, the package provides commands to download the latest data from [@mobility data](https://mobilitydata.org/) sources.
 
-The package condenses the raw GTFS data by considering the services offered only on the `busiest day`(in the data). More discussion on the interpretation of different weightings for stop spacings, and the process in which the package condenses information can be seen in our [arXiv paper](https://arxiv.org/abs/2208.04394). The usage of the package is detailed in [documentation](https://gtfs-segments.readthedocs.io/en/latest/). The stop spacings dataset containing over 540 transit providers in the US generated using this package can be found on [Harvard Dataverse](https://doi.org/10.7910/DVN/SFBIVU).
+The package condenses the raw GTFS data by considering the services offered only on the `busiest day`(in the data). More discussion on the interpretation of different weightings for stop spacings, and the process in which the package condenses information can be seen in our [paper](https://doi.org/10.1016/j.jpubtr.2024.100083). The usage of the package is detailed in [documentation](https://gtfs-segments.readthedocs.io/en/latest/). The stop spacings dataset containing over 540 transit providers in the US generated using this package can be found on [Harvard Dataverse](https://doi.org/10.7910/DVN/SFBIVU).
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
@@ -369,13 +370,21 @@ year = {2023}
 If you use stop spacings paper in your research please use the following BibTeX entry:
 
 ```bibtex
-@misc{devunuri2022bus,
-    title={Bus Stop Spacings Statistics: Theory and Evidence},
-    author={Saipraneeth Devunuri and Shirin Qiam and Lewis Lehe and Ayush Pandey},
-    year={2022},
-    eprint={2208.04394},
-    archivePrefix={arXiv},
-    primaryClass={stat.ME}
+@article{Devunuri2024,
+  title = {Bus Stop Spacing Statistics: {{Theory}} and Evidence},
+  shorttitle = {Bus Stop Spacing Statistics},
+  author = {Devunuri, Saipraneeth and Lehe, Lewis J. and Qiam, Shirin and Pandey, Ayush and Monzer, Dana},
+  year = {2024},
+  month = jan,
+  journal = {Journal of Public Transportation},
+  volume = {26},
+  pages = {100083},
+  issn = {1077-291X},
+  doi = {10.1016/j.jpubtr.2024.100083},
+  url = {https://www.sciencedirect.com/science/article/pii/S1077291X24000031},
+  urldate = {2024-03-07},
+  abstract = {Discussions of bus stop consolidation sometimes refer to average stop spacings, but there are no reliable statistics about spacings, nor methodologies for calculating them. This paper aims to clarify discussions of bus stop spacings by introducing clear definitions, a methodology for creating statistics from General Transit Feed Specification (GTFS) files, and a python package, gtfs-segments, which splits bus networks into isolated `segments.' With the package, we calculate national-level statistics from 539 US transit providers and 83 Canadian providers, as well as agency-level statistics for 30 providers in the US, 10 in Canada, and a sample of 38 providers from other countries. Our estimates of US and Canadian mean spacings are both around 350~m (slightly wider than five stops per mile). US spacings are wider than sometimes claimed but narrower than those in other countries. Finally, the paper gives examples of metrics created by combining GTFS with data from other sources and proposes research ideas and applications to transit planning involving fine-grained stop spacing data.},
+  keywords = {Bus stop,GTFS,Public Transit,Stop Spacings,Transit Planning}
 }
 ```
 <!-- 
