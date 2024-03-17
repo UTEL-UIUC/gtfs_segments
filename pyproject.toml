@@ -40,6 +40,9 @@ classifiers = [
     "Programming Language :: Python :: 3.9",
 ]
 
+[tool.setuptools]
+packages = ["gtfs_segments"]
+
 [project.urls]
 Homepage = "https://github.com/UTEL-UIUC/gtfs_segments"
 Documentation = "https://gtfs-segments.readthedocs.io"
