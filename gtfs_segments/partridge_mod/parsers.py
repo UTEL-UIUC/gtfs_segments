@@ -36,7 +36,7 @@ def parse_time(val: str) -> np.float32:
         return np.nan
     val = str(val).strip()
 
-    h, m, s = map(int, val.split(":"))
+    h, m, s = map(float, val.split(":"))
     return np.float32(h * 3600 + m * 60 + s)
 
 
