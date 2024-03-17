@@ -367,7 +367,7 @@ year = {2023}
 
 ## Citing stop spacings paper
 
-If you use stop spacings paper in your research please use the following BibTeX entry:
+If you use [stop spacings paper](https://doi.org/10.1016/j.jpubtr.2024.100083) in your research please use the following BibTeX entry:
 
 ```bibtex
 @article{Devunuri2024,
@@ -383,7 +383,6 @@ If you use stop spacings paper in your research please use the following BibTeX 
   doi = {10.1016/j.jpubtr.2024.100083},
   url = {https://www.sciencedirect.com/science/article/pii/S1077291X24000031},
   urldate = {2024-03-07},
-  abstract = {Discussions of bus stop consolidation sometimes refer to average stop spacings, but there are no reliable statistics about spacings, nor methodologies for calculating them. This paper aims to clarify discussions of bus stop spacings by introducing clear definitions, a methodology for creating statistics from General Transit Feed Specification (GTFS) files, and a python package, gtfs-segments, which splits bus networks into isolated `segments.' With the package, we calculate national-level statistics from 539 US transit providers and 83 Canadian providers, as well as agency-level statistics for 30 providers in the US, 10 in Canada, and a sample of 38 providers from other countries. Our estimates of US and Canadian mean spacings are both around 350~m (slightly wider than five stops per mile). US spacings are wider than sometimes claimed but narrower than those in other countries. Finally, the paper gives examples of metrics created by combining GTFS with data from other sources and proposes research ideas and applications to transit planning involving fine-grained stop spacing data.},
   keywords = {Bus stop,GTFS,Public Transit,Stop Spacings,Transit Planning}
 }
 ```
