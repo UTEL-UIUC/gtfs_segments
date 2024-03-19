@@ -332,10 +332,10 @@ export_segments(segments_df,'filename', output_format ='csv',geometry = False)
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 <!-- ROADMAP -->
-# Roadmapackage
+# Roadmap
 - [x] Add interactive visualization with folium
+- [x] Log trips that do not have shapes
 - [ ] Visualize catchment areas for stops
-- [ ] Log trips that do not have shapes
 
 
 See the [open issues](https://github.com/UTEL-UIUC/gtfs_segments/issues) for a full list of proposed features (and known issues).
@@ -354,18 +354,20 @@ Distributed under the MIT License. See [`LICENSE.txt`](https://github.com/UTEL-U
 If you use gtfs-segments in your research please use the following BibTeX entry:
 
 ```bibtex
-@software{devunuri_gtfs_segments,
+@article{Devunuri_GTFS_Segments_A_2024,
 author = {Devunuri, Saipraneeth and Lehe, Lewis},
-doi = {10.5281/zenodo.10019419},
-month = Oct,
-title = {{GTFS Segments: A fast and efficient library to generate bus stop spacings}},
-url = {https://github.com/UTEL-UIUC/gtfs_segments},
-version = {2.0.3},
-year = {2023}
+doi = {10.21105/joss.06306},
+journal = {Journal of Open Source Software},
+month = mar,
+number = {95},
+pages = {6306},
+title = {{GTFS Segments: A Fast and Efficient Library to Generate Bus Stop Spacings}},
+url = {https://joss.theoj.org/papers/10.21105/joss.06306},
+volume = {9},
+year = {2024}
 }
-
 ```
-
+Alternative: Check the `Cite this repository`
 ## Citing stop spacings paper
 
 If you use [stop spacings paper](https://doi.org/10.1016/j.jpubtr.2024.100083) in your research please use the following BibTeX entry:
