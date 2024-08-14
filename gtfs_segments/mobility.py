@@ -45,7 +45,7 @@ def fetch_gtfs_source(
     sources_df = sources_df[sources_df["data_type"] == "gtfs"]
     # Download only active feeds
     if active:
-        sources_df = sources_df[sources_df["status"].isin(["active", np.NAN, None])]
+        sources_df = sources_df[sources_df["status"].isin(["active", np.nan, None])]
         sources_df.drop(["status"], axis=1, inplace=True)
     sources_df = pd.merge(
         sources_df,
