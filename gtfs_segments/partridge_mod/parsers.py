@@ -1,6 +1,6 @@
 import datetime
 from functools import lru_cache
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Union
 
 import numpy as np
 import pandas as pd
@@ -18,7 +18,7 @@ DATE_FORMAT = "%Y%m%d"
 
 # Why 2^18? See https://git.io/vxB2P.
 @lru_cache(maxsize=2**18)
-def parse_time(val: str) -> np.float32:
+def parse_time(val: str) -> Any:
     """
     The function `parse_time` takes a string representing a time value in the format "hh:mm:ss" and
     returns the equivalent time in seconds as a numpy int, or returns the input value if it is
@@ -30,14 +30,15 @@ def parse_time(val: str) -> np.float32:
     Returns:
       a value of type np.float32.
     """
-    if isinstance(val, float) or (isinstance(val, float) and np.isnan(val)):  # Corrected handling for np.nan
+    if isinstance(val, float):  # Corrected handling for np.nan
         return val
-    if str(val) == "":
+    
+    try:
+        val = str(val).strip()
+        h, m, s = map(float, val.split(":"))
+        return np.float32(h * 3600 + m * 60 + s)
+    except ValueError:
         return np.nan
-    val = str(val).strip()
-
-    h, m, s = map(float, val.split(":"))
-    return np.float32(h * 3600 + m * 60 + s)
 
 
 @lru_cache(maxsize=2**18)
@@ -59,21 +60,25 @@ def parse_date(val: str) -> datetime.date:
 
 @lru_cache(maxsize=2**18)
 def parse_float(val: Any) -> float:
+    if isinstance(val, float):
+        return val
     try:
         return float(val)
     except ValueError:
         return np.nan
-    
+
 @lru_cache(maxsize=2**18)
-def parse_integer(val: Any) -> float:
+def parse_integer(val: Any) -> Union[int, float]:
+    if isinstance(val, int) or isinstance(val,float):
+        return val
     try:
         return int(val)
     except ValueError:
         return np.nan
 
 
-vparse_float = np.vectorize(parse_float)
-vparse_int = np.vectorize(parse_integer)
+vparse_float = lambda x : pd.to_numeric(x, errors="coerce", downcast =None) # np.vectorize(parse_float)
+vparse_int = lambda x : pd.to_numeric(x, errors="coerce", downcast ="integer") # np.vectorize(parse_integer)
 vparse_time = np.vectorize(parse_time)
 vparse_date = np.vectorize(parse_date)
 
@@ -316,16 +321,14 @@ def transforms_dict() -> Dict[str, Dict[str, Any]]:
                 "stop_name": "str",
                 "stop_lat": "float32",
                 "stop_lon": "float32",
-                # "location_type": "int8",
-                # "wheelchair_boarding":"int8",
-                # "timepoint":"bool",
+                "location_type": "int8",
+                "wheelchair_boarding":"int8",
             },
             "converters": {
                 "stop_lat": vparse_float,
                 "stop_lon": vparse_float,
-                # "location_type": vparse_float,
-                "wheelchair_boarding": vparse_float,
-                "timepoint": vparse_float,
+                "location_type": vparse_int,
+                "wheelchair_boarding": vparse_int,
             },
             "required_columns": (
                 "stop_id",
@@ -344,17 +347,17 @@ def transforms_dict() -> Dict[str, Dict[str, Any]]:
                 "stop_sequence": vparse_int,
                 "pickup_type": vparse_int,
                 "drop_off_type": vparse_int,
-                # "shape_dist_traveled",
-                # "timepoint",
+                "shape_dist_traveled": vparse_float,
+                "timepoint":"bool",
             },
             "converters": {
                 "arrival_time": vparse_time,
                 "departure_time": vparse_time,
                 "pickup_type": vparse_int,
                 "drop_off_type": vparse_int,
-                # "shape_dist_traveled": vparse_float,
+                "shape_dist_traveled": vparse_float,
                 "stop_sequence": vparse_int,
-                # "timepoint": vparse_float,
+                "timepoint": vparse_int,
             },
             "required_columns": (
                 "trip_id",

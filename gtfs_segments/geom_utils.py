@@ -163,16 +163,19 @@ def view_spacings(
     elif level == "route":
         markersize = 40
         assert "route" in kwargs, "Please provide a route_id in route attibute"
+        kwargs["route"] = [kwargs["route"]] if isinstance(kwargs["route"], str) else kwargs["route"]
         gdf = gdf[gdf.route_id.isin(kwargs["route"])].copy()
     elif level == "segment":
         markersize = 60
         assert "segment" in kwargs, "Please provide a segment_id in segment attibute"
+        kwargs["segment"] = [kwargs["segment"]] if isinstance(kwargs["segment"], str) else kwargs["segment"]
         gdf = gdf[gdf.segment_id.isin(kwargs["segment"])].copy()
     else:
         raise ValueError("level must be either whole, route, or segment")
 
     # Plot the spacings
     if "route" in kwargs:
+        kwargs["route"] = [kwargs["route"]] if isinstance(kwargs["route"], str) else kwargs["route"]
         gdf = gdf[gdf.route_id.isin(kwargs["route"])].copy()
         if len(kwargs["route"]) > 1:
             ax = gdf.plot(
@@ -194,6 +197,7 @@ def view_spacings(
             )
     if "segment" in kwargs:
         try:
+            kwargs["segment"] = [kwargs["segment"]] if isinstance(kwargs["segment"], str) else kwargs["segment"]
             gdf = gdf[gdf.segment_id.isin(kwargs["segment"])].copy()
         except ValueError as e:
             raise ValueError(f"No such segment exists. Check if direction_id is incorrect {e}")
@@ -270,10 +274,12 @@ def view_spacings_interactive(
     # Filter and plot based on level
     if level == "route":
         assert "route" in kwargs, "Please provide a route_id in route attribute"
-        gdf = gdf[gdf.route_id == kwargs["route"]].copy()
+        kwargs["route"] = [kwargs["route"]] if isinstance(kwargs["route"], str) else kwargs["route"]
+        gdf = gdf[gdf.route_id.isin(kwargs["route"])].copy()
     elif level == "segment":
         assert "segment" in kwargs, "Please provide a segment_id in segment attribute"
-        gdf = gdf[gdf.segment_id == kwargs["segment"]].copy()
+        kwargs["segment"] = [kwargs["segment"]] if isinstance(kwargs["segment"], str) else kwargs["segment"]
+        gdf = gdf[gdf.segment_id.isin(kwargs["segment"])].copy()
 
     # Add lines to map
     tooltip = folium.GeoJsonTooltip(fields=["segment_id", "distance"])
@@ -304,8 +310,10 @@ def view_spacings_interactive(
     # Show stops
     if show_stops:
         if "route" in kwargs:
-            gdf = gdf[gdf.route_id == kwargs["route"]].copy()
+            kwargs["route"] = [kwargs["route"]] if isinstance(kwargs["route"], str) else kwargs["route"]
+            gdf = gdf[gdf.route_id.isin(kwargs["route"])].copy()
         if "segment" in kwargs:
+            kwargs["segment"] = [kwargs["segment"]] if isinstance(kwargs["segment"], str) else kwargs["segment"]
             gdf = gdf[gdf.segment_id == kwargs["segment"]].copy()
         stop_ids = {}
         for _, row in gdf.iterrows():
