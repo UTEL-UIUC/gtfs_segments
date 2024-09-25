@@ -240,7 +240,7 @@ Visualize stop spacings at network, route and segments levels along with basemap
 
 ```python
 from gtfs_segments import view_spacings
-view_spacings(segments_df,route = '8',segment = '6364-3725-1',basemap=True)
+view_spacings(segments_df,route = ['8'],segment = ['6364-3725-1'],basemap=True)
 ```
 
 <div align='center'><a>
