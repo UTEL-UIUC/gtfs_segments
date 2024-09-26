@@ -17,7 +17,7 @@ from .mobility import summary_stats_mobility
 from .partridge_func import get_bus_feed
 from .partridge_mod.gtfs import Feed
 from .utils import download_write_file, export_segments, failed_pipeline, plot_hist
-
+from .elevations import extract_segment_elevations
 
 def merge_trip_geom(trip_df: pd.DataFrame, shape_df: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     """
@@ -352,6 +352,57 @@ def get_gtfs_segments(
     if max_spacing is not None:
         print("Using max_spacing {:.0f} to filter segments".format(max_spacing))
         df = df[df["distance"] <= max_spacing]
+    return df
+
+def get_gtfs_segments_with_elevations(
+    path: str,
+    raster_path: str,
+    sample_distance: Optional[int] = 100,
+    agency_id: Optional[str] = None,
+    threshold: Optional[int] = 1,
+    max_spacing: Optional[float] = None,
+    parallel: bool = False,
+) -> gpd.GeoDataFrame:
+    """
+    Processes a GTFS feed file and returns segments with additional elevation data.
+
+    Args:
+      path: File path to the GTFS (General Transit Feed Specification) data.
+      raster_path: File path to the raster elevation data.
+      sample_distance: Distance in meters between elevation samples along each segment. Defaults to 100.
+      agency_id: The agency_id of the transit agency to retrieve the bus feed for. If not provided,
+        retrieves the bus feed for all transit agencies. Can be a list of agency_ids for multiple agencies.
+      threshold: Minimum number of stops a trip must have to be included. Defaults to 1.
+      max_spacing: Maximum distance (in meters) between two consecutive stops in a segment.
+        Segments exceeding this distance will be split.
+      parallel: Whether to use parallel processing for certain operations. Defaults to False.
+
+    Returns:
+      A GeoDataFrame containing information about the stops and segments in the feed,
+      including elevation data. Each row contains the following columns:
+      - segment_id: The segment's identifier, produced by gtfs-segments
+      - stop_id1: The `stop_id` identifier of the segment's beginning stop
+      - stop_id2: The `stop_id` identifier of the segment's ending stop
+      - route_id: The route ID as listed in the agency's routes.txt file
+      - direction_id: The route's direction identifier
+      - traversals: Number of times the route traverses the segment during the busiest day
+      - distance: Length of the segment in meters
+      - geometry: The segment's LINESTRING (EPSG:4326/WGS84)
+      - start_elevation: Elevation at the start of the segment
+      - end_elevation: Elevation at the end of the segment
+      - min_elevation: Minimum elevation along the segment
+      - max_elevation: Maximum elevation along the segment
+      - avg_elevation: Average elevation along the segment
+      - elevation_diff: Difference between end and start elevations
+      - end_to_end_grade: Absolute grade (in percent) from start to end of the segment
+      - avg_grade: Average absolute grade (in percent) along the segment
+    """
+    feed = get_bus_feed(path, agency_id=agency_id, threshold=threshold, parallel=parallel)
+    df = process_feed(feed, parallel=parallel)
+    if max_spacing is not None:
+        print("Using max_spacing {:.0f} to filter segments".format(max_spacing))
+        df = df[df["distance"] <= max_spacing]
+    df = extract_segment_elevations(raster_path, df, sample_distance=sample_distance)
     return df
 
 
