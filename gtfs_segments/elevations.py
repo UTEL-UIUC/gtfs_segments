@@ -25,8 +25,8 @@ def extract_segment_elevations(raster_path, segments_gdf, sample_distance=100):
       - max_elevation: The maximum elevation along the segment.
       - avg_elevation: The average elevation along the segment.
       - elevation_diff: The difference between end and start elevations.
-      - end_to_end_grade: The absolute grade (in percent) from start to end of the segment.
-      - avg_grade: The average absolute grade (in percent) along the segment.
+      - end_to_end_grade: The actual grade (in percent) from start to end of the segment.
+      - avg_grade: The average actual grade (in percent) along the segment.
     """
     try:
         with rasterio.open(raster_path) as src:
@@ -87,9 +87,8 @@ def extract_segment_elevations(raster_path, segments_gdf, sample_distance=100):
                         avg_elevation = np.mean(elevations)
 
                         elevation_diff = end_elevation - start_elevation
-                        end_to_end_grade = abs((elevation_diff / total_distance) * 100)
-
-                        segment_grades = np.abs(np.diff(elevations) / np.diff(distances) * 100)
+                        end_to_end_grade = (elevation_diff / total_distance) * 100  # Removed abs()
+                        segment_grades = np.diff(elevations) / np.diff(distances) * 100  # Removed abs()
                         avg_grade = np.average(segment_grades) if segment_grades.size > 0 else 0
 
                         return (
@@ -129,6 +128,7 @@ def extract_segment_elevations(raster_path, segments_gdf, sample_distance=100):
 def view_spacings_with_grade(
     gdf: gpd.GeoDataFrame,
     grade_column: str = "avg_grade",
+    abs_grade: bool = False,
     basemap: bool = True,
     map_provider: str = cx.providers.CartoDB.Positron,
     dpi: int = 300,
@@ -142,7 +142,8 @@ def view_spacings_with_grade(
 
     Args:
       gdf: GeoDataFrame containing the segments with grade information.
-      grade_column: Column name for the grade to visualize. Defaults to "avg_grade".
+      grade_column: Column name for the grade to visualize. Defaults to "avg_grade"
+      abs_grade: Whether to use the absolute value of the grade. Defaults to False.
       basemap: Whether to add a basemap to the plot. Defaults to True.
       map_provider: The map provider for the basemap. Defaults to CartoDB Positron.
       dpi: The resolution of the plot. Defaults to 300.
@@ -163,6 +164,8 @@ def view_spacings_with_grade(
         vmax = gdf[grade_column].max()
 
     # Plot segments with color based on grade
+    if abs_grade:
+        gdf[grade_column] = gdf[grade_column].abs()
     gdf.plot(
         column=grade_column,
         ax=ax,
