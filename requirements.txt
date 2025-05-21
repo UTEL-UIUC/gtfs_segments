@@ -8,7 +8,7 @@ pandas>=1.5.2
 pytest==7.2.0
 requests==2.32.2
 scipy==1.10.0
-setuptools==70.0.0
+setuptools==78.1.1
 shapely==2.0.0
 utm==0.7.0
 rasterio==1.3.6
