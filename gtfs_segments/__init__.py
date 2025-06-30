@@ -13,7 +13,12 @@ from .partridge_func import get_bus_feed
 from .route_stats import get_route_stats
 from .utils import export_segments, plot_hist, process, summary_stats
 
-__version__ = importlib.metadata.version("gtfs_segments")
+try:
+    __version__ = importlib.metadata.version("gtfs_segments")
+except importlib.metadata.PackageNotFoundError:
+    # Fallback version for development/testing when package is not installed
+    __version__ = "dev"
+    
 __all__ = [
     "__version__",
     "get_gtfs_segments",
