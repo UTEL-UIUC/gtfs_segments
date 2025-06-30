@@ -1,5 +1,6 @@
 import os
-from typing import List, Optional, Set
+from datetime import date as date_type
+from typing import List, Optional, Set, Union
 
 import geopandas as gpd
 import numpy as np
@@ -313,41 +314,45 @@ def get_gtfs_segments(
     threshold: Optional[int] = 1,
     max_spacing: Optional[float] = None,
     parallel: bool = False,
+    date: Optional[Union[str, date_type, List[Union[str, date_type]]]] = None,
+    skip_invalid_dates: bool = False,
 ) -> gpd.GeoDataFrame:
     """
-    The function `get_gtfs_segments` takes a path to a GTFS feed file, an optional agency name, a
-    threshold value, and an optional maximum spacing value, and returns processed GTFS segments.
+    The function `get_gtfs_segments` takes a path to a GTFS feed file and returns processed GTFS segments
+    with comprehensive date filtering support.
 
     Args:
       path: The path parameter is the file path to the GTFS (General Transit Feed Specification) data.
-    This is the data format used by public transportation agencies to provide schedule and geographic
-    information about their services.
-      [Optional] agency_id: The agency_id of the transit agency for which you want to retrieve the bus feed. If this
-    parameter is not provided, the function will retrieve the bus feed for all transit agencies. You can pass
-    a list of agency_ids to retrieve the bus feed for multiple transit agencies.
-      [Optional] threshold: The threshold parameter is used to filter out bus trips that have fewer stops than the
-    specified threshold. Trips with fewer stops than the threshold will be excluded from the result.
-    Defaults to 1
-      [Optional] max_spacing: The `max_spacing` parameter is used to specify the maximum distance between two
-    consecutive stops in a segment. If the distance between two stops exceeds the `max_spacing` value,
-    the segment is split into multiple segments.
+      agency_id: Filter by specific transit agency ID. Defaults to None (all agencies).
+      threshold: Filter out trips with fewer stops than this threshold. Defaults to 1.
+      max_spacing: Maximum distance between consecutive stops in meters. Defaults to None (no limit).
+      parallel: If True, process the feed in parallel for improved performance. Defaults to False.
+      date: Specific date(s) to analyze. Can be:
+        - Single date string in YYYYMMDD format (e.g., '20230315')
+        - Single datetime.date object  
+        - List of date strings and/or datetime.date objects
+        If None, uses the busiest day in the GTFS schedule.
+      skip_invalid_dates: If True and a list of dates is provided, skip invalid dates and continue 
+        with valid ones. If False, raise an error for any invalid date. Defaults to False.
 
     Returns:
-      A GeoDataFrame containing information about the stops and segments in the feed with segments
-      smaller than the max_spacing values. Each row contains the following columns:
-      - segment_id: the segment's identifier, produced by gtfs-segments
-      - stop_id1: The `stop_id` identifier of the segment's beginning stop.
-        The identifier is the same one the agency has chosen in the stops.txt file of its GTFS package.
-      - stop_id2: The `stop_id` identifier of the segment's ending stop.
-      - route_id: The same route ID listed in the agency's routes.txt file.
-      - direction_id: The route's direction identifier.
-      - traversals: The number of times the indicated route traverses the segment during the "measurement interval."
-        The "measurement interval" chosen is the busiest day in the GTFS schedule: the day which has the most bus services running.
-      - distance: The length of the segment in meters.
-      - geometry: The segment's LINESTRING (a format for encoding geographic paths).
-        All geometries are re-projected onto Mercator (EPSG:4326/WGS84) to maintain consistency.
+      A GeoDataFrame containing segment information with the following columns:
+      - segment_id: Unique segment identifier
+      - stop_id1, stop_id2: Beginning and ending stop IDs
+      - route_id: Route identifier from the GTFS data
+      - direction_id: Route direction identifier
+      - traversals: Number of times the route traverses this segment during the measurement period
+      - distance: Segment length in meters
+      - geometry: Segment LINESTRING geometry (EPSG:4326/WGS84)
     """
-    feed = get_bus_feed(path, agency_id=agency_id, threshold=threshold, parallel=parallel)
+    feed = get_bus_feed(
+        path, 
+        agency_id=agency_id, 
+        threshold=threshold, 
+        parallel=parallel,
+        date=date,
+        skip_invalid_dates=skip_invalid_dates
+    )
     df = process_feed(feed, parallel=parallel)
     if max_spacing is not None:
         print("Using max_spacing {:.0f} to filter segments".format(max_spacing))
